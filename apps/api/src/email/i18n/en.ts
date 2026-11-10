@@ -4,6 +4,12 @@ import { emailButton, renderEmailLayout } from '../templates/layout';
 // Introduces the plain-text copy of a button's link.
 const COPY_LINK = 'Or copy this link:';
 
+export interface SignInEmailFields {
+  when: string;
+  passkey: string;
+  address: string;
+}
+
 // English email catalog. Bodies interpolating a value use safeHtml`...`.
 export default {
   registration: {
@@ -78,5 +84,19 @@ export default {
       heading: 'Passkey removed',
       bodyHtml: safeHtml`<p style="margin:0;">A passkey was just removed from your Bagheera account. If you did not do this, sign in with one of your remaining passkeys immediately and review the passkeys listed in your account settings.</p>`,
     }),
+  },
+  signIn: {
+    subject: 'New sign-in to Bagheera',
+    unnamedPasskey: 'unnamed passkey',
+    body: ({ when, passkey, address }: SignInEmailFields) =>
+      renderEmailLayout({
+        locale: 'en',
+        preheader: 'Your account was just signed in to.',
+        heading: 'New sign-in',
+        bodyHtml:
+          safeHtml`<p style="margin:0 0 20px;">Your Bagheera account was just signed in to.</p>` +
+          safeHtml`<p style="margin:0 0 20px;">When: <strong style="color:#f2efe9;">${when}</strong><br />Passkey: <strong style="color:#f2efe9;">${passkey}</strong><br />IP address: <strong style="color:#f2efe9;">${address}</strong></p>` +
+          safeHtml`<p style="margin:0;">If this was you, there's nothing to do. If it wasn't, sign in with another passkey immediately and remove this one from your account settings: removing a passkey signs out every other device.</p>`,
+      }),
   },
 };

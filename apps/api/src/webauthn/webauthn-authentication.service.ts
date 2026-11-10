@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 import { eq } from 'drizzle-orm';
@@ -6,8 +6,12 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
 import { BusinessError } from '../common/filters/business-error';
+import { effectiveTimeZone } from '../common/member-today';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
+import { EmailQueueService } from '../email/email-queue.service';
+import { enqueueAlert } from '../email/enqueue-alert';
+import { signInEmail } from '../email/templates/sign-in.template';
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
@@ -51,10 +55,12 @@ function toError(err: unknown): Error {
  * verify() learns the member from the one that answered. Asking for an
  * email would reveal which addresses are registered and allow per-email
  * lockouts. Ends by rotating the session, then setting memberId and the
- * member's session epoch.
+ * member's session epoch, and emails the member a notice of the sign-in.
  */
 @Injectable()
 export class WebauthnAuthenticationService {
+  private readonly logger = new Logger(WebauthnAuthenticationService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
@@ -65,6 +71,7 @@ export class WebauthnAuthenticationService {
     private readonly schedulerCatchUp: SchedulerCatchUpService,
     private readonly audit: AuditService,
     private readonly singleUse: SingleUseStore,
+    private readonly emailQueue: EmailQueueService,
   ) {}
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialRequestOptionsJSON> {
@@ -132,10 +139,26 @@ export class WebauthnAuthenticationService {
       throw invalidPasskey();
     }
 
-    await this.db.update(member).set({ loggedAt: new Date() }).where(eq(member.id, row.id));
+    const signedInAt = new Date();
+    await this.db.update(member).set({ loggedAt: signedInAt }).where(eq(member.id, row.id));
 
     await this.schedulerCatchUp.catchUp(row.id);
     await this.audit.record('webauthn_sign_in_success', row.id, sourceAddress);
+    // Signed in: a queue outage may neither fail the sign-in nor hold it up.
+    void enqueueAlert(
+      this.emailQueue,
+      this.logger,
+      signInEmail(
+        row.email,
+        {
+          at: signedInAt,
+          timeZone: effectiveTimeZone(row.timeZone),
+          deviceName: credentialRow.deviceName,
+          sourceAddress,
+        },
+        row.locale,
+      ),
+    );
 
     return { message: 'ok' };
   }

@@ -246,6 +246,7 @@ describe('webauthn credentials', () => {
     it('answers without waiting for the alert to be queued', async () => {
       const fixture = await seedSignedInMember(app);
       const credential = await insertCredential(app, fixture.memberId, 'To delete');
+      fakeEmailQueue.enqueue.mockClear();
       fakeEmailQueue.enqueue.mockReturnValueOnce(new Promise<void>(() => undefined));
 
       await completeStepUp(app, fixture);
@@ -260,6 +261,7 @@ describe('webauthn credentials', () => {
       const otherDevice = request.agent(app.getHttpServer());
       await signInWithPasskey(app, otherDevice, fixture.credentialId);
       await completeStepUp(app, fixture);
+      fakeEmailQueue.enqueue.mockClear();
       const recordIn = vi
         .spyOn(app.get(AuditService), 'recordIn')
         .mockRejectedValueOnce(new Error('insert failed'));
@@ -289,6 +291,7 @@ describe('webauthn credentials', () => {
     it('rejects removal without a fresh step-up and leaves the credential in place', async () => {
       const { memberId, mutate } = await seedSignedInMember(app);
       const credential = await insertCredential(app, memberId, 'Still here');
+      fakeEmailQueue.enqueue.mockClear();
 
       const res = await mutate('delete', `/webauthn/credentials/${credential.id}`);
       expect(res.status).toBe(422);

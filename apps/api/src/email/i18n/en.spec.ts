@@ -47,6 +47,13 @@ describe('email/i18n/en', () => {
     expect(en.passkeyRemoved.body).toContain('removed from your Bagheera account');
   });
 
+  it('escapes every field of the sign-in notice, and puts no link in it', () => {
+    const body = en.signIn.body({ when: XSS_PAYLOAD, passkey: XSS_PAYLOAD, address: XSS_PAYLOAD });
+    expect(body).not.toContain(XSS_PAYLOAD);
+    expect(body.split(ESCAPED_PAYLOAD)).toHaveLength(4);
+    expect(body).not.toContain('href=');
+  });
+
   it('every entry has a non-empty subject', () => {
     for (const entry of Object.values(en)) {
       expect(entry.subject.length).toBeGreaterThan(0);

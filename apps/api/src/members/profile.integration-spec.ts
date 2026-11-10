@@ -118,6 +118,7 @@ describe('POST /members/profile', () => {
 
     it('no-ops when the "new" email is the same as the current one', async () => {
       const fixture = await seedSignedInMember(app);
+      fakeEmailQueue.enqueue.mockClear();
 
       await completeStepUp(app, fixture);
       const csrfToken = await fixture.getCsrfToken();
@@ -172,6 +173,7 @@ describe('POST /members/profile', () => {
     it('handles an address another member holds the same way, but sends its owner a notice, not a link', async () => {
       const other = await insertMemberWithCredential(app, { locale: 'fr' });
       const fixture = await seedSignedInMember(app);
+      fakeEmailQueue.enqueue.mockClear();
       const before = await versionOf(fixture.memberId);
 
       await completeStepUp(app, fixture);
@@ -308,6 +310,7 @@ describe('POST /members/profile', () => {
 
     it('answers without waiting for the old-address notice to be queued', async () => {
       const fixture = await seedSignedInMember(app);
+      fakeEmailQueue.enqueue.mockClear();
       const key = await startEmailChange(fixture);
       fakeEmailQueue.enqueue.mockReturnValueOnce(new Promise<void>(() => undefined));
 

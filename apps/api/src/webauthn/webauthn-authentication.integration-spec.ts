@@ -44,13 +44,18 @@ function fakeResponseFor(credentialId: string) {
 
 describe('webauthn authentication', () => {
   let app: INestApplication<Server>;
+  let fakeEmailQueue: { enqueue: ReturnType<typeof vi.fn> };
 
   beforeAll(async () => {
-    ({ app } = await createTestApp());
+    ({ app, fakeEmailQueue } = await createTestApp());
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  beforeEach(() => {
+    fakeEmailQueue.enqueue.mockClear();
   });
 
   // Starts a sign-in ceremony on a fresh anonymous agent — usernameless, so
@@ -100,7 +105,7 @@ describe('webauthn authentication', () => {
   });
 
   describe('POST /webauthn/authentication/verify', () => {
-    it('signs in as the credential owner, bumps the counter, and records webauthn_sign_in_success', async () => {
+    it('signs in as the credential owner, bumps the counter, records webauthn_sign_in_success and emails a sign-in notice', async () => {
       const { email, memberId, credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();
 
@@ -143,6 +148,27 @@ describe('webauthn authentication', () => {
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);
       expect(event).toBeDefined();
+
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ to: email, subject: 'New sign-in to Bagheera' }),
+      );
+    });
+
+    it('signs in without waiting for the sign-in notice to be queued', async () => {
+      const { credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+      fakeEmailQueue.enqueue.mockReturnValueOnce(new Promise<void>(() => undefined));
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(1));
+      await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(200);
+      await agent.get('/auth/me').expect(200);
     });
 
     it('identifies the member from whichever credential answered', async () => {
@@ -242,6 +268,7 @@ describe('webauthn authentication', () => {
         .send({ response: fakeResponseFor(credentialId) })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
     });
 
     it('rejects a signature check that throws, and records webauthn_sign_in_failure against the owner', async () => {

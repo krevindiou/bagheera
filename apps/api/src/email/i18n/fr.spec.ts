@@ -41,6 +41,13 @@ describe('email/i18n/fr', () => {
     }
   });
 
+  it('escapes every field of the sign-in notice, and puts no link in it', () => {
+    const body = fr.signIn.body({ when: XSS_PAYLOAD, passkey: XSS_PAYLOAD, address: XSS_PAYLOAD });
+    expect(body).not.toContain(XSS_PAYLOAD);
+    expect(body.split(ESCAPED_PAYLOAD)).toHaveLength(4);
+    expect(body).not.toContain('href=');
+  });
+
   it('every entry has a non-empty subject', () => {
     for (const entry of Object.values(fr)) {
       expect(entry.subject.length).toBeGreaterThan(0);
