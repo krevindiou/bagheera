@@ -28,10 +28,25 @@ function firstMatch(userAgent: string, rules: [RegExp, string][]): string | null
   return rules.find(([pattern]) => pattern.test(userAgent))?.[1] ?? null;
 }
 
+// Real user agents stay well under this. It bounds what a client can make
+// the store keep, and the regex work every signed-in request does on it.
+export const USER_AGENT_MAX_LENGTH = 512;
+
 /** Browser and OS names good enough to tell a member's devices apart; null when unknown. */
 export function describeUserAgent(userAgent: string | null | undefined): UserAgentSummary {
   if (!userAgent) {
     return { browser: null, os: null };
   }
-  return { browser: firstMatch(userAgent, BROWSERS), os: firstMatch(userAgent, SYSTEMS) };
+  const capped = userAgent.slice(0, USER_AGENT_MAX_LENGTH);
+  return { browser: firstMatch(capped, BROWSERS), os: firstMatch(capped, SYSTEMS) };
+}
+
+/** Same browser on the same system; versions don't count, since browsers update mid-session. */
+export function sameDevice(
+  signedIn: string | null | undefined,
+  current: string | null | undefined,
+): boolean {
+  const before = describeUserAgent(signedIn);
+  const now = describeUserAgent(current);
+  return before.browser === now.browser && before.os === now.os;
 }

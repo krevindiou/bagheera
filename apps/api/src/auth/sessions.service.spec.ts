@@ -83,14 +83,29 @@ describe('SessionsService', () => {
         browser: 'Firefox',
         os: 'Linux',
         ipAddress: '203.0.113.7',
+        lastIpAddress: '203.0.113.7',
         signedInAt: new Date(NOW - MINUTE),
       });
       expect(b).toMatchObject({
         browser: null,
         os: null,
         ipAddress: null,
+        lastIpAddress: null,
         signedInAt: new Date(NOW - 60 * MINUTE),
       });
+    });
+
+    it("lists another session's latest network, and this one's own request address", async () => {
+      const client = { userAgent: null, ip: '203.0.113.7', signedInAt: NOW - MINUTE };
+      const { service, req } = setup([
+        stored('current', { client }),
+        stored('moved', { client: { ...client, lastIp: '192.0.2.40' } }),
+      ]);
+
+      const [current, moved] = await service.list(req);
+
+      expect(current).toMatchObject({ ipAddress: '203.0.113.7', lastIpAddress: '198.51.100.1' });
+      expect(moved).toMatchObject({ ipAddress: '203.0.113.7', lastIpAddress: '192.0.2.40' });
     });
 
     it('leaves out sessions of another member, of an older epoch, or past the absolute cap', async () => {

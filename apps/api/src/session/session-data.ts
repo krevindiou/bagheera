@@ -5,6 +5,8 @@ export interface SessionClient {
   userAgent: string | null;
   /** Source address at sign-in; later requests may come from another. */
   ip: string;
+  /** Latest source address outside the one `ip` (or the previous one) belongs to. */
+  lastIp?: string;
   signedInAt: number;
 }
 

@@ -125,7 +125,16 @@ async function signOutOthers() {
                     {{ $t('settings.sessions.thisDevice') }}
                   </span>
                 </td>
-                <td>{{ session.ipAddress ?? $t('settings.sessions.unknownAddress') }}</td>
+                <td>
+                  {{ session.lastIpAddress ?? $t('settings.sessions.unknownAddress') }}
+                  <div
+                    v-if="session.ipAddress && session.ipAddress !== session.lastIpAddress"
+                    class="text-muted"
+                    style="font-size: 13.5px"
+                  >
+                    {{ $t('settings.sessions.signInAddress', { address: session.ipAddress }) }}
+                  </div>
+                </td>
                 <td>{{ formatTimestampDateTime(session.signedInAt) }}</td>
                 <td>
                   {{

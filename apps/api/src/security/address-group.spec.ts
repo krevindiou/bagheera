@@ -1,4 +1,4 @@
-import { rateLimitAddress } from './address-group';
+import { rateLimitAddress, sameAddressGroup } from './address-group';
 
 describe('rateLimitAddress', () => {
   it.each(['203.0.113.7', '127.0.0.1', 'unknown'])('keeps %s as is', (address) => {
@@ -28,5 +28,14 @@ describe('rateLimitAddress', () => {
     ['::ffff:cb00:7107', '203.0.113.7'],
   ])('counts the IPv4-mapped %s as its IPv4 address', (address, ipv4) => {
     expect(rateLimitAddress(address)).toBe(ipv4);
+  });
+});
+
+describe('sameAddressGroup', () => {
+  it('matches addresses of one IPv4 client or one IPv6 /64 only', () => {
+    expect(sameAddressGroup('203.0.113.7', '::ffff:203.0.113.7')).toBe(true);
+    expect(sameAddressGroup('2001:db8:a:b::1', '2001:db8:a:b:dead:beef::9')).toBe(true);
+    expect(sameAddressGroup('203.0.113.7', '203.0.113.8')).toBe(false);
+    expect(sameAddressGroup('2001:db8:a:b::1', '2001:db8:a:c::1')).toBe(false);
   });
 });

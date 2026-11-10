@@ -7,6 +7,8 @@ export class SessionSummaryDto {
   os!: string | null;
   /** Source address at sign-in; null for a session signed in before it was recorded. */
   ipAddress!: string | null;
+  /** Latest source address on a new network (by IPv4 address or IPv6 /64), else the sign-in one. */
+  lastIpAddress!: string | null;
   signedInAt!: Date;
   lastActiveAt!: Date;
 }

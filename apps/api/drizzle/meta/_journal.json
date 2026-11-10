@@ -127,6 +127,13 @@
       "when": 1794302291443,
       "tag": "0017_add_session_revoke_security_event_types",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794309834302,
+      "tag": "0018_add_session_client_security_event_types",
+      "breakpoints": true
     }
   ]
 }

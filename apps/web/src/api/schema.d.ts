@@ -899,6 +899,7 @@ export interface components {
             browser: string | null;
             os: string | null;
             ipAddress: string | null;
+            lastIpAddress: string | null;
             /** Format: date-time */
             signedInAt: string;
             /** Format: date-time */

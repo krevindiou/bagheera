@@ -1,10 +1,7 @@
 import type { Request } from 'express';
 import { clientIp } from '../common/client-ip.decorator';
+import { USER_AGENT_MAX_LENGTH } from './describe-user-agent';
 import './session-data';
-
-// Real user agents stay well under this; it only bounds what a client can
-// make the store keep.
-const USER_AGENT_MAX_LENGTH = 512;
 
 /** Records which browser signed in, for the member's sessions list. Call right after setting memberId. */
 export function recordSessionClient(req: Request): void {

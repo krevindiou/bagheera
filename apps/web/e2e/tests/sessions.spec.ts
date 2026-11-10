@@ -52,3 +52,26 @@ test('lists another signed-in browser and signs it out', async ({
   await otherAuthenticator.remove();
   await otherContext.close();
 });
+
+// The session cookie copied into another browser ends the session there and
+// in the browser that signed in.
+test('ends a session whose cookie shows up in another browser', async ({
+  signedInMember,
+  browser,
+}) => {
+  const { page } = signedInMember;
+  const thiefContext = await browser.newContext({
+    baseURL: test.info().project.use.baseURL,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0',
+  });
+  await thiefContext.addCookies(await page.context().cookies());
+  const thiefPage = await thiefContext.newPage();
+
+  await thiefPage.goto('/en/settings/sessions');
+  await expect(thiefPage).toHaveURL(/\/en\/sign-in/);
+
+  await page.goto('/en/settings/sessions');
+  await expect(page).toHaveURL(/\/en\/sign-in/);
+
+  await thiefContext.close();
+});

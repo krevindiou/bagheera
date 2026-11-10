@@ -21,6 +21,7 @@ interface SessionSummary {
   browser: string | null;
   os: string | null;
   ipAddress: string | null;
+  lastIpAddress: string | null;
   signedInAt: string;
   lastActiveAt: string;
 }
@@ -35,6 +36,7 @@ const CURRENT: SessionSummary = {
   browser: 'Firefox',
   os: 'Linux',
   ipAddress: '198.51.100.1',
+  lastIpAddress: '198.51.100.1',
   signedInAt: '2026-11-10T08:00:00Z',
   lastActiveAt: '2026-11-10T09:00:00Z',
 };
@@ -45,6 +47,7 @@ const OTHER: SessionSummary = {
   browser: null,
   os: 'iOS',
   ipAddress: null,
+  lastIpAddress: null,
   signedInAt: '2026-11-09T08:00:00Z',
   lastActiveAt: '2026-11-09T08:30:00Z',
 };
@@ -113,6 +116,18 @@ describe('SessionsPage', () => {
     expect(other.text()).toContain('Unknown browser on iOS');
     expect(other.text()).toContain('Unknown');
     expect(other.text()).not.toContain('This device');
+    expect(wrapper.text()).not.toContain('At sign-in');
+  });
+
+  it('shows the latest address, and the sign-in one when the session moved since', async () => {
+    const wrapper = await mountPage([
+      CURRENT,
+      { ...OTHER, ipAddress: '203.0.113.7', lastIpAddress: '192.0.2.40' },
+    ]);
+
+    const other = wrapper.find(`[data-testid="session-${OTHER.id}"]`);
+    expect(other.text()).toContain('192.0.2.40');
+    expect(other.text()).toContain('At sign-in: 203.0.113.7');
   });
 
   it('says so when neither the browser nor the system is known', async () => {

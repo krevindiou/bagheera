@@ -1,9 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, eq } from 'drizzle-orm';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import type IORedis from 'ioredis';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
+import type { SecurityEventType } from '../security/audit.service';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SESSION_KEY_PREFIX, VALKEY_CLIENT } from '../session/session.constants';
 import {
@@ -29,6 +31,8 @@ describe('/auth/sessions', () => {
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    // As in main.ts, so a test can move a session to another network.
+    (app as unknown as NestExpressApplication).set('trust proxy', 1);
   });
 
   afterAll(async () => {
@@ -54,15 +58,15 @@ describe('/auth/sessions', () => {
     return other!;
   }
 
-  async function eventCount(
-    eventType: 'session_revoked' | 'other_sessions_revoked',
-    memberId: string,
-  ) {
-    const rows = await getDb(app)
+  async function events(eventType: SecurityEventType, memberId: string) {
+    return getDb(app)
       .select()
       .from(securityEvent)
       .where(and(eq(securityEvent.eventType, eventType), eq(securityEvent.memberId, memberId)));
-    return rows.length;
+  }
+
+  async function eventCount(eventType: SecurityEventType, memberId: string) {
+    return (await events(eventType, memberId)).length;
   }
 
   describe('GET /auth/sessions', () => {
@@ -188,6 +192,59 @@ describe('/auth/sessions', () => {
       const res = await fixture.mutate('delete', '/auth/sessions');
       expect(res.status).toBe(422);
       await elsewhere.get('/auth/me').expect(200);
+    });
+  });
+
+  describe('client binding', () => {
+    const CHROME_WINDOWS =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+
+    // The session cookie copied into another browser.
+    it('ends a session used from another browser, and records session_device_mismatch', async () => {
+      const fixture = await seedSignedInMember(app);
+      const elsewhere = await signInElsewhere(fixture);
+
+      await elsewhere.get('/auth/me').set('User-Agent', CHROME_WINDOWS).expect(401);
+
+      await elsewhere.get('/auth/me').expect(401);
+      expect(await listSessions(fixture)).toHaveLength(1);
+      expect((await events('session_device_mismatch', fixture.memberId))[0].details).toEqual({
+        signedInBrowser: 'Firefox',
+        signedInOs: 'Linux',
+        browser: 'Chrome',
+        os: 'Windows',
+      });
+    });
+
+    it('keeps a session whose browser updated itself', async () => {
+      const fixture = await seedSignedInMember(app);
+      const elsewhere = await signInElsewhere(fixture);
+
+      await elsewhere
+        .get('/auth/me')
+        .set('User-Agent', FIREFOX_LINUX.replaceAll('132.0', '133.0'))
+        .expect(200);
+      expect(await eventCount('session_device_mismatch', fixture.memberId)).toBe(0);
+    });
+
+    it('keeps a session on a new network, records it once and lists its latest address', async () => {
+      const fixture = await seedSignedInMember(app);
+      const elsewhere = await signInElsewhere(fixture);
+      const signInAddress = (await otherSession(fixture)).ipAddress;
+
+      await elsewhere.get('/auth/me').set('X-Forwarded-For', '192.0.2.40').expect(200);
+      await elsewhere.get('/auth/me').set('X-Forwarded-For', '192.0.2.40').expect(200);
+
+      const recorded = await events('session_address_changed', fixture.memberId);
+      expect(recorded).toHaveLength(1);
+      expect(recorded[0]).toMatchObject({
+        sourceAddress: '192.0.2.40',
+        details: { previousAddress: signInAddress },
+      });
+      expect(await otherSession(fixture)).toMatchObject({
+        ipAddress: signInAddress,
+        lastIpAddress: '192.0.2.40',
+      });
     });
   });
 });

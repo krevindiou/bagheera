@@ -48,3 +48,8 @@ export function rateLimitAddress(address: string): string {
     .map((group) => group.toString(16))
     .join(':')}::/64`;
 }
+
+/** Whether two addresses belong to one subscriber, as rateLimitAddress groups them. */
+export function sameAddressGroup(a: string, b: string): boolean {
+  return rateLimitAddress(a) === rateLimitAddress(b);
+}

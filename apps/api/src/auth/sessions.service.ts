@@ -13,7 +13,7 @@ import { sessionEpochOf } from '../session/session-epoch';
 import { SessionRegistryService, type StoredSession } from '../session/session-registry.service';
 import { SESSION_IDLE_TTL_SECONDS, SESSION_MAX_AGE_MS } from '../session/session.constants';
 import { SingleUseStore } from '../session/single-use-store';
-import { describeUserAgent } from './describe-user-agent';
+import { describeUserAgent } from '../session/describe-user-agent';
 import { SessionSummaryDto } from './dto/session-summary.dto';
 
 // The session id is the cookie's secret, so the client only ever sees a
@@ -54,6 +54,8 @@ export class SessionsService {
           current,
           ...describeUserAgent(data.client?.userAgent),
           ipAddress: data.client?.ip ?? null,
+          // This request's own address may not be in the store yet.
+          lastIpAddress: current ? clientIp(req) : (data.client?.lastIp ?? data.client?.ip ?? null),
           signedInAt: new Date(signedInAt),
           lastActiveAt: new Date(lastActiveAt),
         };
