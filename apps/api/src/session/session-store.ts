@@ -19,7 +19,7 @@ export function sessionMaxAgeMs(session: Partial<SessionData>): number {
 /**
  * The store TTL set on every write and refresh: the idle timeout, cut down
  * for an anonymous session to what's left of its absolute cap, so no
- * refresh can keep its key past that. A signed-in session's 24h cap is
+ * refresh can keep its key past that. A signed-in session's 8h cap is
  * enforced on its next request instead (absoluteSessionTtl).
  */
 export function sessionTtlSeconds(session: Partial<SessionData>, now = Date.now()): number {

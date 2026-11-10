@@ -5,7 +5,7 @@ import { sessionMaxAgeMs } from './session-store';
 
 /**
  * The rolling cookie only enforces an idle timeout; this adds the absolute
- * cap (24h signed in, one idle timeout otherwise), counted from the
+ * cap (8h signed in, one idle timeout otherwise), counted from the
  * `createdAt` SessionStore stamps on first save. A session past it is
  * swapped for a fresh one, so CSRF checks and the token mint further down
  * still find a session to read.

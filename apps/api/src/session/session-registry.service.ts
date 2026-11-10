@@ -29,7 +29,7 @@ function memberSessionsKey(memberId: string): string {
  * Tracks which session ids belong to a member (a Valkey set per member), so
  * a security-relevant change — removing a passkey, confirming a new email
  * address — can sign out every other device instead of leaving a stolen
- * session alive until its 24h absolute cap.
+ * session alive until its 8h absolute cap.
  *
  * Ids of sessions that ended on their own (idle timeout, sign-out) stay in
  * the set until the next revocation or until the set itself expires; both

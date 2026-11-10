@@ -35,7 +35,7 @@ describe('absoluteSessionTtl', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('calls next() without touching a signed-in session still within its 24h cap', () => {
+  it('calls next() without touching a signed-in session still within its 8h cap', () => {
     const regenerate = vi.fn();
     const req = fakeRequest({
       session: {
@@ -63,7 +63,7 @@ describe('absoluteSessionTtl', () => {
 
   // A fresh session, not none: CSRF checks and the token mint read req.session.
   it.each([
-    ['a signed-in session past 24h', { memberId: 'm', createdAt: -SESSION_MAX_AGE_MS - 1000 }],
+    ['a signed-in session past 8h', { memberId: 'm', createdAt: -SESSION_MAX_AGE_MS - 1000 }],
     [
       'an anonymous session past its cap',
       { csrfIssued: true, createdAt: -ANONYMOUS_SESSION_MAX_AGE_MS - 1000 },

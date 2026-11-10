@@ -24,9 +24,10 @@ export const SESSION_IDLE_TTL_SECONDS = process.env.SESSION_IDLE_TTL_SECONDS
   ? Number(process.env.SESSION_IDLE_TTL_SECONDS)
   : 30 * 60;
 
-/** Absolute cap: session is force-expired 24h after it was first created,
- * regardless of activity. */
-export const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+/** Absolute cap: session is force-expired 8h after it was first created,
+ * regardless of activity — bounds a stolen cookie's useful life, while a
+ * passkey sign-in to start a new one costs a single tap. */
+export const SESSION_MAX_AGE_MS = 8 * 60 * 60 * 1000;
 
 /**
  * Absolute cap of a session nobody signed in to: long enough for one

@@ -260,7 +260,7 @@ describe('session lifecycle', () => {
       expect(await valkey.exists(sessionKeyFrom(res))).toBe(0);
     });
 
-    it('keeps a signed-in session to the idle timeout and its 24h cap', async () => {
+    it('keeps a signed-in session to the idle timeout and its 8h cap', async () => {
       const valkey = app.get<IORedis>(VALKEY_CLIENT);
       const { agent, memberId } = await seedSignedInMember(app);
       const key = await findSessionKey(valkey, memberId);

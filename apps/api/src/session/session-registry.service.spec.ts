@@ -36,7 +36,7 @@ describe('SessionRegistryService', () => {
     const { chain, service } = fakeValkey();
     await service.register('m1', 's1');
     expect(chain.sadd).toHaveBeenCalledWith('member:m1:sessions', 's1');
-    expect(chain.expire).toHaveBeenCalledWith('member:m1:sessions', 24 * 60 * 60);
+    expect(chain.expire).toHaveBeenCalledWith('member:m1:sessions', 8 * 60 * 60);
     expect(chain.exec).toHaveBeenCalled();
   });
 

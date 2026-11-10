@@ -15,7 +15,7 @@ function sessionOf(fields: Partial<SessionData>): SessionData {
 }
 
 describe('sessionMaxAgeMs', () => {
-  it('caps a signed-in session at 24h and an anonymous one at an idle timeout', () => {
+  it('caps a signed-in session at 8h and an anonymous one at an idle timeout', () => {
     expect(sessionMaxAgeMs({ memberId: 'm' })).toBe(SESSION_MAX_AGE_MS);
     expect(sessionMaxAgeMs({ csrfIssued: true })).toBe(ANONYMOUS_SESSION_MAX_AGE_MS);
     expect(ANONYMOUS_SESSION_MAX_AGE_MS).toBe(SESSION_IDLE_TTL_SECONDS * 1000);
