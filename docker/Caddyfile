@@ -1,8 +1,8 @@
-# Serves the built SPA. The API is same-origin but routed by kamal-proxy
-# straight to its own app (config/deploy.api.yml), never through here.
+# Serves the built SPA. The API is same-origin but routed by Uncloud's Caddy
+# straight to its own service (docker/compose.prod.yml), never through here.
 # $CADDY_SITE_ADDRESS: "localhost" (default) gets a locally-trusted cert, a
 # real hostname a public ACME one, "http://:80" plain HTTP behind a
-# TLS-terminating proxy (Kamal's).
+# TLS-terminating proxy (Uncloud's Caddy).
 
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
@@ -10,7 +10,7 @@
 	# The SPA's security headers; the API sets its own with helmet().
 	header {
 		# Pins HTTPS for two years: set only where the site is always served
-		# over HTTPS (config/deploy.yml). Anywhere else — a local run on
+		# over HTTPS (docker/compose.prod.yml). Anywhere else — a local run on
 		# https://localhost — max-age=0 keeps browsers from pinning HTTPS for
 		# every dev server on localhost.
 		Strict-Transport-Security "{$HSTS_POLICY:max-age=0}"
@@ -23,9 +23,9 @@
 		-Server
 	}
 
-	# kamal-proxy's readiness check of this container (config/deploy.yml).
+	# Uncloud's readiness check of this container (docker/compose.prod.yml).
 	# It probes the container directly; public /health traffic goes to the
-	# api app.
+	# api service.
 	handle /health {
 		respond "ok" 200
 	}

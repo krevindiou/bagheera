@@ -16,7 +16,7 @@ jobs:
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
     steps:
-      # Its own key, not Kamal's: on the deploy host this key is restricted
+      # Its own key, not the one used to deploy: on the deploy host this key is restricted
       # to one forced command (/usr/local/bin/backup.sh, with the restic and
       # Postgres configuration kept on the host in /etc/bagheera-backup.env),
       # so a leak lets someone start a backup and nothing else. See

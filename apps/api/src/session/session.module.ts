@@ -65,7 +65,7 @@ export class SessionModule implements NestModule, OnModuleDestroy {
         doubleCsrfProtection,
         signedInImportBody,
       )
-      // Kamal's proxy polls /health every few seconds, forever — it never
+      // The deploy health check polls /health every few seconds, forever — it never
       // needs a session, so it shouldn't load, refresh or create one.
       .exclude('health')
       .forRoutes('*');

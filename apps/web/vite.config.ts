@@ -25,7 +25,7 @@ export default defineConfig({
           target: apiProxyTarget,
           changeOrigin: true,
           // The API only sets its Secure cookies on an HTTPS request, read
-          // from this header (set by kamal-proxy in production).
+          // from this header (set by Uncloud's Caddy in production).
           headers: { 'X-Forwarded-Proto': 'https' },
         },
       ]),

@@ -6,7 +6,7 @@ import IORedis, { type RedisOptions } from 'ioredis';
  * The one Valkey client library (ioredis — BullMQ requires it, and
  * connect-redis / rate-limiter-flexible accept it). The password comes from
  * VALKEY_PASSWORD: production keeps it out of VALKEY_URL (see
- * .kamal/secrets), and a URL-only connection there is refused with NOAUTH.
+ * docker/compose.prod.yml), and a URL-only connection there is refused with NOAUTH.
  * `options` overrides per consumer, e.g. BullMQ Workers need
  * `maxRetriesPerRequest: null`.
  */

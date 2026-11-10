@@ -5,7 +5,7 @@ import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 import type { paths } from './schema';
 
-// Same-origin: kamal-proxy routes /api to the API in production, Vite's dev
+// Same-origin: Uncloud's Caddy routes /api to the API in production, Vite's dev
 // proxy locally. schema.d.ts paths leave out the API's /api prefix (Swagger
 // ignores it), so it's added back here.
 const baseUrl = '/api';

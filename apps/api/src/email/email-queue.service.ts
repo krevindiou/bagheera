@@ -8,7 +8,7 @@ const JOB_OPTIONS: JobsOptions = {
   backoff: { type: 'exponential', delay: 1000 },
   // BullMQ keeps every finished job by default, message and one-time links
   // included, and Valkey refuses writes once full (maxmemory + noeviction,
-  // config/deploy.yml). Sent emails go at once; failures stay a week for
+  // docker/compose.prod.yml). Sent emails go at once; failures stay a week for
   // diagnosis, capped in number.
   removeOnComplete: true,
   removeOnFail: { age: 7 * 24 * 60 * 60, count: 1000 },

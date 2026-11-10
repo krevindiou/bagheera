@@ -8,7 +8,7 @@ import type IORedis from 'ioredis';
 import { VALKEY_CLIENT } from '../session/session.constants';
 import { createTestApp } from '../test-support/create-test-app';
 
-// kamal-proxy polls this (config/deploy.api.yml) to decide when a new
+// Uncloud polls this (docker/compose.prod.yml) to decide when a new
 // container takes traffic.
 describe('GET /health', () => {
   let app: INestApplication<Server>;

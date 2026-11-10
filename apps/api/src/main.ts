@@ -19,14 +19,15 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-  // Without it SIGTERM (every Kamal deploy) kills the process before the
+  // Without it SIGTERM (every deploy) kills the process before the
   // Express adapter drains in-flight requests and the modules'
   // OnModuleDestroy hooks close the pg pool, Valkey and BullMQ workers.
   app.enableShutdownHooks();
   // One /api prefix for the proxies (Caddy, Vite dev) to match. /health
-  // stays bare for the Dockerfile/compose healthchecks and kamal-proxy.
+  // stays bare for the Dockerfile/compose healthchecks and Uncloud.
   app.setGlobalPrefix('api', { exclude: ['health'] });
-  // Exactly one proxy hop in production: kamal-proxy (config/deploy.api.yml).
+  // Exactly one proxy hop in production: Uncloud's Caddy
+  // (docker/compose.prod.yml).
   // A wrong count makes req.ip a proxy's address, collapsing per-IP rate
   // limits into one site-wide bucket and corrupting audit-log addresses.
   app.set('trust proxy', 1);
