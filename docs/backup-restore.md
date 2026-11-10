@@ -5,14 +5,17 @@
 Two different SSH identities reach the deploy host, and neither should be a
 root login:
 
-- **Deploys** (`ci.yml`'s deploy job, via Kamal) use `KAMAL_SSH_PRIVATE_KEY`.
+- **Deploys** (`make deploy`) run from your own machine with your own SSH
+  key. CI holds no deploy credential.
 - **Backups** (`backup.yml`) use their own key, `BACKUP_SSH_PRIVATE_KEY`,
   which on the host can do exactly one thing: run the backup script.
 
-Both pin the host's SSH key in a `DEPLOY_HOST_KNOWN_HOSTS` secret rather than
-trusting whatever `ssh-keyscan` returns on each run (that accepts whichever
-key answers, which a DNS/routing MITM could exploit). Everything below is done
-once, and again if the host is rebuilt or its key rotated.
+The backup workflow pins the host's SSH key in a `DEPLOY_HOST_KNOWN_HOSTS`
+secret rather than trusting whatever `ssh-keyscan` returns on each run (that
+accepts whichever key answers, which a DNS/routing MITM could exploit). Your
+own `ssh` pins the key in `~/.ssh/known_hosts` on first connection, so check
+the fingerprint then. Everything below is done once, and again if the host is
+rebuilt or its key rotated.
 
 ### 1. Pin the host key
 
@@ -90,29 +93,27 @@ from a shell; the account itself is still privileged. A rootless backup
 container with only the postgres socket mounted is a further step, not
 required by this one.
 
-### 3. Deploys: a non-root account (optional switch)
+### 3. Deploys: a non-root account (optional)
 
-Kamal connects as `root` unless told otherwise. To stop root being reachable
-with the deploy key:
+`uc machine init` is usually pointed at `root@<deploy-host>`, and `uc` keeps
+connecting as whoever its context names. To stop root being reachable with
+your deploy key, give deploys an account of their own:
 
 ```sh
 useradd --create-home --shell /bin/bash deploy
 usermod -aG docker deploy
 install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-cp /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys   # KAMAL_SSH_PRIVATE_KEY's public half
+cp /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys   # your own public key
 chown deploy:deploy /home/deploy/.ssh/authorized_keys
 chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
-Test it before switching (`ssh deploy@<deploy-host> docker ps`), then set the
-repo variable `KAMAL_SSH_USER=deploy` (Settings → Variables). Both Kamal
-configs read it and fall back to `root` while it is unset, so nothing changes
-until you do. Once deploys work as `deploy`, remove root's SSH access
-(`PermitRootLogin no`, or delete root's `authorized_keys`).
-
-The first deploy as `deploy` is the real test: Kamal bootstraps its own
-directories on the host, and anything it created earlier as root (for
-example a `.kamal` directory) may need `chown`ing to `deploy`.
+Then check that `uc` works through it: `uc --connect ssh://deploy@<deploy-host> ps`.
+Whether a non-root account may use the Uncloud daemon depends on its socket's
+permissions, so if `uc` is refused, keep the root login for deploys and skip
+this step. Once it works, point your context at the new account (`uc ctx
+connection`) and remove root's SSH access (`PermitRootLogin no`, or delete
+root's `authorized_keys`).
 
 ## Restoring
 
@@ -159,8 +160,8 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
 
 4. **Reconcile passkeys with the live database.** Do this before cut-over,
    while the live database is still readable, with the API stopped
-   (`kamal app stop -c config/deploy.api.yml`) so live can't change under
-   you. If the live database is lost, see "Live database lost" below
+   (`docker stop "$(docker ps -q --filter label=uncloud.service.name=api)"`)
+   so live can't change under you. If the live database is lost, see "Live database lost" below
    instead.
 
    Export live's passkeys, and its audit rows since `<since>` — the

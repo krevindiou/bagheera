@@ -12,7 +12,7 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 | API   | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, rate limiting, BullMQ queue) · BullMQ (email jobs) |
 | Web   | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js                                           |
 | Auth  | Passkeys (WebAuthn), cookie-based server-side revocable sessions                                                    |
-| Infra | Docker Compose · Caddy (static SPA) · Kamal + kamal-proxy (deploy, TLS, routing)                                    |
+| Infra | Docker Compose · Caddy (static SPA) · Docker Hub (images) · Uncloud (deploy, TLS, routing)                          |
 
 ## Getting started
 
@@ -65,41 +65,45 @@ apps/
 packages/
   money/           cross-stack code shared by api and web (minor-units money math)
   reference-data/  shared reference data (payment-method ids, locales, entry types, report and scheduler enum values, country and currency codes, report result cap, value-date bounds)
-docker/      Dockerfiles, Compose files, Caddyfile
-config/      Kamal deploy configs (deploy.yml: web, deploy.api.yml: api)
+docker/      Dockerfiles, Compose files (compose.yml for dev, compose.prod.yml for production), Caddyfile
 docs/        backup-restore.md
-scripts/     backup.sh
-.kamal/      Kamal secrets (env references only)
+scripts/     backup.sh, deploy.sh
 ```
 
 ## Production
 
-Deploys go through [Kamal](https://kamal-deploy.org) as two apps on one host, rolled out over SSH by CI on pushes to `main`:
+Production runs on [Uncloud](https://uncloud.run), on one host. CI builds the images; you deploy them by hand.
 
-- `config/deploy.yml` builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, see `docker/Caddyfile` for its security headers) and runs the Postgres and Valkey accessories.
-- `config/deploy.api.yml` builds `docker/Dockerfile.api`; migrations run from the new image before it goes live.
+- On every push to `main` that passes the tests, CI's `publish` job builds `bagheera-api` (`docker/Dockerfile.api`) and `bagheera-web` (`docker/Dockerfile.caddy`: Caddy serving the built SPA, see `docker/Caddyfile` for its security headers) for amd64 and arm64, and pushes them to Docker Hub tagged with the git SHA and `latest`. The images are public and hold no secrets or deployment settings.
+- `make deploy TAG=<git sha>` (`scripts/deploy.sh`, which needs `uc` and Docker on your machine) rolls those images out with `uc deploy -f docker/compose.prod.yml`, which also runs Postgres and Valkey. Migrations run from the new API image before it replaces the old one.
 
-kamal-proxy terminates TLS and routes `/api` and `/health` to the API, everything else to Caddy. Secrets come from the deploying environment via `.kamal/secrets`. See `scripts/backup.sh` and `docs/backup-restore.md` for backups and restores.
+Uncloud's Caddy terminates TLS and routes `/api` and `/health` to the API, everything else to the web container. Settings and secrets come from `docker/prod.env` (copy `docker/prod.env.example`; it is git-ignored). See `scripts/backup.sh` and `docs/backup-restore.md` for backups and restores.
+
+### Setting up (once)
+
+1. **Docker Hub.** Create two public repositories, `bagheera-api` and `bagheera-web`, and an access token with Read & Write scope. In the GitHub repository's Actions settings, add the variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN`.
+2. **Host.** A Linux server reachable over SSH, with a DNS A record for `<your-domain>` pointing at it. Open ports 80 and 443 for Uncloud's Caddy; 51820/udp only matters once there are several machines (it carries the WireGuard mesh between them).
+3. **`uc`.** Install the CLI on your machine ([install guide](https://uncloud.run/docs/getting-started/install-cli)), then run `uc machine init <user>@<host>`. It installs Docker and the Uncloud daemon on the host and starts Caddy.
+4. **Settings.** `cp docker/prod.env.example docker/prod.env` and fill it in, with `APP_DOMAIN=<your-domain>`.
+5. **First deploy.** Once CI has published a commit, run `make deploy TAG=<its git sha>`. If the migration step fails on an empty host because Postgres isn't up yet, deploy the stores first with `scripts/deploy.sh <sha> postgres valkey`, then deploy again.
+
+Then check that the pages, `/api/…` and `/health` all resolve over HTTPS on `<your-domain>`, and that passkey sign-up works (a passkey is bound to the domain).
+
+### Deploying and rolling back
+
+`make deploy TAG=<git sha>` takes a SHA CI has published (the script refuses one whose images are missing). Uncloud replaces containers one at a time: it starts the new one, waits for its health check, then removes the old one, so a release that never turns healthy leaves the previous one serving. Extra arguments go to `uc deploy`, e.g. `scripts/deploy.sh <sha> -y` to skip the confirmation.
+
+To roll back, deploy an older SHA.
 
 ### Deploying schema changes
 
-Migrations run from the new API image while the previous release is still serving traffic, so every migration must work against the API version currently running: expand first (add columns/tables, backfill, widen types), and only drop, rename, or tighten a shape in a later release once no running code depends on the old one. Drizzle migrations here are forward-only — there's no down migration to undo one.
+Migrations run from the new API image while the previous release is still serving traffic, so every migration must work against the API version currently running: expand first (add columns/tables, backfill, widen types), and only drop, rename, or tighten a shape in a later release once no running code depends on the old one. Drizzle migrations here are forward-only — there's no down migration to undo one. A failing migration aborts the deploy before any API container is replaced.
 
-Rolling back the API (`kamal rollback <version> -c config/deploy.api.yml`, e.g. after a failed health check) leaves the schema exactly as the last migration left it; it does not undo anything. Undoing a migration means a restore per `docs/backup-restore.md`.
+Rolling back the API (`make deploy TAG=<previous git sha>`, e.g. after a failed health check) leaves the schema exactly as the last migration left it; it does not undo anything. Undoing a migration means a restore per `docs/backup-restore.md`.
 
 ### Valkey persistence
 
-The Valkey accessory runs with the append-only file (`--appendonly yes --appendfsync everysec`), so sessions, revocations and queued jobs survive an unclean stop (SIGKILL, OOM, host crash). Without it, Valkey reloads its last RDB snapshot, which can be around 30 minutes old and would bring revoked or signed-out cookies back to life. `everysec` can still lose about a second of writes on a host crash; `--appendfsync always` narrows that further at a write-latency cost.
-
-Do not roll this out with `kamal accessory reboot valkey` alone: restarting straight into `appendonly yes` over an existing `dump.rdb` was observed to start with an empty dataset, discarding every session and queued job. Switch the live instance over first:
-
-```bash
-# on the deploy host
-docker exec bagheera-web-valkey sh -c 'valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" config set appendonly yes'
-docker exec bagheera-web-valkey sh -c 'valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" info persistence' | grep -E 'aof_rewrite_in_progress|aof_last_bgrewrite_status'
-```
-
-Repeat the second command until it shows `aof_rewrite_in_progress:0` and `aof_last_bgrewrite_status:ok`. Only then ship the `config/deploy.yml` change and run `kamal accessory reboot valkey`, and check `dbsize` afterwards.
+Valkey runs with the append-only file (`--appendonly yes --appendfsync everysec`), so sessions, revocations and queued jobs survive an unclean stop (SIGKILL, OOM, host crash). Without it, Valkey reloads its last RDB snapshot, which can be around 30 minutes old and would bring revoked or signed-out cookies back to life. `everysec` can still lose about a second of writes on a host crash; `--appendfsync always` narrows that further at a write-latency cost.
 
 ## License
 
