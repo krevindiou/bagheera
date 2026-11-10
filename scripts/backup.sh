@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Nightly backup: pg_dump of the running postgres container, pushed to a
 # restic repository. Run on the deploy host itself, as the dedicated
-# `backup` user (a member of the `docker` group — enough for `docker exec`
-# against the postgres container, without needing root).
+# `backup` user (a member of the `docker` group — enough for `docker ps` and
+# `docker exec` against the postgres container, without needing root).
 #
 # In production: root-owned at /usr/local/bin/backup.sh, the forced command
 # of the backup user's CI key, configured from /etc/bagheera-backup.env. The
@@ -15,8 +15,9 @@
 #     AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY, etc — see restic's own docs).
 #   POSTGRES_PASSWORD — password for POSTGRES_USER inside the container.
 # Optional env:
-#   POSTGRES_CONTAINER (default: postgres) — under Kamal this is
-#     "bagheera-web-postgres" (see config/deploy.yml), not the default.
+#   POSTGRES_SERVICE (default: postgres) — the Uncloud service to dump
+#     (docker/compose.prod.yml). Uncloud gives its containers generated
+#     names, so the container is found by its uncloud.service.name label.
 #   POSTGRES_USER (default: bagheera)
 #   POSTGRES_DB (default: bagheera)
 #   BACKUP_KEEP_DAILY / BACKUP_KEEP_WEEKLY / BACKUP_KEEP_MONTHLY
@@ -36,7 +37,7 @@ fi
 
 : "${RESTIC_REPOSITORY:?RESTIC_REPOSITORY must be set}"
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
-POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-postgres}"
+POSTGRES_SERVICE="${POSTGRES_SERVICE:-postgres}"
 POSTGRES_USER="${POSTGRES_USER:-bagheera}"
 POSTGRES_DB="${POSTGRES_DB:-bagheera}"
 BACKUP_KEEP_DAILY="${BACKUP_KEEP_DAILY:-7}"
@@ -51,7 +52,16 @@ chmod 600 "$pgpass_env_file"
 trap 'rm -f "$dump_file" "$pgpass_env_file"' EXIT
 printf 'PGPASSWORD=%s\n' "$POSTGRES_PASSWORD" > "$pgpass_env_file"
 
-echo "==> Dumping $POSTGRES_DB from container $POSTGRES_CONTAINER"
+# `docker ps` lists running containers only, so a stopped or restarting one
+# counts as missing; more than one would mean dumping an arbitrary replica.
+mapfile -t containers < <(docker ps --quiet --filter "label=uncloud.service.name=$POSTGRES_SERVICE")
+if [[ ${#containers[@]} -ne 1 ]]; then
+  echo "expected one running container of service $POSTGRES_SERVICE, found ${#containers[@]}" >&2
+  exit 1
+fi
+POSTGRES_CONTAINER="${containers[0]}"
+
+echo "==> Dumping $POSTGRES_DB from service $POSTGRES_SERVICE (container $POSTGRES_CONTAINER)"
 docker exec --env-file "$pgpass_env_file" "$POSTGRES_CONTAINER" \
   pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" > "$dump_file"
 

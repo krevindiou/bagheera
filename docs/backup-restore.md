@@ -37,7 +37,7 @@ On the deploy host, as root:
 
 ```sh
 useradd --create-home --shell /bin/bash backup
-usermod -aG docker backup          # docker exec into the postgres container
+usermod -aG docker backup          # find and docker exec into the postgres container
 install -d -m 700 -o backup -g backup /home/backup/.ssh
 
 # The script the key is allowed to run. Root-owned, so the backup user (and
@@ -60,8 +60,12 @@ RESTIC_PASSWORD=...
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 POSTGRES_PASSWORD=...
-POSTGRES_CONTAINER=bagheera-web-postgres
 ```
+
+`POSTGRES_SERVICE` (default `postgres`, the service in
+`docker/compose.prod.yml`) is optional. The script finds that service's
+container by its `uncloud.service.name` label, because Uncloud names
+containers itself.
 
 Generate the key pair somewhere safe (not on the host), authorize the public
 half with the restrictions, and give CI the private half:
@@ -227,7 +231,7 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
    session set — only those: `FLUSHALL` would also drop queued emails and
    rate-limit lockouts.
    ```sh
-   docker exec bagheera-web-valkey sh -c '
+   docker exec "$(docker ps -q --filter label=uncloud.service.name=valkey)" sh -c '
      for pattern in "sess:*" "member:*:sessions"; do
        valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" --scan --pattern "$pattern" |
          xargs -r valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" unlink
