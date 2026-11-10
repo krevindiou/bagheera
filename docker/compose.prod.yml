@@ -1,0 +1,135 @@
+# Production stack, deployed with Uncloud (`uc deploy -f docker/compose.prod.yml`).
+# Dev uses docker/compose.yml instead.
+#
+# Uncloud's Caddy terminates TLS and is the only public entry point: the
+# `x-caddy` block on web sends /api/* and /health to the api and the rest to
+# the SPA container. Neither postgres nor valkey publishes a port.
+#
+# Every ${VAR:?} is required: a deploy with one unset fails before touching
+# anything. See docker/prod.env.example for the full list.
+
+name: bagheera
+
+services:
+  web:
+    image: ${DOCKERHUB_USERNAME:?}/bagheera-web:${TAG:?set TAG to a published image tag}
+    restart: unless-stopped
+    environment:
+      # Uncloud's Caddy already terminates TLS, so this Caddy serves plain HTTP.
+      CADDY_SITE_ADDRESS: 'http://:80'
+      # Read by the Caddyfile's security headers: HSTS, sent only here where
+      # the site is always HTTPS; and the Sentry ingest origin the SPA's
+      # Content-Security-Policy allows (empty without Sentry).
+      HSTS_POLICY: 'max-age=63072000; includeSubDomains'
+      SENTRY_INGEST_ORIGIN: ${SENTRY_INGEST_ORIGIN:-}
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:80/health']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    # /api and /health keep their prefix (the API's routes include it), hence
+    # `handle`, not `handle_path`. `{{ }}` is rendered by Uncloud, `${ }` by
+    # Compose.
+    x-caddy: |
+      ${APP_DOMAIN:?} {
+        @api path /api/* /health
+        handle @api {
+          reverse_proxy {{upstreams "api" 3000}} {
+            import common_proxy
+          }
+        }
+        handle {
+          reverse_proxy {{upstreams 80}} {
+            import common_proxy
+          }
+        }
+      }
+
+  api:
+    image: ${DOCKERHUB_USERNAME:?}/bagheera-api:${TAG:?set TAG to a published image tag}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    # Runs from the new image, against the still-serving old release, before
+    # any api container is replaced: migrations must stay backward compatible
+    # (README.md, "Deploying schema changes"). A failure aborts the deploy.
+    x-pre_deploy:
+      command: node dist/db/migrate.js
+    environment:
+      PORT: '3000'
+      APP_URL: https://${APP_DOMAIN:?}
+      RP_ID: ${APP_DOMAIN:?}
+      RP_ORIGIN: https://${APP_DOMAIN:?}
+      RP_NAME: Bagheera
+      APP_TIMEZONE: ${APP_TIMEZONE:-Europe/Paris}
+      # The password goes in unencoded: generate it URL-safe
+      # (`openssl rand -hex 32`).
+      DATABASE_URL: postgres://bagheera:${POSTGRES_PASSWORD:?}@postgres:5432/bagheera
+      VALKEY_URL: redis://valkey:6379
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?}
+      CRYPTO_KEYS: ${CRYPTO_KEYS:?}
+      CRYPTO_ACTIVE_KEY_ID: ${CRYPTO_ACTIVE_KEY_ID:?}
+      SESSION_SECRET: ${SESSION_SECRET:?}
+      CSRF_SECRET: ${CSRF_SECRET:?}
+      EMAIL_SMTP_URL: ${EMAIL_SMTP_URL:?}
+      EMAIL_FROM: ${EMAIL_FROM:?}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+
+  # No archive_mode/archive_command: WAL archiving without a periodic
+  # pg_basebackup to replay it onto isn't point-in-time recovery, it's just
+  # unbounded disk growth. Recovery point objective is the nightly pg_dump
+  # in scripts/backup.sh — up to 24h of data — documented in
+  # docs/backup-restore.md.
+  postgres:
+    # Pinned by digest so a floated `postgres:18-alpine` retag can't
+    # silently change what production runs; Renovate's docker:pinDigests
+    # preset (renovate.json) keeps this current as the tag moves.
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bagheera
+      POSTGRES_DB: bagheera
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+    volumes:
+      # postgres 18+ images expect the mount at /var/lib/postgresql itself
+      # (not .../data) — they lay out a version-named subdir underneath so
+      # pg_upgrade --link works across major versions later.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bagheera -d bagheera']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    # Pinned by digest — same reasoning as postgres above.
+    image: valkey/valkey:9-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11
+    restart: unless-stopped
+    # maxmemory bounds how much of the host an anonymous flood (sessions,
+    # rate-limit counters) can take. noeviction makes Valkey refuse writes
+    # past it instead of silently dropping keys: evicting would erase
+    # rate-limit counters and lockouts, and BullMQ requires it anyway.
+    # The append-only file keeps sessions, revocations and queued jobs across
+    # an unclean stop: with RDB snapshots alone, a crash reloads a snapshot up
+    # to ~30 minutes old, which resurrects signed-out sessions. everysec can
+    # still lose about a second on a host crash.
+    command: >-
+      sh -c 'exec valkey-server --requirepass "$$VALKEY_PASSWORD"
+      --maxmemory 256mb --maxmemory-policy noeviction
+      --appendonly yes --appendfsync everysec'
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?}
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'valkey-cli --no-auth-warning -a "$$VALKEY_PASSWORD" ping | grep -q PONG']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  valkey_data:
