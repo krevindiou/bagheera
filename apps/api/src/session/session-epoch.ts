@@ -5,7 +5,7 @@ import type { Executor } from '../db/executor';
 import { member } from '../db/schema';
 import './session-data';
 
-export function sessionEpochOf(session: Request['session']): number {
+export function sessionEpochOf(session: { sessionEpoch?: number }): number {
   return session.sessionEpoch ?? 0;
 }
 

@@ -528,6 +528,33 @@ export default {
         'Cet authentificateur contient déjà l’une de vos clés d’accès. Choisissez-en un autre.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
+    sessions: {
+      title: 'Sessions',
+      intro:
+        'Navigateurs connectés à votre compte. Si vous n’en reconnaissez pas un, déconnectez-le, puis supprimez la clé d’accès qu’il a utilisée.',
+      stepUpHint:
+        'Déconnecter une autre session vous demande d’abord de confirmer avec une clé d’accès.',
+      stepUpFailed: 'La confirmation par clé d’accès a échoué. Veuillez réessayer.',
+      device: 'Appareil',
+      deviceDescription: '{browser} sur {os}',
+      unknownBrowser: 'Navigateur inconnu',
+      unknownOs: 'système inconnu',
+      thisDevice: 'Cet appareil',
+      ipAddress: 'Adresse IP à la connexion',
+      unknownAddress: 'Inconnue',
+      signedInAt: 'Connexion',
+      lastActiveAt: 'Dernière activité',
+      activeNow: 'Maintenant',
+      signOut: 'Déconnecter',
+      signOutOthers: 'Déconnecter toutes les autres sessions',
+      confirmSignOut: 'Déconnecter « {name} » ? Il faudra s’y reconnecter avec une clé d’accès.',
+      confirmSignOutOthers:
+        'Déconnecter toutes les autres sessions ? Seul ce navigateur restera connecté.',
+      signedOut: 'Session déconnectée',
+      signedOutOthers: 'Autres sessions déconnectées',
+      noOtherSession: 'Aucun autre navigateur n’est connecté.',
+      genericError: "Une erreur s'est produite. Veuillez réessayer.",
+    },
     labelCorrections: {
       title: 'Corrections de libellés',
       intro:

@@ -27,6 +27,7 @@ export const queryKeys = {
   },
 
   webauthnCredentials: ['webauthn-credentials'] as const,
+  sessions: ['sessions'] as const,
   labelCorrections: ['label-corrections'] as const,
 
   reports: ['reports'] as const,

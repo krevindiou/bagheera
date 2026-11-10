@@ -109,6 +109,12 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, titleKey: 'settings.passkeys.title' },
       },
       {
+        path: 'settings/sessions',
+        name: 'settings-sessions',
+        component: () => import('../pages/settings/SessionsPage.vue'),
+        meta: { requiresAuth: true, titleKey: 'settings.sessions.title' },
+      },
+      {
         path: 'settings/label-corrections',
         name: 'settings-label-corrections',
         component: () => import('../pages/settings/LabelCorrectionsPage.vue'),

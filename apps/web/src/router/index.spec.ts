@@ -292,3 +292,19 @@ describe('router wide pages', () => {
     expect(wide).toEqual(['operations', 'operations-import']);
   });
 });
+
+describe('router lazy pages', () => {
+  // A wrong path in a route's import() only fails once someone opens it.
+  it('loads the page behind every lazily loaded route', async () => {
+    const loaders = router
+      .getRoutes()
+      .map((route) => route.components?.default)
+      .filter((component) => typeof component === 'function');
+
+    expect(loaders.length).toBeGreaterThan(0);
+    for (const load of loaders) {
+      const page = (await (load as () => Promise<{ default: unknown }>)()).default;
+      expect(page).toBeTruthy();
+    }
+  });
+});

@@ -11,13 +11,24 @@ function fakeValkey(members: string[] = []) {
     srem: vi.fn().mockReturnThis(),
     exec: vi.fn().mockResolvedValue([]),
   };
+  const pipeline = {
+    get: vi.fn().mockReturnThis(),
+    pttl: vi.fn().mockReturnThis(),
+    exec: vi.fn().mockResolvedValue([]),
+  };
   const client = {
     multi: vi.fn().mockReturnValue(chain),
+    pipeline: vi.fn().mockReturnValue(pipeline),
     smembers: vi.fn().mockResolvedValue(members),
     srem: vi.fn().mockResolvedValue(1),
     sismember: vi.fn().mockResolvedValue(0),
   };
-  return { chain, client, service: new SessionRegistryService(client as unknown as IORedis) };
+  return {
+    chain,
+    client,
+    pipeline,
+    service: new SessionRegistryService(client as unknown as IORedis),
+  };
 }
 
 describe('SessionRegistryService', () => {
@@ -45,6 +56,40 @@ describe('SessionRegistryService', () => {
   it('reports a session missing from the member set as not registered', async () => {
     const { service } = fakeValkey();
     await expect(service.isRegistered('m1', 's1')).resolves.toBe(false);
+  });
+
+  it('reads every listed session with its remaining TTL, skipping ended and unreadable ones', async () => {
+    const { pipeline, service } = fakeValkey(['s1', 's2', 's3', 's4']);
+    pipeline.exec.mockResolvedValue([
+      [null, JSON.stringify({ memberId: 'm1' })],
+      [null, 60_000],
+      [null, null],
+      [null, -2],
+      [null, '{not json'],
+      [null, 1000],
+      [new Error('boom'), null],
+      [null, 1000],
+    ]);
+
+    await expect(service.sessionsOf('m1')).resolves.toEqual([
+      { id: 's1', data: { memberId: 'm1' }, ttlMs: 60_000 },
+    ]);
+    expect(pipeline.get).toHaveBeenCalledWith('sess:s1');
+    expect(pipeline.pttl).toHaveBeenCalledWith('sess:s1');
+  });
+
+  it('reads nothing when the member has no listed session', async () => {
+    const { client, service } = fakeValkey();
+    await expect(service.sessionsOf('m1')).resolves.toEqual([]);
+    expect(client.pipeline).not.toHaveBeenCalled();
+  });
+
+  it('deletes one session and drops it from the set', async () => {
+    const { chain, service } = fakeValkey();
+    await service.revoke('m1', 's2');
+    expect(chain.del).toHaveBeenCalledWith('sess:s2');
+    expect(chain.srem).toHaveBeenCalledWith('member:m1:sessions', 's2');
+    expect(chain.exec).toHaveBeenCalled();
   });
 
   it('deletes every session but the kept one, and drops them from the set', async () => {

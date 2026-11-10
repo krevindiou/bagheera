@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
 import en from '../../src/i18n/locales/en';
-import { addVirtualAuthenticator } from './webauthn';
+import { addVirtualAuthenticator, type VirtualAuthenticator } from './webauthn';
 import { waitForEmailLink } from './mailpit';
 
 export { expect };
@@ -106,13 +106,13 @@ interface Fixtures {
   accountWithBank: AccountWithBank;
   /** A CDP virtual authenticator on `page`, removed after the test.
    * signedInMember depends on it; request it directly only to inspect it. */
-  virtualAuthenticator: { authenticatorId: string };
+  virtualAuthenticator: Omit<VirtualAuthenticator, 'remove'>;
 }
 
 // The API rate-limits sign-ups per source IP (20 a minute), which a fast run
 // of this suite exceeds. Each test gets its own address, which the API reads
 // from X-Forwarded-For (`trust proxy` is 1).
-function randomClientIp(): string {
+export function randomClientIp(): string {
   return `10.${randomInt(256)}.${randomInt(256)}.${randomInt(1, 255)}`;
 }
 
@@ -124,9 +124,9 @@ export const test = base.extend<Fixtures>({
   },
 
   virtualAuthenticator: async ({ page }, use) => {
-    const authenticator = await addVirtualAuthenticator(page);
-    await use({ authenticatorId: authenticator.authenticatorId });
-    await authenticator.remove();
+    const { remove, ...authenticator } = await addVirtualAuthenticator(page);
+    await use(authenticator);
+    await remove();
   },
 
   signedInMember: async ({ page, virtualAuthenticator }, use) => {

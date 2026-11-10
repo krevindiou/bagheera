@@ -6,6 +6,7 @@ import {
   formatDisplayMoney,
   formatMoney,
   formatTimestampDate,
+  formatTimestampDateTime,
   toDisplayAmount,
   today,
   valueDateRange,
@@ -95,6 +96,30 @@ describe('formatTimestampDate', () => {
 
   it("returns the raw string when it doesn't parse as a date", () => {
     expect(formatTimestampDate('not-a-date')).toBe('not-a-date');
+  });
+});
+
+// The hour depends on the machine's time zone; only its shape is pinned.
+describe('formatTimestampDateTime', () => {
+  afterEach(async () => {
+    await setLocale('en');
+  });
+
+  it('formats an ISO timestamp as date and time of day in the active locale', () => {
+    expect(formatTimestampDateTime('2026-01-15T12:00:00.000Z')).toMatch(
+      /^Jan 1[45], 2026, \d{1,2}:00\s(AM|PM)$/,
+    );
+  });
+
+  it('follows the in-app locale', async () => {
+    await setLocale('fr');
+    expect(formatTimestampDateTime('2026-01-15T12:00:00.000Z')).toMatch(
+      /^1[45] janv\. 2026(,| à) \d{2}:00$/,
+    );
+  });
+
+  it("returns the raw string when it doesn't parse as a date", () => {
+    expect(formatTimestampDateTime('not-a-date')).toBe('not-a-date');
   });
 });
 

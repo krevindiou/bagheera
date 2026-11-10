@@ -1,5 +1,13 @@
 import 'express-session';
 
+/** The browser a member signed in from, listed on their sessions page. */
+export interface SessionClient {
+  userAgent: string | null;
+  /** Source address at sign-in; later requests may come from another. */
+  ip: string;
+  signedInAt: number;
+}
+
 // The signed-in member, set on sign-in and sign-up completion.
 declare module 'express-session' {
   interface SessionData {
@@ -12,5 +20,7 @@ declare module 'express-session' {
     // When the session was first stored (see SessionStore), the start of its
     // absolute cap.
     createdAt?: number;
+    // Set with memberId (see recordSessionClient).
+    client?: SessionClient;
   }
 }

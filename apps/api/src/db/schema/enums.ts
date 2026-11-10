@@ -49,4 +49,6 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'signup_confirmation_issued',
   'passkey_signup_completed',
   'step_up_verified',
+  'session_revoked',
+  'other_sessions_revoked',
 ]);

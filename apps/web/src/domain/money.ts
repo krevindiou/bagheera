@@ -67,6 +67,18 @@ export function formatTimestampDate(timestamp: string): string {
   return new Intl.DateTimeFormat(currentLocale(), DATE_FORMAT).format(parsed);
 }
 
+// A full ISO timestamp as date and time of day in the viewer's time zone
+// (e.g. when a session was last active).
+export function formatTimestampDateTime(timestamp: string): string {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return timestamp;
+  return new Intl.DateTimeFormat(currentLocale(), {
+    ...DATE_FORMAT,
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(parsed);
+}
+
 // Chart helpers: charts plot decimal amounts, so series points (rounded to
 // the currency's decimals) and axis bounds (unrounded, they're only hints)
 // are converted from the API's minor units before they reach Chart.js.

@@ -13,6 +13,7 @@ import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
+import { recordSessionClient } from '../session/record-session-client';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import { SingleUseStore } from '../session/single-use-store';
@@ -143,6 +144,7 @@ export class WebauthnSignupService {
     await this.sessionRotation.rotate(req);
     req.session.memberId = signedUp.id;
     req.session.sessionEpoch = signedUp.sessionEpoch;
+    recordSessionClient(req);
     await this.sessionRegistry.register(signedUp.id, req.sessionID);
     await this.audit.record('passkey_signup_completed', signedUp.id, sourceAddress);
 

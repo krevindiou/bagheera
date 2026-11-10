@@ -1,9 +1,25 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import type { SessionData } from 'express-session';
 import type IORedis from 'ioredis';
 import { errorMessage } from '../common/error-message';
 import { SESSION_KEY_PREFIX, SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
 const MEMBER_SESSIONS_TTL_SECONDS = SESSION_MAX_AGE_MS / 1000;
+
+export interface StoredSession {
+  id: string;
+  data: Partial<SessionData>;
+  /** What's left of its idle timeout, in milliseconds. */
+  ttlMs: number;
+}
+
+function parseSession(raw: string): Partial<SessionData> | null {
+  try {
+    return JSON.parse(raw) as Partial<SessionData>;
+  } catch {
+    return null;
+  }
+}
 
 function memberSessionsKey(memberId: string): string {
   return `member:${memberId}:sessions`;
@@ -43,6 +59,37 @@ export class SessionRegistryService {
 
   async isRegistered(memberId: string, sessionId: string): Promise<boolean> {
     return (await this.valkey.sismember(memberSessionsKey(memberId), sessionId)) === 1;
+  }
+
+  /** The member's listed sessions still in the store; ended ones are skipped. */
+  async sessionsOf(memberId: string): Promise<StoredSession[]> {
+    const ids = await this.valkey.smembers(memberSessionsKey(memberId));
+    if (ids.length === 0) {
+      return [];
+    }
+    const pipeline = this.valkey.pipeline();
+    for (const id of ids) {
+      pipeline.get(`${SESSION_KEY_PREFIX}${id}`).pttl(`${SESSION_KEY_PREFIX}${id}`);
+    }
+    const replies = (await pipeline.exec()) ?? [];
+    return ids.flatMap((id, index) => {
+      const [getErr, raw] = replies[2 * index] ?? [];
+      const [ttlErr, ttlMs] = replies[2 * index + 1] ?? [];
+      if (getErr || ttlErr || typeof raw !== 'string' || typeof ttlMs !== 'number') {
+        return [];
+      }
+      const data = parseSession(raw);
+      return data ? [{ id, data, ttlMs }] : [];
+    });
+  }
+
+  /** Destroys one session of the member. */
+  async revoke(memberId: string, sessionId: string): Promise<void> {
+    await this.valkey
+      .multi()
+      .del(`${SESSION_KEY_PREFIX}${sessionId}`)
+      .srem(memberSessionsKey(memberId), sessionId)
+      .exec();
   }
 
   /** Destroys every session of the member except `keepSessionId` (none, if omitted). */

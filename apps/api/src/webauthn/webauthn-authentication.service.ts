@@ -14,6 +14,7 @@ import { enqueueAlert } from '../email/enqueue-alert';
 import { signInEmail } from '../email/templates/sign-in.template';
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
+import { recordSessionClient } from '../session/record-session-client';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import { SingleUseStore } from '../session/single-use-store';
@@ -127,6 +128,7 @@ export class WebauthnAuthenticationService {
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
     req.session.sessionEpoch = row.sessionEpoch;
+    recordSessionClient(req);
     await this.sessionRegistry.register(row.id, req.sessionID);
     await saveSession(req);
 
