@@ -4,10 +4,5 @@
   "trailingComma": "all",
   "printWidth": 100,
   "tabWidth": 2,
-  "ignorePatterns": [
-    ".claude/settings.local.json",
-    "apps/api/drizzle/meta/**",
-    "config/deploy*.yml",
-    "pnpm-lock.yaml"
-  ]
+  "ignorePatterns": [".claude/settings.local.json", "apps/api/drizzle/meta/**", "pnpm-lock.yaml"]
 }

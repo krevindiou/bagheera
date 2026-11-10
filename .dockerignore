@@ -9,3 +9,4 @@
 .env.local
 **/.env
 **/.env.local
+docker/prod.env
