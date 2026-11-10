@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB. Each container mounts only its own app plus `packages/`, so workspace-wide checks (`pnpm dedupe --check`, knip, `pnpm audit`) run in the `check` compose service (`make check`, which installs the whole workspace), not in `api`/`web`. CI's lint job runs the same root `check:*` scripts by name: a new quality check is one `check:<name>` entry in the root `package.json` plus one step in `ci.yml`.
 
-The only host-level requirement is Docker + Docker Compose.
+The only host-level requirement is Docker + Docker Compose. The one exception is `make deploy`, which runs the `uc` CLI installed on the host: it only talks to the production host over SSH and never touches the app, its tests or its tooling.
 
 ## Commands
 

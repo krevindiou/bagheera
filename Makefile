@@ -8,7 +8,7 @@ export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help check precommit build build-images up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
+.PHONY: help check precommit build build-images deploy up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -32,6 +32,11 @@ build: ## Build api + web and their packages/* deps, as CI's Build job does
 
 build-images: ## Build Docker images
 	$(COMPOSE) build
+
+# Not dev tooling: it runs the `uc` CLI installed on this machine, which only
+# talks to the production host over SSH (scripts/deploy.sh).
+deploy: ## Roll published images out to production: make deploy TAG=<git sha>
+	scripts/deploy.sh $(TAG)
 
 up: ## Start stack
 	$(COMPOSE) up
