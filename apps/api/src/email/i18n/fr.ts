@@ -39,7 +39,7 @@ export default {
         locale: 'fr',
         preheader: "L'adresse email de votre compte a été modifiée.",
         heading: 'Adresse email modifiée',
-        bodyHtml: safeHtml`<p style="margin:0;">L'adresse email de votre compte Bagheera vient d'être changée pour <strong style="color:#f2efe9;">${newAddress}</strong>. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec votre clé d'accès et vérifiez votre compte.</p>`,
+        bodyHtml: safeHtml`<p style="margin:0;">L'adresse email de votre compte Bagheera vient d'être changée pour <strong style="color:#1c1917;">${newAddress}</strong>. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec votre clé d'accès et vérifiez votre compte.</p>`,
       }),
   },
   confirmEmailChange: {
@@ -91,7 +91,7 @@ export default {
         heading: 'Nouvelle connexion',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Une connexion à votre compte Bagheera vient d'avoir lieu.</p>` +
-          safeHtml`<p style="margin:0 0 20px;">Date : <strong style="color:#f2efe9;">${when}</strong><br />Clé d'accès : <strong style="color:#f2efe9;">${passkey}</strong><br />Adresse IP : <strong style="color:#f2efe9;">${address}</strong></p>` +
+          safeHtml`<p style="margin:0 0 20px;">Date : <strong style="color:#1c1917;">${when}</strong><br />Clé d'accès : <strong style="color:#1c1917;">${passkey}</strong><br />Adresse IP : <strong style="color:#1c1917;">${address}</strong></p>` +
           safeHtml`<p style="margin:0;">Si c'était vous, vous n'avez rien à faire. Sinon, connectez-vous immédiatement avec une autre clé d'accès et supprimez celle-ci depuis les paramètres de votre compte : supprimer une clé d'accès déconnecte tous les autres appareils.</p>`,
       }),
   },

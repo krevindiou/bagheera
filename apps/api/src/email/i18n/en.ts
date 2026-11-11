@@ -43,7 +43,7 @@ export default {
         locale: 'en',
         preheader: 'Your account email address was changed.',
         heading: 'Email address changed',
-        bodyHtml: safeHtml`<p style="margin:0;">The email address of your Bagheera account has just been changed to <strong style="color:#f2efe9;">${newAddress}</strong>. If you did not do this, sign in with your passkey immediately and review your account.</p>`,
+        bodyHtml: safeHtml`<p style="margin:0;">The email address of your Bagheera account has just been changed to <strong style="color:#1c1917;">${newAddress}</strong>. If you did not do this, sign in with your passkey immediately and review your account.</p>`,
       }),
   },
   confirmEmailChange: {
@@ -95,7 +95,7 @@ export default {
         heading: 'New sign-in',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Your Bagheera account was just signed in to.</p>` +
-          safeHtml`<p style="margin:0 0 20px;">When: <strong style="color:#f2efe9;">${when}</strong><br />Passkey: <strong style="color:#f2efe9;">${passkey}</strong><br />IP address: <strong style="color:#f2efe9;">${address}</strong></p>` +
+          safeHtml`<p style="margin:0 0 20px;">When: <strong style="color:#1c1917;">${when}</strong><br />Passkey: <strong style="color:#1c1917;">${passkey}</strong><br />IP address: <strong style="color:#1c1917;">${address}</strong></p>` +
           safeHtml`<p style="margin:0;">If this was you, there's nothing to do. If it wasn't, sign in with another passkey immediately and remove this one from your account settings: removing a passkey signs out every other device.</p>`,
       }),
   },
