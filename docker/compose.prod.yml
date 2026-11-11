@@ -56,7 +56,7 @@ services:
         condition: service_healthy
     # Runs from the new image, against the still-serving old release, before
     # any api container is replaced: migrations must stay backward compatible
-    # (README.md, "Deploying schema changes"). A failure aborts the deploy.
+    # (docs/deploying.md, "Deploying schema changes"). A failure aborts the deploy.
     x-pre_deploy:
       command: node dist/db/migrate.js
     environment:
