@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/github/krevindiou/bagheera/graph/badge.svg?token=V05Z98I3T9)](https://codecov.io/github/krevindiou/bagheera)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](package.json)
 
-Bagheera is a manual-entry personal finance manager. Users track banks, accounts, and operations (transactions), move money between accounts via transfers, automate regular income or expenses with recurring schedulers, and review balances and spending through reports.
+Bagheera is a manual-entry personal finance manager. Users track banks, accounts, and operations (transactions), import operations from their bank's OFX files, move money between accounts via transfers, automate regular income or expenses with recurring schedulers, and review balances and spending through reports.
 
 ## Stack
 
@@ -44,6 +44,8 @@ make migrate   # run db migrations
 make test      # unit + integration + e2e (or test-unit/test-integration/test-e2e individually)
 make lint      # lint api + web + packages/*
 make format    # format api + web + packages/*
+make check     # every workspace-wide check CI runs (lint, format, types, audit, knip, ...)
+make precommit # format + lint + check + build + test-unit: run before committing
 make shell-api # shell into the api container
 make shell-web # shell into the web container
 ```
@@ -65,7 +67,7 @@ apps/
   web/       Vue frontend
 packages/
   money/           cross-stack code shared by api and web (minor-units money math)
-  reference-data/  shared reference data (payment-method ids, locales, entry types, report and scheduler enum values, country and currency codes, report result cap, value-date bounds)
+  reference-data/  reference data, enums, limits and constants shared by api and web
 docker/      Dockerfiles, Compose files (compose.yml for dev, compose.prod.yml for production), Caddyfile
 docs/        deploying.md, backup-restore.md
 scripts/     backup.sh, deploy.sh
