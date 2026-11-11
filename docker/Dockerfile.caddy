@@ -7,7 +7,7 @@
 # Pinned by digest so a floated `node:24-alpine` retag can't silently
 # change what this builds against; Renovate's docker:pinDigests preset
 # (renovate.json) keeps this current as the tag moves.
-FROM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS deps
+FROM node:24-alpine@sha256:61cf3202592df80f42ff3a595636e97039b351d1bd2a1c475f897f328e4870ed AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -24,12 +24,13 @@ COPY . .
 RUN pnpm --filter web... build
 
 # Pinned by digest — same reasoning as the node base image above.
-FROM caddy:2-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
+FROM caddy:2-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9
 # Non-root: create a caddy user/group and grant the binary
 # CAP_NET_BIND_SERVICE via a file capability so it can still bind 80/443
 # without running as root. Docker's default capability bounding set
 # already includes NET_BIND_SERVICE, so no extra cap_add is needed.
-RUN apk add --no-cache libcap \
+RUN apk upgrade --no-cache \
+	&& apk add --no-cache libcap \
 	&& setcap cap_net_bind_service=+ep /usr/bin/caddy \
 	&& addgroup -S caddy && adduser -S -G caddy caddy \
 	&& mkdir -p /data /config \
