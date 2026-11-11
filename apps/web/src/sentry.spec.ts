@@ -2,10 +2,12 @@ import type { App } from 'vue';
 import * as Sentry from '@sentry/vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { initSentry } from './sentry';
+import { scrubLog } from './sentry-scrub';
 
 vi.mock('@sentry/vue', () => ({
   init: vi.fn(),
   browserTracingIntegration: vi.fn(() => ({ name: 'BrowserTracing' })),
+  consoleLoggingIntegration: vi.fn(() => ({ name: 'ConsoleLogs' })),
 }));
 vi.mock('./router', () => ({ router: {} }));
 
@@ -35,7 +37,20 @@ describe('initSentry', () => {
     initSentry(app);
 
     expect(Sentry.init).toHaveBeenCalledWith(
-      expect.objectContaining({ app, dsn: 'https://key@sentry.example/1', tracesSampleRate: 0 }),
+      expect.objectContaining({ app, dsn: 'https://key@sentry.example/1' }),
     );
+  });
+
+  it('traces and sends console warnings and errors as logs, scrubbed', () => {
+    window.__RUNTIME_CONFIG__ = { sentryDsn: 'https://key@sentry.example/1' };
+
+    initSentry(app);
+
+    const options = vi.mocked(Sentry.init).mock.calls[0][0];
+    expect(options?.tracesSampleRate).toBeGreaterThan(0);
+    expect(options?.integrations).toEqual([{ name: 'BrowserTracing' }, { name: 'ConsoleLogs' }]);
+    expect(Sentry.consoleLoggingIntegration).toHaveBeenCalledWith({ levels: ['warn', 'error'] });
+    expect(options?.dataCollection).toEqual({ urlQueryParams: false, userInfo: false });
+    expect(options?.beforeSendLog).toBe(scrubLog);
   });
 });

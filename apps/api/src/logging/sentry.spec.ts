@@ -2,9 +2,15 @@ import * as Sentry from '@sentry/node';
 import type { ErrorEvent } from '@sentry/node';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { vi } from 'vitest';
-import { initSentry, scrubEvent } from './sentry';
+import { initSentry, scrubEvent, scrubLog, scrubSpan } from './sentry';
 
-vi.mock('@sentry/node', () => ({ init: vi.fn() }));
+vi.mock('@sentry/node', () => ({
+  init: vi.fn(),
+  pinoIntegration: vi.fn(() => ({ name: 'Pino' })),
+  nodeRuntimeMetricsIntegration: vi.fn(() => ({ name: 'NodeRuntimeMetrics' })),
+}));
+
+type StreamedSpan = Parameters<typeof scrubSpan>[0];
 
 describe('initSentry', () => {
   const originalDsn = process.env.SENTRY_DSN;
@@ -26,7 +32,7 @@ describe('initSentry', () => {
     expect(Sentry.init).not.toHaveBeenCalled();
   });
 
-  it('keeps incoming request bodies out of events', () => {
+  it('keeps request bodies, query strings, query values, job data, locals and addresses out', () => {
     process.env.SENTRY_DSN = 'https://key@example.invalid/1';
 
     initSentry();
@@ -34,16 +40,112 @@ describe('initSentry', () => {
     expect(Sentry.init).toHaveBeenCalledTimes(1);
     expect(vi.mocked(Sentry.init).mock.calls[0][0]).toMatchObject({
       dsn: 'https://key@example.invalid/1',
-      dataCollection: { httpBodies: [] },
+      dataCollection: {
+        httpBodies: [],
+        urlQueryParams: false,
+        databaseQueryData: false,
+        queues: false,
+        stackFrameVariables: false,
+        userInfo: false,
+        httpHeaders: { request: { deny: ['forwarded', 'x-real-ip'] } },
+      },
     });
   });
 
-  it('scrubs every event before it is sent', () => {
+  it('traces requests and sends pino logs and runtime metrics', () => {
     process.env.SENTRY_DSN = 'https://key@example.invalid/1';
 
     initSentry();
 
-    expect(vi.mocked(Sentry.init).mock.calls[0][0]?.beforeSend).toBe(scrubEvent);
+    const options = vi.mocked(Sentry.init).mock.calls[0][0];
+    expect(options?.tracesSampleRate).toBeGreaterThan(0);
+    expect(options?.integrations).toEqual([{ name: 'Pino' }, { name: 'NodeRuntimeMetrics' }]);
+  });
+
+  it('scrubs every event, span and log before it is sent', () => {
+    process.env.SENTRY_DSN = 'https://key@example.invalid/1';
+
+    initSentry();
+
+    const options = vi.mocked(Sentry.init).mock.calls[0][0];
+    expect(options?.beforeSend).toBe(scrubEvent);
+    expect(options?.beforeSendSpan).toBe(scrubSpan);
+    expect(options?.beforeSendLog).toBe(scrubLog);
+  });
+});
+
+describe('scrubSpan', () => {
+  function span(attributes: Record<string, unknown>): StreamedSpan {
+    return {
+      trace_id: 't',
+      span_id: 's',
+      name: 'GET valkey:6379',
+      start_timestamp: 0,
+      status: 'ok',
+      is_segment: false,
+      attributes,
+    };
+  }
+
+  it('keeps only the command name of a Redis statement', () => {
+    const scrubbed = scrubSpan(
+      span({
+        'db.system.name': 'redis',
+        'db.operation.name': 'evalsha',
+        'db.query.text': 'evalsha abc 8 bull:email:wait {"html":"…?key=s3cret"}',
+      }),
+    );
+
+    expect(scrubbed.attributes['db.query.text']).toBe('evalsha');
+  });
+
+  it('leaves a parameterised SQL statement alone', () => {
+    const attributes = {
+      'db.system.name': 'postgresql',
+      'db.query.text': 'select "id" from "bank" where "member_id" = $1',
+    };
+
+    expect(scrubSpan(span({ ...attributes })).attributes).toEqual(attributes);
+  });
+});
+
+describe('scrubLog', () => {
+  it('keeps only the method and path of a logged request', () => {
+    const log = scrubLog({
+      level: 'info',
+      message: 'request completed',
+      attributes: {
+        req: {
+          method: 'GET',
+          url: '/api/operations/autocomplete?thirdParty=Dr%20Smith#x',
+          query: { thirdParty: 'Dr Smith' },
+          headers: { 'x-forwarded-for': '203.0.113.9', 'user-agent': 'Firefox' },
+          remoteAddress: '203.0.113.9',
+          remotePort: 51234,
+        },
+        res: { statusCode: 200 },
+      },
+    });
+
+    expect(log.attributes).toEqual({
+      req: { method: 'GET', url: '/api/operations/autocomplete' },
+      res: { statusCode: 200 },
+    });
+  });
+
+  it('cuts the parameters from a logged failed query', () => {
+    const log = scrubLog({
+      level: 'error',
+      message: 'Failed query: select $1\nparams: rent for flat 3B',
+    });
+
+    expect(log.message).toBe('Failed query: select $1');
+  });
+
+  it('leaves a log without a request alone', () => {
+    const log = { level: 'warn' as const, message: 'slow job', attributes: { queue: 'email' } };
+
+    expect(scrubLog(structuredClone(log))).toEqual(log);
   });
 });
 

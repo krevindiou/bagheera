@@ -8,6 +8,7 @@ import { localIsoDate } from '../common/local-date';
 import { toMinorUnits } from '../common/money';
 import { account, member, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { metrics } from '../logging/metrics';
 import {
   insertMemberWithCredential,
   seedSignedInMember,
@@ -254,8 +255,11 @@ describe('scheduler occurrence generation', () => {
       const id = await insertScheduler(accountId, { valueDate: aheadToday });
       // A save's announced count follows the same "today".
       const announced = await generation.countDue(id);
+      const counted = vi.spyOn(metrics, 'operationsGenerated');
       const generated = await generation.runForScheduler(id);
       expect(announced).toBe(generated);
+      expect(counted).toHaveBeenCalledWith(generated);
+      counted.mockRestore();
       return generated;
     }
 
@@ -267,9 +271,12 @@ describe('scheduler occurrence generation', () => {
     const { memberId, accountId } = await memberWithAccount();
     const ids = [await insertScheduler(accountId), await insertScheduler(accountId)];
     const generation = app.get(SchedulerGenerationService);
+    const counted = vi.spyOn(metrics, 'operationsGenerated');
 
     expect(await generation.catchUpMember(memberId, 5)).toBe(true);
     expect(await generatedFor(ids)).toHaveLength(5);
+    expect(counted.mock.calls.reduce((sum, [count]) => sum + count, 0)).toBe(5);
+    counted.mockRestore();
 
     expect(await generation.catchUpMember(memberId)).toBe(false);
     const perScheduler = (await generatedFor([ids[0]])).length;

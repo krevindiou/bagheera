@@ -4,6 +4,7 @@ import type { Server } from 'http';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
+import { metrics } from '../logging/metrics';
 import { AuditService, SecurityEventType } from './audit.service';
 import { csrfTokenFor, insertMemberWithCredential } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -109,5 +110,16 @@ describe('security audit log', () => {
     await expect(
       audit.record('not_a_real_event_type' as SecurityEventType, null, '127.0.0.1'),
     ).resolves.toBeUndefined();
+  });
+
+  it('counts an event once written, and not one that failed to write', async () => {
+    const counted = vi.spyOn(metrics, 'securityEvent');
+    const audit = app.get(AuditService);
+
+    await audit.record('session_revoked', null, '127.0.0.1');
+    await audit.record('not_a_real_event_type' as SecurityEventType, null, '127.0.0.1');
+
+    expect(counted.mock.calls).toEqual([['session_revoked']]);
+    counted.mockRestore();
   });
 });

@@ -6,6 +6,9 @@ import { RateLimitGuard } from './rate-limit.guard';
 import { RATE_LIMIT_OPTIONS, RateLimitOptions } from './rate-limit.constants';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-context';
+import { metrics } from '../logging/metrics';
+
+vi.mock('../logging/metrics', () => ({ metrics: { rateLimited: vi.fn() } }));
 
 // Shared by every RateLimiterRedis the guard creates. (`mock` prefix:
 // vi.mock's hoisted factory may reference it; typed so `.mock.calls` isn't
@@ -43,6 +46,7 @@ function fakeReflector(opts: { skip?: boolean; options?: RateLimitOptions } = {}
 beforeEach(() => {
   mockConsume.mockReset().mockResolvedValue(undefined);
   (RateLimiterRedis as Mock).mockClear();
+  vi.mocked(metrics.rateLimited).mockClear();
 });
 
 describe('RateLimitGuard', () => {
@@ -329,6 +333,29 @@ describe('RateLimitGuard', () => {
     await expect(guard.canActivate(ctx)).rejects.toThrow('Too many requests');
     // durationSeconds(60) * 2^(strikes(1)-1) = 60
     expect(valkey.set).toHaveBeenCalledWith(expect.stringContaining('rl:block:'), '1', 'EX', 60);
+  });
+
+  it('counts a 429 by route, block key or exhausted budget alike', async () => {
+    const options: RateLimitOptions = { points: 1, durationSeconds: 60, scope: 'sign-in' };
+    const ctx = () => fakeExecutionContext(fakeRequest({ method: 'POST' }));
+    const blocked = new RateLimitGuard(
+      fakeValkeyClient({ exists: vi.fn().mockResolvedValue(1) }),
+      fakeReflector({ options }),
+    );
+    await expect(blocked.canActivate(ctx())).rejects.toThrow('Too many requests');
+    mockConsume.mockRejectedValue({ msBeforeNext: 1000 });
+    const exhausted = new RateLimitGuard(fakeValkeyClient(), fakeReflector({ options }));
+    await expect(exhausted.canActivate(ctx())).rejects.toThrow('Too many requests');
+
+    expect(vi.mocked(metrics.rateLimited).mock.calls).toEqual([['sign-in'], ['sign-in']]);
+  });
+
+  it('does not count a Valkey failure as rate limiting', async () => {
+    mockConsume.mockRejectedValue(new Error('ECONNREFUSED'));
+    const guard = new RateLimitGuard(fakeValkeyClient(), fakeReflector());
+    const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
+    await expect(guard.canActivate(ctx)).rejects.toThrow('ECONNREFUSED');
+    expect(metrics.rateLimited).not.toHaveBeenCalled();
   });
 
   it('doubles the block duration with each further strike', async () => {

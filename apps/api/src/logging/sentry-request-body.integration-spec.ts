@@ -4,6 +4,7 @@ import type { AddressInfo } from 'node:net';
 import { gunzipSync } from 'node:zlib';
 import { INestApplication, Logger } from '@nestjs/common';
 import type { Server } from 'http';
+import { pino } from 'pino';
 import { bank } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { ImportStore } from '../operations/import/import.store';
@@ -23,7 +24,7 @@ interface SentryEvent {
 // and a literal marker in this file could turn up there.
 const newMarker = () => `content-marker-${randomUUID()}`;
 
-describe('Sentry events for unhandled errors', () => {
+describe('What the API sends to Sentry', () => {
   let app: INestApplication<Server>;
   let ingest: HttpServer;
   let envelopes: string[] = [];
@@ -66,19 +67,71 @@ describe('Sentry events for unhandled errors', () => {
 
   // An envelope is newline-delimited JSON: a header, then an item header and
   // its payload for each item.
-  async function reportedErrors(): Promise<{ events: SentryEvent[]; raw: string }> {
+  async function reportedErrors(): Promise<{
+    events: SentryEvent[];
+    itemTypes: Set<string | undefined>;
+    raw: string;
+  }> {
     await Sentry.flush(5000);
     const events: SentryEvent[] = [];
+    const itemTypes = new Set<string | undefined>();
     for (const envelope of envelopes) {
       const lines = envelope.split('\n').filter((line) => line !== '');
       for (let i = 1; i < lines.length - 1; i += 2) {
-        if ((JSON.parse(lines[i]) as { type?: string }).type === 'event') {
+        const { type } = JSON.parse(lines[i]) as { type?: string };
+        itemTypes.add(type);
+        if (type === 'event') {
           events.push(JSON.parse(lines[i + 1]) as SentryEvent);
         }
       }
     }
-    return { events, raw: envelopes.join('\n') };
+    return { events, itemTypes, raw: envelopes.join('\n') };
   }
+
+  it('traces a request without its query string, client address or Valkey command arguments', async () => {
+    const fixture = await seedSignedInMember(app);
+    const marker = newMarker();
+    const clientAddress = '203.0.113.79';
+
+    const res = await fixture.agent
+      .get('/operations/autocomplete')
+      .set('x-forwarded-for', clientAddress)
+      .query({ q: marker });
+    expect(res.status).toBe(200);
+
+    const { itemTypes, raw } = await reportedErrors();
+    expect(itemTypes).toContain('span');
+    // The session lookup was traced, so its key had a chance to leak.
+    expect(raw).toContain('"redis"');
+    expect(raw).not.toContain('sess:');
+    expect(raw).not.toContain(marker);
+    expect(raw).not.toContain(clientAddress);
+  });
+
+  it('sends a pino line as a log with only the request path', async () => {
+    const marker = newMarker();
+    const clientAddress = '203.0.113.80';
+    const logger = pino({ level: 'info' }, { write: () => undefined });
+
+    logger.info(
+      {
+        req: {
+          method: 'GET',
+          url: `/api/operations/autocomplete?q=${marker}`,
+          query: { q: marker },
+          headers: { 'x-forwarded-for': clientAddress },
+          remoteAddress: clientAddress,
+        },
+      },
+      'request completed',
+    );
+
+    const { itemTypes, raw } = await reportedErrors();
+    expect(itemTypes).toContain('log');
+    expect(raw).toContain('/api/operations/autocomplete');
+    expect(raw).not.toContain(marker);
+    expect(raw).not.toContain(clientAddress);
+  });
 
   it('leaves a JSON request body out of the event', async () => {
     const fixture = await seedSignedInMember(app);

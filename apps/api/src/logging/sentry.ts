@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import type { ErrorEvent, EventHint } from '@sentry/node';
+import type { ErrorEvent, EventHint, Log, NodeOptions } from '@sentry/node';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { errorMessage } from '../common/error-message';
 
@@ -91,6 +91,51 @@ export function scrubEvent(event: ErrorEvent, hint?: EventHint): ErrorEvent {
   return event;
 }
 
+type StreamedSpan = Parameters<NonNullable<NodeOptions['beforeSendSpan']>>[0];
+
+/**
+ * Redis spans record a command's arguments: session ids, rate-limit keys,
+ * and for BullMQ's scripts the queued job itself (an email with its one-time
+ * link). Only the command name is kept.
+ */
+export function scrubSpan(span: StreamedSpan): StreamedSpan {
+  const { attributes } = span;
+  if (attributes['db.system.name'] === 'redis' && 'db.query.text' in attributes) {
+    attributes['db.query.text'] = attributes['db.operation.name'];
+  }
+  return span;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Pino lines become Sentry logs. pino-http's request URL and query can carry
+ * typed search text, so only the path is kept; its headers and remote
+ * address, the client's address, are dropped; a failed query's values are
+ * cut as in events.
+ */
+export function scrubLog(log: Log): Log {
+  if (typeof log.message === 'string') {
+    log.message = withoutQueryParams(log.message);
+  }
+  const req = log.attributes?.req;
+  if (isRecord(req)) {
+    delete req.query;
+    delete req.headers;
+    delete req.remoteAddress;
+    delete req.remotePort;
+    if (typeof req.url === 'string') {
+      req.url = req.url.replace(/[?#].*$/s, '');
+    }
+  }
+  return log;
+}
+
+// Every request is traced: traffic is low enough to stay within quota.
+const TRACES_SAMPLE_RATE = 1;
+
 /**
  * No-op without SENTRY_DSN. Called in main.ts before AppModule is
  * imported, so instrumentation is in place first.
@@ -103,10 +148,26 @@ export function initSentry(): void {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV ?? 'development',
-    tracesSampleRate: 0,
-    // Request bodies carry one-time keys, notes and bank statement text.
-    dataCollection: { httpBodies: [] },
+    tracesSampleRate: TRACES_SAMPLE_RATE,
+    // Polled every few seconds by the container healthchecks.
+    ignoreSpans: [{ attributes: { 'url.path': /^\/health$/ } }],
+    dataCollection: {
+      // Request bodies carry one-time keys, notes and bank statement text;
+      // query strings, typed search text; queued jobs, emails and their links;
+      // a failing frame's locals, decrypted member data. A client's address
+      // is personal data every request would otherwise carry.
+      httpBodies: [],
+      urlQueryParams: false,
+      databaseQueryData: false,
+      queues: false,
+      stackFrameVariables: false,
+      userInfo: false,
+      httpHeaders: { request: { deny: ['forwarded', 'x-real-ip'] } },
+    },
+    integrations: [Sentry.pinoIntegration(), Sentry.nodeRuntimeMetricsIntegration()],
     beforeSend: scrubEvent,
+    beforeSendSpan: scrubSpan,
+    beforeSendLog: scrubLog,
   });
 }
 

@@ -13,9 +13,14 @@ export async function withSafeJobErrors<T>(run: () => Promise<T>): Promise<T> {
 }
 
 // BullMQ emits 'failed' after every attempt; only the last one means the
-// job is lost for good, so only that one is worth an alert.
+// job is lost for good.
+export function isFinalAttempt(job: Job): boolean {
+  return job.attemptsMade >= (job.opts.attempts ?? 1);
+}
+
+// Only a lost job is worth an alert.
 export function reportFinalJobFailure(job: Job | undefined, err: Error): void {
-  if (!job || job.attemptsMade < (job.opts.attempts ?? 1)) {
+  if (!job || !isFinalAttempt(job)) {
     return;
   }
   Sentry.captureException(withoutQueryValues(err), {

@@ -6,6 +6,7 @@ import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { SignupRequestService } from '../members/signup-request.service';
 import type { EmailMessage, SignupRequest } from './email-message';
 import { EmailWorker } from './email.worker';
+import { metrics } from '../logging/metrics';
 import { vi } from 'vitest';
 
 // Capture the processor the Worker is handed and drive it directly.
@@ -17,6 +18,7 @@ vi.mock('../common/report-job-failure', async (importActual) => ({
   ...(await importActual<typeof import('../common/report-job-failure')>()),
   reportFinalJobFailure: vi.fn(),
 }));
+vi.mock('../logging/metrics', () => ({ metrics: { emailJob: vi.fn() } }));
 vi.mock('bullmq', () => ({
   Worker: vi.fn().mockImplementation(function Worker(_queue: string, processor: Processor) {
     mockProcessor = processor;
@@ -29,6 +31,20 @@ vi.mock('bullmq', () => ({
 
 function job(name: string, data: EmailMessage | SignupRequest): Job<EmailMessage | SignupRequest> {
   return { id: 'job-1', name, data } as Job<EmailMessage | SignupRequest>;
+}
+
+function listener(event: string): (job: Job, err?: Error) => void {
+  const call = mockWorker.on.mock.calls.find(([name]) => name === event) as
+    | [string, (job: Job, err?: Error) => void]
+    | undefined;
+  if (!call) {
+    throw new Error(`No '${event}' listener`);
+  }
+  return call[1];
+}
+
+function settledJob(attemptsMade: number): Job {
+  return { id: '42', name: 'send', attemptsMade, opts: { attempts: 3 } } as Job;
 }
 
 describe('EmailWorker', () => {
@@ -102,17 +118,38 @@ describe('EmailWorker', () => {
 
   it('logs a job that failed', () => {
     const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    const [event, listener] = mockWorker.on.mock.calls[0] as [
-      string,
-      (job: { id: string }, err: Error) => void,
-    ];
 
-    const failed = { id: '42' };
-    listener(failed, new Error('SMTP down'));
+    const failed = settledJob(1);
+    listener('failed')(failed, new Error('SMTP down'));
 
-    expect(event).toBe('failed');
     expect(reportFinalJobFailure).toHaveBeenCalledWith(failed, expect.any(Error));
     expect(error).toHaveBeenCalledWith('Email job 42 failed: SMTP down');
+    error.mockRestore();
+  });
+
+  it('counts a sent job, a retried attempt and a lost job', () => {
+    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    listener('completed')(settledJob(1));
+    listener('failed')(settledJob(1), new Error('SMTP down'));
+    listener('failed')(settledJob(3), new Error('SMTP down'));
+
+    expect(vi.mocked(metrics.emailJob).mock.calls).toEqual([
+      ['send', 'sent'],
+      ['send', 'retrying'],
+      ['send', 'failed'],
+    ]);
+    error.mockRestore();
+  });
+
+  // BullMQ can report a failure it has no job for.
+  it('logs, but cannot count, a failure without a job', () => {
+    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    listener('failed')(undefined as unknown as Job, new Error('stalled'));
+
+    expect(error).toHaveBeenCalledWith('Email job undefined failed: stalled');
+    expect(metrics.emailJob).not.toHaveBeenCalled();
     error.mockRestore();
   });
 

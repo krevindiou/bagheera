@@ -24,6 +24,7 @@ import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 import { clientIp } from '../common/client-ip.decorator';
 import { rateLimitAddress } from './address-group';
 import { normalizeEmail, plusTaggedMailbox } from '../common/email-address';
+import { metrics } from '../logging/metrics';
 
 // Strikes (lockout violations) decay after an hour of no further
 // violations on that dimension, so a stale block count doesn't keep
@@ -96,8 +97,18 @@ export class RateLimitGuard implements CanActivate {
     }
     // One counter per route, unless the options name a shared scope.
     const routeKey = options.scope ?? `${context.getClass().name}#${context.getHandler().name}`;
-    for (const dimension of this.dimensions(req, options, routeKey)) {
-      await this.checkDimension(dimension);
+    try {
+      for (const dimension of this.dimensions(req, options, routeKey)) {
+        await this.checkDimension(dimension);
+      }
+    } catch (err) {
+      if (
+        err instanceof HttpException &&
+        err.getStatus() === Number(HttpStatus.TOO_MANY_REQUESTS)
+      ) {
+        metrics.rateLimited(routeKey);
+      }
+      throw err;
     }
     return true;
   }

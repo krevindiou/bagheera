@@ -1,7 +1,7 @@
 import type { Job } from 'bullmq';
 import { Sentry } from '../logging/sentry';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
-import { reportFinalJobFailure, withSafeJobErrors } from './report-job-failure';
+import { isFinalAttempt, reportFinalJobFailure, withSafeJobErrors } from './report-job-failure';
 import { vi } from 'vitest';
 
 vi.mock('../logging/sentry', () => ({ Sentry: { captureException: vi.fn() } }));
@@ -9,6 +9,16 @@ vi.mock('../logging/sentry', () => ({ Sentry: { captureException: vi.fn() } }));
 function job(attemptsMade: number, attempts?: number): Job {
   return { id: '9', name: 'send', queueName: 'email', attemptsMade, opts: { attempts } } as Job;
 }
+
+describe('isFinalAttempt', () => {
+  it.each([
+    [1, 3, false],
+    [3, 3, true],
+    [1, undefined, true],
+  ])('%i of %s attempts made: %s', (attemptsMade, attempts, expected) => {
+    expect(isFinalAttempt(job(attemptsMade, attempts))).toBe(expected);
+  });
+});
 
 describe('reportFinalJobFailure', () => {
   const err = new Error('SMTP down');

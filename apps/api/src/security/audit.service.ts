@@ -5,6 +5,7 @@ import { DRIZZLE } from '../db/db.constants';
 import type { Executor } from '../db/executor';
 import { securityEvent } from '../db/schema';
 import { securityEventTypeEnum } from '../db/schema/enums';
+import { metrics } from '../logging/metrics';
 
 export type SecurityEventType = (typeof securityEventTypeEnum.enumValues)[number];
 
@@ -24,6 +25,9 @@ async function insertEvent(
     sourceAddress,
     details,
   });
+  // A `recordIn` whose transaction then rolls back still counts: rare, and
+  // the metric is for trends, not the audit trail.
+  metrics.securityEvent(eventType);
 }
 
 /**

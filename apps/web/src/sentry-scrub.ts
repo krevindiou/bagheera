@@ -1,4 +1,4 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/vue';
+import type { Breadcrumb, ErrorEvent, Log } from '@sentry/vue';
 
 /**
  * Emailed links carry a one-time token in `?key=`. The pages drop it from
@@ -37,4 +37,18 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
   }
   event.breadcrumbs?.forEach(scrubBreadcrumb);
   return event;
+}
+
+/** A console line can quote a URL, the address bar's included. */
+export function scrubLog(log: Log): Log {
+  if (typeof log.message === 'string') {
+    log.message = scrubKeyParam(log.message);
+  }
+  const { attributes } = log;
+  for (const [name, value] of Object.entries(attributes ?? {})) {
+    if (attributes && typeof value === 'string') {
+      attributes[name] = scrubKeyParam(value);
+    }
+  }
+  return log;
 }

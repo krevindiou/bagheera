@@ -6,6 +6,7 @@ import { effectiveTimeZone } from '../common/member-today';
 import { DRIZZLE } from '../db/db.constants';
 import type { Executor } from '../db/executor';
 import { account, bank, member, scheduler } from '../db/schema';
+import { metrics } from '../logging/metrics';
 import { TransferService } from '../operations/transfer.service';
 import { isFullyActive } from '../security/reachable';
 import {
@@ -43,8 +44,12 @@ export class SchedulerGenerationService {
   // One scheduler, in its own transaction — what a save's queued job runs
   // (see GenerationQueueService). Resolves to how many occurrences it
   // generated.
-  runForScheduler(schedulerId: string, budget = MAX_OCCURRENCES_PER_RUN): Promise<number> {
-    return this.db.transaction((tx) => this.generateForScheduler(tx, schedulerId, budget));
+  async runForScheduler(schedulerId: string, budget = MAX_OCCURRENCES_PER_RUN): Promise<number> {
+    const generated = await this.db.transaction((tx) =>
+      this.generateForScheduler(tx, schedulerId, budget),
+    );
+    metrics.operationsGenerated(generated);
+    return generated;
   }
 
   // How many occurrences generation will add for this scheduler, however
@@ -186,7 +191,11 @@ export class SchedulerGenerationService {
       if (remaining <= 0) {
         break;
       }
-      remaining -= await this.db.transaction((tx) => this.generateForScheduler(tx, id, remaining));
+      const generated = await this.db.transaction((tx) =>
+        this.generateForScheduler(tx, id, remaining),
+      );
+      metrics.operationsGenerated(generated);
+      remaining -= generated;
     }
     return remaining <= 0;
   }
