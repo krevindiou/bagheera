@@ -72,6 +72,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: apps/api/coverage/lcov.info
           flags: api-unit
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: apps/api/junit-unit.xml
+          flags: api-unit
 
   web-unit:
     name: Web unit tests
@@ -99,6 +106,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: apps/web/coverage/lcov.info
+          flags: web-unit
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: apps/web/junit-unit.xml
           flags: web-unit
 
   money-unit:
@@ -128,6 +142,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/money/coverage/lcov.info
           flags: money-unit
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: packages/money/junit-unit.xml
+          flags: money-unit
 
   reference-data-unit:
     name: Reference-data package unit tests
@@ -155,6 +176,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: packages/reference-data/coverage/lcov.info
+          flags: reference-data-unit
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: packages/reference-data/junit-unit.xml
           flags: reference-data-unit
 
   api-integration:
@@ -186,6 +214,13 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: apps/api/coverage-integration/lcov.info
+          flags: api-integration
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: apps/api/junit-integration.xml
           flags: api-integration
 
   # Disabled for now — re-enable by dropping `if: false`.
