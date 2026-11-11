@@ -66,6 +66,12 @@ jobs:
         with:
           path: apps/api/coverage/coverage-summary.json
           title: API unit test coverage
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/api/coverage/lcov.info
+          flags: api-unit
 
   web-unit:
     name: Web unit tests
@@ -88,6 +94,12 @@ jobs:
         with:
           path: apps/web/coverage/coverage-summary.json
           title: Web unit test coverage
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/web/coverage/lcov.info
+          flags: web-unit
 
   money-unit:
     name: Money package unit tests
@@ -110,6 +122,12 @@ jobs:
         with:
           path: packages/money/coverage/coverage-summary.json
           title: Money package unit test coverage
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/money/coverage/lcov.info
+          flags: money-unit
 
   reference-data-unit:
     name: Reference-data package unit tests
@@ -132,6 +150,12 @@ jobs:
         with:
           path: packages/reference-data/coverage/coverage-summary.json
           title: Reference-data package unit test coverage
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/reference-data/coverage/lcov.info
+          flags: reference-data-unit
 
   api-integration:
     name: API integration tests
@@ -157,6 +181,12 @@ jobs:
         with:
           path: apps/api/coverage-integration/coverage-summary.json
           title: API integration test coverage (services/controllers)
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        if: success() || failure()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/api/coverage-integration/lcov.info
+          flags: api-integration
 
   # Disabled for now — re-enable by dropping `if: false`.
   e2e:
