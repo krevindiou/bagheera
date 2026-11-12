@@ -12,7 +12,7 @@ name: bagheera
 
 services:
   web:
-    image: ${DOCKERHUB_USERNAME:?}/bagheera-web:${TAG:?set TAG to a published image tag}
+    image: ${IMAGE_NAMESPACE:?}/bagheera-web:${TAG:?set TAG to a published image tag}
     restart: unless-stopped
     environment:
       # Uncloud's Caddy already terminates TLS, so this Caddy serves plain HTTP.
@@ -47,7 +47,7 @@ services:
       }
 
   api:
-    image: ${DOCKERHUB_USERNAME:?}/bagheera-api:${TAG:?set TAG to a published image tag}
+    image: ${IMAGE_NAMESPACE:?}/bagheera-api:${TAG:?set TAG to a published image tag}
     restart: unless-stopped
     depends_on:
       postgres:

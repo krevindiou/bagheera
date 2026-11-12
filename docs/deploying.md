@@ -10,8 +10,8 @@ afterwards.
   `bagheera-api` (`docker/Dockerfile.api`) and `bagheera-web`
   (`docker/Dockerfile.caddy`: Caddy serving the built SPA, see
   `docker/Caddyfile` for its security headers) for amd64 and arm64, and pushes
-  them to Docker Hub tagged with the git SHA and `latest`. The images are
-  public and hold no secrets or deployment settings.
+  them to GitHub Container Registry (`ghcr.io`) tagged with the git SHA and
+  `latest`. The images are public and hold no secrets or deployment settings.
 - `make deploy TAG=<git sha>` (`scripts/deploy.sh`, which needs `uc` and Docker
   on your machine) rolls those images out with
   `uc deploy -f docker/compose.prod.yml`, which also runs Postgres and Valkey.
@@ -23,12 +23,13 @@ afterwards.
 ## Publishing your own images
 
 Only needed if you changed the code and want to deploy your build rather than
-the public `krevindiou/bagheera-*` images. Fork the repository, create two
-public Docker Hub repositories, `bagheera-api` and `bagheera-web`, and an
-access token with Read & Write scope. In your fork's Actions settings, add the
-variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN`, then set
-`DOCKERHUB_USERNAME` in `docker/prod.env` to your account. Each push to `main`
-then publishes both images under your account, tagged with the git SHA.
+the public `ghcr.io/krevindiou/bagheera-*` images. Fork the repository: each
+push to your fork's `main` then publishes both images to
+`ghcr.io/<your-account>/bagheera-api` and `bagheera-web`, tagged with the git
+SHA, with no secret to set up. After the first publish, make both packages
+public (each package's settings on GitHub, "Change visibility") so the host can
+pull them anonymously, and set `IMAGE_NAMESPACE=ghcr.io/<your-account>` in
+`docker/prod.env`.
 
 ## Deploying and rolling back
 

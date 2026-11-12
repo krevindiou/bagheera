@@ -15,7 +15,7 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 | API   | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, rate limiting, BullMQ queue) · BullMQ (email jobs) |
 | Web   | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js                                           |
 | Auth  | Passkeys (WebAuthn), cookie-based server-side revocable sessions                                                    |
-| Infra | Docker Compose · Caddy (static SPA) · Docker Hub (images) · Uncloud (deploy, TLS, routing)                          |
+| Infra | Docker Compose · Caddy (static SPA) · GitHub Container Registry (images) · Uncloud (deploy, TLS, routing)           |
 
 ## Run it locally
 
@@ -77,7 +77,7 @@ scripts/     backup.sh, deploy.sh
 
 ## Deploy it on your own server
 
-Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images are pre-built and public on Docker Hub (`krevindiou/bagheera-api` and `krevindiou/bagheera-web`), so you only deploy them: nothing to build or publish.
+Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images are pre-built and public on GitHub Container Registry (`ghcr.io/krevindiou/bagheera-api` and `ghcr.io/krevindiou/bagheera-web`), so you only deploy them: nothing to build or publish.
 
 1. **Host.** A Linux server reachable over SSH, with a DNS A record for `<your-domain>` pointing at it. Open ports 80 and 443 for Uncloud's Caddy; 51820/udp only matters once there are several machines (it carries the WireGuard mesh between them).
 2. **`uc`.** Install the CLI on your machine ([install guide](https://uncloud.run/docs/getting-started/install-cli)), then run `uc machine init <user>@<host>`. It installs Docker and the Uncloud daemon on the host and starts Caddy.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Manual production deploy: rolls the images the CI publish job pushed to
-# Docker Hub out to the Uncloud cluster, over SSH, with the local `uc` CLI
+# GitHub Container Registry out to the Uncloud cluster, over SSH, with the local `uc` CLI
 # (https://uncloud.run/docs/getting-started/install-cli).
 #
 # Usage: scripts/deploy.sh <tag> [uc deploy flags...]
@@ -29,13 +29,13 @@ if [ -f docker/prod.env ]; then
 	. docker/prod.env
 	set +a
 fi
-: "${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME in docker/prod.env}"
+: "${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE in docker/prod.env}"
 
 # Both images must exist for the tag: a publish cancelled halfway leaves one,
 # and rolling out only that one would pair it with the previous release.
 for image in bagheera-api bagheera-web; do
-	if ! docker manifest inspect "$DOCKERHUB_USERNAME/$image:$tag" >/dev/null 2>&1; then
-		echo "$DOCKERHUB_USERNAME/$image:$tag is not on Docker Hub: wait for CI's publish job, or pick another tag" >&2
+	if ! docker manifest inspect "$IMAGE_NAMESPACE/$image:$tag" >/dev/null 2>&1; then
+		echo "$IMAGE_NAMESPACE/$image:$tag is not published: wait for CI's publish job, or pick another tag" >&2
 		exit 1
 	fi
 done
