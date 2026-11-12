@@ -3,7 +3,8 @@
 [![CI](https://github.com/krevindiou/bagheera/actions/workflows/ci.yml/badge.svg)](https://github.com/krevindiou/bagheera/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/krevindiou/bagheera/graph/badge.svg?token=V05Z98I3T9)](https://codecov.io/github/krevindiou/bagheera)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/krevindiou/bagheera/badge)](https://scorecard.dev/viewer/?uri=github.com/krevindiou/bagheera)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](package.json)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16610/badge)](https://www.bestpractices.dev/projects/16610)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Bagheera is a manual-entry personal finance manager. Users track banks, accounts, and operations (transactions), import operations from their bank's OFX files, move money between accounts via transfers, automate regular income or expenses with recurring schedulers, and review balances and spending through reports.
 
@@ -87,6 +88,10 @@ Then check that the pages, `/api/…` and `/health` all resolve over HTTPS on `<
 
 Rolling back, schema changes, Valkey persistence and backups are in [`docs/deploying.md`](docs/deploying.md) and [`docs/backup-restore.md`](docs/backup-restore.md).
 
+## Contributing
+
+Bug reports, feature requests and pull requests are welcome: see [`CONTRIBUTING.md`](CONTRIBUTING.md). Report security vulnerabilities privately, as [`SECURITY.md`](SECURITY.md) explains.
+
 ## License
 
-MIT — see [`package.json`](package.json).
+MIT — see [`LICENSE`](LICENSE).
