@@ -2,11 +2,12 @@
 # Build context is the repo root (pnpm workspace), e.g.:
 #   docker build -f docker/Dockerfile.api -t bagheera-api .
 
-# Pinned by digest so a floated `node:24-alpine` retag can't silently
+# Pinned by digest so a floated `node:26-alpine` retag can't silently
 # change what this builds against; Renovate's docker:pinDigests preset
 # (renovate.json) keeps this current as the tag moves.
-FROM node:24-alpine@sha256:61cf3202592df80f42ff3a595636e97039b351d1bd2a1c475f897f328e4870ed AS base
-RUN corepack enable
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS base
+# Node 25+ no longer bundles corepack.
+RUN npm install -g corepack@0.36.0 && npm cache clean --force && corepack enable
 WORKDIR /app
 
 FROM base AS deps
@@ -44,8 +45,8 @@ RUN pnpm --filter api deploy --prod --legacy /app/deploy/api
 FROM base AS runtime
 ENV NODE_ENV=production
 # Patch Alpine packages released after the base image was built, and drop the
-# package managers: the app runs `node` directly, and the npm/corepack copies
-# bundled in the base image carry their own (often stale) dependencies.
+# package managers: the app runs `node` directly, and the npm and corepack
+# copies in the base stage carry their own (often stale) dependencies.
 RUN apk upgrade --no-cache \
 	&& rm -rf /usr/local/lib/node_modules /opt/yarn-* \
 		/usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
