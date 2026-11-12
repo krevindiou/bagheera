@@ -46,7 +46,7 @@
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "nestjs-pino": "^5.3.1",
-    "nodemailer": "^10.0.12",
+    "nodemailer": "^10.1.4",
     "pg": "^8.23.0",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
@@ -67,8 +67,9 @@
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
-    "@vitest/coverage-v8": "^5.0.2",
+    "@vitest/coverage-v8": "^5.1.0",
     "drizzle-kit": "^0.31.11",
+    "fast-check": "^4.10.2",
     "oxfmt": "^0.77.0",
     "oxlint": "^1.92.0",
     "oxlint-tsgolint": "^7.0.2006",
@@ -79,6 +80,6 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "~6.0.3",
     "unplugin-swc": "^2.0.0",
-    "vitest": "^5.0.2"
+    "vitest": "^5.1.0"
   }
 }
