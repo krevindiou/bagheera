@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/krevindiou/bagheera/actions/workflows/ci.yml/badge.svg)](https://github.com/krevindiou/bagheera/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/krevindiou/bagheera/graph/badge.svg?token=V05Z98I3T9)](https://codecov.io/github/krevindiou/bagheera)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/krevindiou/bagheera/badge)](https://scorecard.dev/viewer/?uri=github.com/krevindiou/bagheera)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](package.json)
 
 Bagheera is a manual-entry personal finance manager. Users track banks, accounts, and operations (transactions), import operations from their bank's OFX files, move money between accounts via transfers, automate regular income or expenses with recurring schedulers, and review balances and spending through reports.

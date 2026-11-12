@@ -268,8 +268,28 @@ jobs:
       # QEMU lets the amd64 runner build the arm64 half of the image.
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      # A multi-arch image can't be loaded into the local daemon, so Buildx
-      # builds and pushes it in this one step.
+      # A multi-arch image can't be loaded into the local daemon, so the scan
+      # runs against an amd64-only build. It shares the layer cache with the
+      # multi-arch build below, so the amd64 half isn't built twice.
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          load: true
+          tags: ${{ matrix.image }}:scan
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+      # Fails the job, before anything is pushed, on a critical or high CVE
+      # that already has a fix. Unfixed ones can't be acted on.
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ matrix.image }}:scan
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+      # Buildx builds and pushes the multi-arch image in this one step.
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
