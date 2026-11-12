@@ -16,13 +16,16 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+version='[0-9]+\.[0-9]+\.[0-9]+'
+
 # Anything that isn't a version is left for `uc deploy`, e.g. `-y` or service names.
-if [[ "${1:-}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ "${1:-}" =~ ^v?$version$ ]]; then
 	tag="${1#v}"
 	shift
 else
-	# Asks the remote, not the local tags, which may not be fetched yet.
-	tags=$(git ls-remote --tags --refs --sort=-v:refname origin 'v*')
+	# Asks the remote, not the local tags, which may not be fetched yet. Other
+	# tags starting with v (v2-beta) are skipped.
+	tags=$(git ls-remote --tags --refs --sort=-v:refname origin 'v*' | grep -E "refs/tags/v$version$" || true)
 	if [ -z "$tags" ]; then
 		echo "no release tag on origin: pass a version, or merge a release PR first" >&2
 		exit 1

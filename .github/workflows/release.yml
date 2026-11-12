@@ -94,7 +94,10 @@ jobs:
             runner: ubuntu-24.04-arm
             sarif-category-suffix: '-arm64'
     steps:
+      # The build context is the checkout: no token left in it.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
       # GHCR names must be lowercase, and a fork's owner may not be.
       - id: registry
         run: echo "namespace=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
