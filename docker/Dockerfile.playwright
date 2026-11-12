@@ -12,7 +12,9 @@ FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 
 # Otherwise corepack's first pnpm run prompts to download, with no TTY.
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable
+# Node 25+ no longer bundles corepack. --force: the image's own yarn
+# shim sits where corepack's goes.
+RUN npm install -g --force corepack@0.36.0 && npm cache clean --force && corepack enable
 WORKDIR /app
 
 # Deps baked in from here; e2e source itself comes in via bind mount (see
