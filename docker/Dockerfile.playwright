@@ -12,9 +12,15 @@ FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 
 # Otherwise corepack's first pnpm run prompts to download, with no TTY.
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-# Node 25+ no longer bundles corepack. --force: the image's own yarn
-# shim sits where corepack's goes.
-RUN npm install -g --force corepack@0.36.0 && npm cache clean --force && corepack enable
+# Node 25+ no longer bundles corepack. Installed from a lockfile (integrity
+# hashes) rather than `npm install -g`, so the version is pinned by hash.
+# The shims go to /usr/local/bin, ahead of /usr/bin on PATH, where the
+# image's own yarn shim sits.
+COPY docker/corepack/package.json docker/corepack/package-lock.json /opt/corepack/
+RUN npm ci --prefix /opt/corepack --omit=dev --ignore-scripts \
+	&& npm cache clean --force \
+	&& /opt/corepack/node_modules/.bin/corepack enable --install-directory /usr/local/bin \
+	&& ln -s /opt/corepack/node_modules/.bin/corepack /usr/local/bin/corepack
 WORKDIR /app
 
 # Deps baked in from here; e2e source itself comes in via bind mount (see

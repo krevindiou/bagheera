@@ -6,10 +6,15 @@
 # Same digest as Dockerfile.api's base; Renovate keeps both current.
 FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 # GNU coreutils for `realpath --relative-to`, bash + jq + git for
-# .claude/hooks/test.sh (alpine's busybox has none of them). Node 25+ no
-# longer bundles corepack.
-RUN apk add --no-cache bash coreutils git jq \
-  && npm install -g corepack@0.36.0 && npm cache clean --force && corepack enable
+# .claude/hooks/test.sh (alpine's busybox has none of them).
+RUN apk add --no-cache bash coreutils git jq
+# Node 25+ no longer bundles corepack. Installed from a lockfile (integrity
+# hashes) rather than `npm install -g`, so the version is pinned by hash.
+COPY docker/corepack/package.json docker/corepack/package-lock.json /opt/corepack/
+RUN npm ci --prefix /opt/corepack --omit=dev --ignore-scripts \
+	&& npm cache clean --force \
+	&& /opt/corepack/node_modules/.bin/corepack enable --install-directory /usr/local/bin \
+	&& ln -s /opt/corepack/node_modules/.bin/corepack /usr/local/bin/corepack
 # Mountpoints for the compose volumes, owned by `node` so a fresh volume is
 # writable (the bind-mounted repo is the host user's, uid 1000, like `node`).
 RUN mkdir -p /app/node_modules /app/apps/api/node_modules /app/apps/web/node_modules \

@@ -6,8 +6,13 @@
 # change what this builds against; Renovate's docker:pinDigests preset
 # (renovate.json) keeps this current as the tag moves.
 FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS base
-# Node 25+ no longer bundles corepack.
-RUN npm install -g corepack@0.36.0 && npm cache clean --force && corepack enable
+# Node 25+ no longer bundles corepack. Installed from a lockfile (integrity
+# hashes) rather than `npm install -g`, so the version is pinned by hash.
+COPY docker/corepack/package.json docker/corepack/package-lock.json /opt/corepack/
+RUN npm ci --prefix /opt/corepack --omit=dev --ignore-scripts \
+	&& npm cache clean --force \
+	&& /opt/corepack/node_modules/.bin/corepack enable --install-directory /usr/local/bin \
+	&& ln -s /opt/corepack/node_modules/.bin/corepack /usr/local/bin/corepack
 WORKDIR /app
 
 FROM base AS deps
@@ -48,7 +53,7 @@ ENV NODE_ENV=production
 # package managers: the app runs `node` directly, and the npm and corepack
 # copies in the base stage carry their own (often stale) dependencies.
 RUN apk upgrade --no-cache \
-	&& rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+	&& rm -rf /usr/local/lib/node_modules /opt/corepack /opt/yarn-* \
 		/usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
 		/usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=build --chown=node:node /app/deploy/api/node_modules ./node_modules
