@@ -5,7 +5,12 @@ name: CodeQL
 on:
   push:
     branches: [main]
+    paths-ignore: &docs
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
+    paths-ignore: *docs
   schedule:
     - cron: '41 4 * * 1'
 

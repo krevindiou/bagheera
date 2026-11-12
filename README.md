@@ -82,7 +82,7 @@ Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images
 1. **Host.** A Linux server reachable over SSH, with a DNS A record for `<your-domain>` pointing at it. Open ports 80 and 443 for Uncloud's Caddy; 51820/udp only matters once there are several machines (it carries the WireGuard mesh between them).
 2. **`uc`.** Install the CLI on your machine ([install guide](https://uncloud.run/docs/getting-started/install-cli)), then run `uc machine init <user>@<host>`. It installs Docker and the Uncloud daemon on the host and starts Caddy.
 3. **Settings.** `cp docker/prod.env.example docker/prod.env` and fill it in, with `APP_DOMAIN=<your-domain>`. The file is git-ignored.
-4. **Deploy.** From a checkout of `main`, run `make deploy TAG=$(git rev-parse HEAD)`. If the migration step fails on an empty host because Postgres isn't up yet, deploy the stores first with `scripts/deploy.sh $(git rev-parse HEAD) postgres valkey`, then deploy again.
+4. **Deploy.** Run `make deploy` to deploy the latest release, or `make deploy TAG=<version>` for another one from the [releases page](https://github.com/krevindiou/bagheera/releases). If the migration step fails on an empty host because Postgres isn't up yet, deploy the stores first with `scripts/deploy.sh postgres valkey`, then deploy again.
 
 Then check that the pages, `/api/…` and `/health` all resolve over HTTPS on `<your-domain>`, and that passkey sign-up works (a passkey is bound to the domain).
 

@@ -1,0 +1,48 @@
+name: Image scan
+
+# Images are scanned when a release builds them (release.yml); this re-scans
+# the published `latest` weekly, for CVEs disclosed since. A failed run means
+# a fix exists: cut a release to pick it up.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [bagheera-api, bagheera-web]
+    steps:
+      # For .trivyignore.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - id: registry
+        run: echo "namespace=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.registry.outputs.namespace }}/${{ matrix.image }}:latest
+          format: sarif
+          output: trivy-${{ matrix.image }}.sarif
+          limit-severities-for-sarif: true
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+      # Same category as release.yml's amd64 scan, so its alerts are updated
+      # rather than duplicated. Trivy picks the amd64 half of the image.
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: always()
+        with:
+          sarif_file: trivy-${{ matrix.image }}.sarif
+          category: trivy-${{ matrix.image }}

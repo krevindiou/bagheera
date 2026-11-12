@@ -35,7 +35,7 @@ build-images: ## Build Docker images
 
 # Not dev tooling: it runs the `uc` CLI installed on this machine, which only
 # talks to the production host over SSH (scripts/deploy.sh).
-deploy: ## Roll published images out to production: make deploy TAG=<git sha>
+deploy: ## Roll published images out to production: make deploy [TAG=<version>], latest release by default
 	scripts/deploy.sh $(TAG)
 
 up: ## Start stack
