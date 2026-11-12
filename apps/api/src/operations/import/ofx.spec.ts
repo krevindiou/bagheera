@@ -1,3 +1,4 @@
+import * as fc from 'fast-check';
 import { ofxFile } from '../../test-support/ofx-files';
 import { OfxFormatError, OfxLimitError, OfxStatementError, parseOfx } from './ofx';
 
@@ -324,6 +325,84 @@ describe('parseOfx', () => {
         expect(() => parseOfx(Buffer.from(`<OFX>${junk}`), limits)).toThrow(OfxFormatError);
       }
       expect(Date.now() - started).toBeLessThan(2000);
+    });
+  });
+
+  // An upload is untrusted: whatever it holds, the parser either reads a
+  // statement that keeps its guarantees or refuses with one of its own errors.
+  describe('arbitrary input', () => {
+    const fuzzLimits = { maxRows: 3 };
+
+    function readsOrRefuses(buffer: Buffer): boolean {
+      let statement;
+      try {
+        statement = parseOfx(buffer, fuzzLimits);
+      } catch (error) {
+        return [OfxFormatError, OfxLimitError, OfxStatementError].some(
+          (type) => error instanceof type,
+        );
+      }
+      return (
+        statement.rows.length <= fuzzLimits.maxRows &&
+        /^[A-Za-z]{3}$/.test(statement.currency) &&
+        (statement.accountRef === null || statement.accountRef.accountId.length <= 128)
+      );
+    }
+
+    const names = [
+      'OFX',
+      'STMTRS',
+      'CCSTMTRS',
+      'INVSTMTRS',
+      'STMTTRN',
+      'PAYEE',
+      'LEDGERBAL',
+      'BANKACCTFROM',
+      'CCACCTFROM',
+      'DTPOSTED',
+      'TRNAMT',
+      'TRNTYPE',
+      'FITID',
+      'NAME',
+      'MEMO',
+      'CURDEF',
+      'BALAMT',
+      'DTASOF',
+      'BANKID',
+      'ACCTID',
+    ];
+    // Tags the parser knows, mixed with entities and free text, so runs
+    // reach past the "Not an OFX file" check into the statement reading.
+    const tagSoup = fc
+      .array(
+        fc.oneof(
+          fc.constantFrom(...names).map((name) => `<${name}>`),
+          fc.constantFrom(...names).map((name) => `</${name}>`),
+          fc.constantFrom('&amp;', '&amp;lt;', '&#0;', '&#x110000;', '&#xD800;', '&#65;'),
+          fc.constantFrom('EUR', '-12.50', '20260305', '<!--', '<?xml?>', '<A/>'),
+          fc.string({ maxLength: 20 }),
+        ),
+        { maxLength: 200 },
+      )
+      .map((parts) => `<OFX>${parts.join('')}`);
+
+    it('reads or refuses arbitrary bytes', () => {
+      fc.assert(
+        fc.property(fc.uint8Array({ maxLength: 4096 }), (bytes) =>
+          readsOrRefuses(Buffer.from(bytes)),
+        ),
+      );
+    });
+
+    it('reads or refuses arbitrary tag soup, in either character set', () => {
+      fc.assert(
+        fc.property(
+          tagSoup,
+          fc.constantFrom('utf-8', 'latin1') as fc.Arbitrary<BufferEncoding>,
+          (text, encoding) => readsOrRefuses(Buffer.from(text, encoding)),
+        ),
+        { numRuns: 500 },
+      );
     });
   });
 });
