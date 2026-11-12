@@ -57,6 +57,7 @@ describe('setupDocumentTitle', () => {
   it('clears a stale override on the next navigation', async () => {
     await router.push({ name: 'operations' });
     const wrapper = mountOverride(() => 'Checking · Operations');
+    await nextTick();
     expect(document.title).toBe('Checking · Operations · Bagheera');
 
     await router.push({ name: 'reports' });
@@ -71,6 +72,7 @@ describe('usePageTitle', () => {
     await router.push({ name: 'operations' });
 
     const wrapper = mountOverride(() => 'Checking · Operations');
+    await nextTick();
 
     expect(document.title).toBe('Checking · Operations · Bagheera');
     wrapper.unmount();
@@ -93,6 +95,7 @@ describe('usePageTitle', () => {
   it('reverts to the route title once unmounted', async () => {
     await router.push({ name: 'reports' });
     const wrapper = mountOverride(() => 'Checking · Operations');
+    await nextTick();
     expect(document.title).toBe('Checking · Operations · Bagheera');
 
     wrapper.unmount();
@@ -104,11 +107,13 @@ describe('usePageTitle', () => {
   it('keeps the next page title when the previous page unmounts afterwards', async () => {
     await router.push({ name: 'operations' });
     const previous = mountOverride(() => 'Checking · Operations');
+    await nextTick();
     expect(document.title).toBe('Checking · Operations · Bagheera');
 
     // Simulates navigating between two pages that both call usePageTitle: the
     // new page's watcher (immediate) runs during setup, before the old one unmounts.
     const next = mountOverride(() => 'Savings · Operations');
+    await nextTick();
     expect(document.title).toBe('Savings · Operations · Bagheera');
 
     previous.unmount();
