@@ -44,7 +44,7 @@ jobs:
           persist-credentials: false
       - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
         with:
-          snyk-version: 1.1308.4
+          snyk-version: v1.1308.4
       # The CLI reads pnpm-lock.yaml, so no install is needed. The SARIF is
       # written even when issues are found; the failing exit code is held back
       # until the upload below has run.
