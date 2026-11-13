@@ -4,6 +4,8 @@ packages:
 overrides:
   # Remove when @nestjs/platform-express pins multer >=2.5.0 and passes the release-age gate.
   multer: '>=2.5.0' # GHSA-q7qp-rjg7-q26m (high)
+  # Remove when express depends on qs >=6.16.2.
+  qs: '>=6.16.2' # CVE-2026-110910 (moderate)
   # Remove when drizzle-kit stops depending on @esbuild-kit.
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3' # GHSA-67mh-4wv8-2f99 (moderate)
   # Remove when archiver-utils, js-beautify and @sentry/bundler-plugins depend on glob >=14.0.2.
