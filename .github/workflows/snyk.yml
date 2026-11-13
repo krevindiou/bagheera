@@ -1,0 +1,74 @@
+name: Snyk
+
+# Snyk's own advisory database lists issues before GHSA does, so `pnpm audit`
+# can miss them. Findings land in the Security tab like CodeQL's, which is
+# what notifies and what a PR check can block on. The daily run catches
+# advisories published without any commit.
+#
+# Needs a SNYK_TOKEN secret, which fork PRs never get: they skip the job. It
+# is a Snyk personal access token, which expires after 90 days at most: renew
+# it before then (up to 3 can be active), or the daily run fails to sign in.
+on:
+  push:
+    branches: [main]
+    paths-ignore: &docs
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore: *docs
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Snyk ${{ matrix.scan }}
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      security-events: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        scan: [open-source, code]
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+        with:
+          snyk-version: 1.1308.4
+      # The CLI reads pnpm-lock.yaml, so no install is needed. The SARIF is
+      # written even when issues are found; the failing exit code is held back
+      # until the upload below has run.
+      - name: Scan
+        id: scan
+        run: |
+          set +e
+          if [ "$SCAN" = open-source ]; then
+            snyk test --all-projects --prune-repeated-subdependencies --severity-threshold=high --sarif-file-output=snyk.sarif
+          else
+            snyk code test --severity-threshold=high --sarif-file-output=snyk.sarif
+          fi
+          echo "exit-code=$?" >> "$GITHUB_OUTPUT"
+        env:
+          SCAN: ${{ matrix.scan }}
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        if: always() && hashFiles('snyk.sarif') != ''
+        with:
+          sarif_file: snyk.sarif
+          category: snyk-${{ matrix.scan }}
+      # Exit code 1 = issues found at or above the threshold; anything else
+      # above 1 is a scan error and fails the job too.
+      - name: Fail on findings
+        if: steps.scan.outputs.exit-code != '0'
+        run: exit "$EXIT_CODE"
+        env:
+          EXIT_CODE: ${{ steps.scan.outputs.exit-code }}
