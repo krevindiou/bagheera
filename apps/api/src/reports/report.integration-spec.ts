@@ -289,6 +289,62 @@ describe('reports', () => {
       expect(links.map((l) => l.accountId)).toEqual([accountB]);
     });
 
+    it('keeps a selection narrowed to nothing when its only account was deleted', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const deletedAccount = await createAccount(mutate, bankId);
+      await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ accountIds: [deletedAccount] }),
+      );
+      const { id } = (created.body as { report: { id: string } }).report;
+      expect((await mutate('delete', `/accounts/${deletedAccount}`)).status).toBe(200);
+
+      const res = await mutate(
+        'patch',
+        `/reports/${id}`,
+        reportPayload({ title: 'Renamed', accountIds: [deletedAccount] }),
+      );
+      expect(res.status).toBe(200);
+
+      const links = await getDb(app)
+        .select()
+        .from(reportAccount)
+        .where(eq(reportAccount.reportId, id));
+      expect(links.map((l) => l.accountId)).toEqual([deletedAccount]);
+      const series = await agent.get(`/reports/${id}/series`).expect(200);
+      expect((series.body as { hidden: boolean }).hidden).toBe(true);
+    });
+
+    it('still drops a deleted account from a selection that keeps a live one', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const deletedAccount = await createAccount(mutate, bankId);
+      const liveAccount = await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ accountIds: [deletedAccount, liveAccount] }),
+      );
+      const { id } = (created.body as { report: { id: string } }).report;
+      expect((await mutate('delete', `/accounts/${deletedAccount}`)).status).toBe(200);
+
+      const res = await mutate(
+        'patch',
+        `/reports/${id}`,
+        reportPayload({ accountIds: [deletedAccount, liveAccount] }),
+      );
+      expect(res.status).toBe(200);
+
+      const links = await getDb(app)
+        .select()
+        .from(reportAccount)
+        .where(eq(reportAccount.reportId, id));
+      expect(links.map((l) => l.accountId)).toEqual([liveAccount]);
+    });
+
     it('replaces the category selection wholesale', async () => {
       const { mutate } = await seedSignedInMember(app);
       const created = await mutate(

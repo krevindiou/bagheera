@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { DataGrouping } from '@bagheera/reference-data';
 import { DRIZZLE } from '../db/db.constants';
@@ -146,6 +146,25 @@ export class ReportService {
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     await this.db.transaction(async (tx) => {
+      // A selection emptied only because every account it named has since
+      // been deleted stays narrowed to nothing: dropping those links too
+      // would read as "no selection" and widen the report to every account.
+      const requestedIds = dto.accountIds ?? [];
+      const linkedIds =
+        requestedIds.length > 0 && accountIds.length === 0
+          ? (
+              await tx
+                .select({ accountId: reportAccount.accountId })
+                .from(reportAccount)
+                .where(
+                  and(
+                    eq(reportAccount.reportId, id),
+                    inArray(reportAccount.accountId, requestedIds),
+                  ),
+                )
+            ).map((link) => link.accountId)
+          : accountIds;
+
       await tx
         .update(report)
         .set({
@@ -163,12 +182,12 @@ export class ReportService {
 
       // Account/category selection is replaced wholesale on every save;
       // links to since-deleted accounts (or stale category ids) are purged
-      // as part of the replacement.
+      // as part of the replacement, unless that would empty the selection.
       await tx.delete(reportAccount).where(eq(reportAccount.reportId, id));
-      if (accountIds.length > 0) {
+      if (linkedIds.length > 0) {
         await tx
           .insert(reportAccount)
-          .values(accountIds.map((accountId) => ({ reportId: id, accountId })));
+          .values(linkedIds.map((accountId) => ({ reportId: id, accountId })));
       }
       await tx.delete(reportCategory).where(eq(reportCategory.reportId, id));
       if (categoryIds.length > 0) {
