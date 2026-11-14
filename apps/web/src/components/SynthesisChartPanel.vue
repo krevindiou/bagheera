@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LoadError from './LoadError.vue';
 import SynthesisChart, { type SynthesisChartSeries } from './SynthesisChart.vue';
 import {
   SYNTHESIS_CHART_RANGE_LABEL_KEYS,
@@ -11,7 +12,9 @@ import {
 // what the page sends to the API; `rangeTestid` names the select for the
 // page's own tests. Attributes (a `data-testid`) land on the root.
 // `label` is the chart's aria-label, independent of the visible `title`.
-// `hideLegend` and `chartHeight` go to the chart. The panel has no outer
+// `failed` swaps the chart for a load error but keeps the range select, so
+// the member can pick a range that works. `hideLegend` and `chartHeight` go
+// to the chart. The panel has no outer
 // margin of its own: the page spaces it.
 defineProps<{
   series: SynthesisChartSeries[];
@@ -19,6 +22,7 @@ defineProps<{
   rangeTestid: string;
   title?: string;
   label: string;
+  failed?: boolean;
   hideLegend?: boolean;
   chartHeight?: number;
 }>();
@@ -40,7 +44,9 @@ const range = defineModel<SynthesisChartRange>('range', { required: true });
         </option>
       </select>
     </div>
+    <LoadError v-if="failed" data-testid="synthesis-chart-error" />
     <SynthesisChart
+      v-else
       :series="series"
       :axis-bounds="axisBounds"
       :label="label"

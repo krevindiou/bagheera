@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
@@ -31,7 +31,7 @@ const synthesisChartAriaLabel = computed(
     `${t('dashboard.synthesisChart')}, ${t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[chartRange.value])}`,
 );
 
-const { data: dashboard, isError } = useQuery({
+const { data, isError } = useQuery({
   queryKey: computed(() => queryKeys.dashboard.range(chartRange.value)),
   queryFn: async () =>
     unwrap(
@@ -43,6 +43,21 @@ const { data: dashboard, isError } = useQuery({
   // change without a client-side event.
   staleTime: 0,
 });
+
+// The last dashboard that loaded. A chart-range change that then fails keeps
+// it on screen, with the error scoped to the chart, rather than blanking the
+// page and taking the range select with it.
+const lastLoaded = shallowRef<(typeof data)['value']>();
+watch(
+  data,
+  (loaded) => {
+    if (loaded) lastLoaded.value = loaded;
+  },
+  { immediate: true },
+);
+const dashboard = computed(() => data.value ?? lastLoaded.value);
+// Only the range that was just asked for is missing: the rest still shows.
+const chartFailed = computed(() => isError.value && data.value === undefined);
 
 // One line per currency, colored like every other per-currency chart.
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
@@ -62,7 +77,7 @@ const accountTiles = computed(() =>
 </script>
 
 <template>
-  <LoadError v-if="isError" data-testid="dashboard-error" />
+  <LoadError v-if="chartFailed && !dashboard" data-testid="dashboard-error" />
   <div v-else>
     <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
     <p class="mb-4" style="color: var(--text-muted); font-size: 15px">
@@ -154,6 +169,7 @@ const accountTiles = computed(() =>
         <SynthesisChartPanel
           v-if="!dashboard.synthesisChart.hidden"
           v-model:range="chartRange"
+          :failed="chartFailed"
           class="mb-4"
           :title="$t('dashboard.synthesisChart')"
           :label="synthesisChartAriaLabel"

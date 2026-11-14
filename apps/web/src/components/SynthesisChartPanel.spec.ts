@@ -9,7 +9,9 @@ const series: SynthesisChartSeries[] = [
   { label: 'USD', color: '#123456', points: [{ period: '2026-01', value: 10 }] },
 ];
 
-function mountPanel(props: { title?: string; label?: string; range?: SynthesisChartRange } = {}) {
+function mountPanel(
+  props: { title?: string; label?: string; range?: SynthesisChartRange; failed?: boolean } = {},
+) {
   return mount(SynthesisChartPanel, {
     ...withGlobalPlugins(),
     props: {
@@ -63,6 +65,16 @@ describe('SynthesisChartPanel', () => {
     await wrapper.get('[data-testid="range"]').setValue('all');
 
     expect(wrapper.emitted('update:range')).toEqual([['all']]);
+  });
+
+  it('swaps the chart for a load error when failed, keeping the range select', () => {
+    const wrapper = mountPanel({ failed: true });
+
+    expect(wrapper.find('[data-testid="synthesis-chart-error"]').text()).toContain(
+      "Couldn't load this",
+    );
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+    expect(wrapper.find('[data-testid="range"]').exists()).toBe(true);
   });
 
   it('forwards attributes to the root panel', () => {

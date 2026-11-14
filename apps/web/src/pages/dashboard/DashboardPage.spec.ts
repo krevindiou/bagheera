@@ -320,6 +320,68 @@ describe('DashboardPage', () => {
     );
   });
 
+  it('keeps the dashboard and the range select, with the error on the chart only, when a range change fails', async () => {
+    const loaded = baseDashboard({
+      totalBalances: [
+        {
+          currency: 'USD',
+          amount: m(100),
+          reconciledAmount: m(100),
+          includesClosedAccounts: false,
+        },
+      ],
+      synthesisChart: {
+        hidden: false,
+        axisBounds: { min: 0, max: m(1000) },
+        series: [{ currency: 'USD', points: [{ period: '2026-01', value: m(100) }] }],
+      },
+    });
+    apiClient.GET.mockReset();
+    apiClient.GET.mockImplementation(async (path: string) => ({
+      data: path === '/accounts' ? [] : loaded,
+      error: undefined,
+      response: new Response(),
+    }));
+    // The chart is stubbed: Chart.js throws in jsdom when torn down mid-animation.
+    const { global } = withGlobalPlugins();
+    const wrapper = mount(DashboardPage, {
+      global: { ...global, stubs: { SynthesisChart: true } },
+    });
+    await flushPromises();
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(true);
+
+    apiClient.GET.mockImplementation(async (path: string, options?: unknown) => {
+      const range = (options as { params?: { query?: { range?: string } } })?.params?.query?.range;
+      if (path === '/dashboard' && range === '24') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      return {
+        data: path === '/accounts' ? [] : loaded,
+        error: undefined,
+        response: new Response(),
+      };
+    });
+    await wrapper.find('[data-testid="synthesis-chart-range"]').setValue('24');
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="dashboard-error"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="synthesis-chart-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+
+    // The way back: the select is still there, and 12 months shows the chart again.
+    await wrapper.find('[data-testid="synthesis-chart-range"]').setValue('12');
+    await flushPromises();
+    expect(wrapper.find('[data-testid="synthesis-chart-error"]').exists()).toBe(false);
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(true);
+  });
+
   it("shows each account's tile labeled with its bank name, balance, and a muted reconciled footnote, flattened across banks", async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
