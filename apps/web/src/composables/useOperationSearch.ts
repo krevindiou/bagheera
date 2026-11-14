@@ -20,6 +20,10 @@ const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
  * could undo. The remembered criteria are restored once per account, on its
  * first load only, but the panel stays closed: the active-search banner
  * already says so, and an open panel would cover the list.
+ *
+ * Once this tab holds a search it pages through it by re-submitting its own
+ * criteria rather than reading the server's remembered ones, which another
+ * tab may have replaced since.
  */
 export function useOperationSearch(accountId: Ref<string>) {
   const { t } = useI18n();
@@ -34,21 +38,36 @@ export function useOperationSearch(accountId: Ref<string>) {
   // The account whose remembered search has already been restored (or
   // superseded by one run here), so a later refetch never restores again.
   const restoredFor = ref<string | null>(null);
+  // The search this tab shows, tied to its account so a stale one is never
+  // sent for another. Null while the tab only follows the server's.
+  const applied = ref<{ accountId: string; criteria: SearchCriteria } | null>(null);
 
   watch(accountId, () => {
     page.value = 1;
     panelOpen.value = false;
     criteria.value = undefined;
+    applied.value = null;
   });
 
   const query = useQuery({
     queryKey: computed(() => queryKeys.operations.page(accountId.value, page.value)),
-    queryFn: async () =>
-      unwrap(
-        await apiClient.GET('/operations', {
-          params: { query: { accountId: accountId.value, page: page.value } },
+    queryFn: async () => {
+      const own = applied.value?.accountId === accountId.value ? applied.value.criteria : null;
+      if (!own) {
+        return unwrap(
+          await apiClient.GET('/operations', {
+            params: { query: { accountId: accountId.value, page: page.value } },
+          }),
+        );
+      }
+      const data = unwrap(
+        await apiClient.POST('/operations/search', {
+          params: { query: { page: page.value } },
+          body: { accountId: accountId.value, ...own },
         }),
-      ),
+      );
+      return { ...data, active: true, criteria: own };
+    },
     // Transfers from other accounts and the scheduler sweep add operations
     // here with no client-side event to invalidate on.
     staleTime: 0,
@@ -71,6 +90,7 @@ export function useOperationSearch(accountId: Ref<string>) {
       restoredFor.value = accountId.value;
       if (result.active) {
         criteria.value = result.criteria;
+        applied.value = { accountId: accountId.value, criteria: result.criteria };
       }
     },
     { immediate: true },
@@ -87,6 +107,7 @@ export function useOperationSearch(accountId: Ref<string>) {
     onSuccess(data, submitted) {
       restoredFor.value = accountId.value;
       criteria.value = submitted;
+      applied.value = { accountId: accountId.value, criteria: submitted };
       page.value = 1;
       // The search's first page, cached as the active search it now is.
       queryClient.setQueryData(queryKeys.operations.page(accountId.value, 1), {
@@ -109,6 +130,7 @@ export function useOperationSearch(accountId: Ref<string>) {
         }),
       ),
     async onSuccess() {
+      applied.value = null;
       page.value = 1;
       panelOpen.value = false;
       await queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) });

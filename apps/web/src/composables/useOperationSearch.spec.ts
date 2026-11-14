@@ -88,6 +88,7 @@ describe('useOperationSearch', () => {
     await flushPromises();
     expect(search.panelOpen.value).toBe(false);
 
+    apiClient.POST.mockResolvedValue(ok(page({ page: 2 })));
     search.page.value = 2;
     await flushPromises();
     expect(search.panelOpen.value).toBe(false);
@@ -123,6 +124,82 @@ describe('useOperationSearch', () => {
     expect(search.isActive.value).toBe(true);
     expect(search.list.value.total).toBe(1);
     expect(search.criteria.value).toEqual({ thirdParty: 'Landlord' });
+  });
+
+  it("pages a search it holds with its own criteria, not the server's remembered ones", async () => {
+    // Another tab's search replaced the remembered one: GET would answer with it.
+    apiClient.GET.mockResolvedValue(ok(page({ active: true, criteria: { thirdParty: 'Other' } })));
+    apiClient.POST.mockImplementation(
+      async (_path: string, { params }: { params: { query: { page: number } } }) =>
+        ok(
+          page({ total: 21, page: params.query.page, items: [{ id: `op-p${params.query.page}` }] }),
+        ),
+    );
+    const { search } = await run();
+    await flushPromises();
+    search.run({ thirdParty: 'Mine' });
+    await flushPromises();
+    apiClient.GET.mockClear();
+    apiClient.POST.mockClear();
+
+    search.page.value = 2;
+    await flushPromises();
+
+    expect(apiClient.GET).not.toHaveBeenCalled();
+    expect(apiClient.POST).toHaveBeenCalledWith('/operations/search', {
+      params: { query: { page: 2 } },
+      body: { accountId: 'acc-1', thirdParty: 'Mine' },
+    });
+    expect(search.list.value.items).toEqual([{ id: 'op-p2' }]);
+    expect(search.isActive.value).toBe(true);
+  });
+
+  it('pages a restored search with the restored criteria', async () => {
+    apiClient.GET.mockResolvedValue(ok(ACTIVE));
+    apiClient.POST.mockResolvedValue(ok(page({ page: 2, items: [{ id: 'op-2' }] })));
+    const { search } = await run();
+    await flushPromises();
+
+    search.page.value = 2;
+    await flushPromises();
+
+    expect(apiClient.POST).toHaveBeenCalledWith('/operations/search', {
+      params: { query: { page: 2 } },
+      body: { accountId: 'acc-1', thirdParty: 'Foo' },
+    });
+    expect(search.list.value.items).toEqual([{ id: 'op-2' }]);
+  });
+
+  it('goes back to the server for pages once the search is cleared', async () => {
+    apiClient.GET.mockResolvedValueOnce(ok(ACTIVE)).mockResolvedValue(ok(page()));
+    apiClient.DELETE.mockResolvedValueOnce(ok(undefined));
+    const { search } = await run();
+    await flushPromises();
+    search.clear();
+    await flushPromises();
+    apiClient.POST.mockClear();
+
+    search.page.value = 2;
+    await flushPromises();
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(apiClient.GET).toHaveBeenLastCalledWith('/operations', {
+      params: { query: { accountId: 'acc-1', page: 2 } },
+    });
+  });
+
+  it("never sends one account's search for another account", async () => {
+    apiClient.GET.mockResolvedValue(ok(ACTIVE));
+    const { search, accountId } = await run();
+    await flushPromises();
+    apiClient.POST.mockClear();
+
+    apiClient.GET.mockResolvedValue(ok(page()));
+    accountId.value = 'acc-2';
+    await flushPromises();
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(search.isActive.value).toBe(false);
   });
 
   it('toasts a failed search and leaves the panel open', async () => {
