@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
+import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { toMinorUnits } from '../../common/money';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
@@ -148,6 +149,24 @@ describe('operation schema', () => {
           transferOperationId: counterpart.id,
         }),
       ).rejects.toMatchObject({ cause: { code: '23505' } });
+    });
+  });
+  describe('third party trigram index', () => {
+    it('can serve the contains ILIKE the payee autocomplete and search run', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+      await insertOperation(getDb(app), account.id, { thirdParty: 'Zqab Market' });
+
+      // Seq scans are priced out so a table this small still shows whether
+      // the index is usable for the pattern, not what the planner prefers.
+      const plan = await getDb(app).transaction(async (tx) => {
+        await tx.execute(sql`set local enable_seqscan = off`);
+        const result = await tx.execute(
+          sql`explain (format json) select id from operation where third_party ilike '%zqab%'`,
+        );
+        return JSON.stringify(result.rows);
+      });
+
+      expect(plan).toContain('operation_third_party_trgm_idx');
     });
   });
 });

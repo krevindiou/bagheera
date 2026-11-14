@@ -72,6 +72,9 @@ export const operation = pgTable(
       table.accountId,
       thirdPartyKeyOf(table.thirdParty),
     ),
+    // Serves the "contains" ILIKE on the payee (autocomplete, search), which a
+    // btree can't: it would otherwise read every operation to find the matches.
+    index('operation_third_party_trgm_idx').using('gin', table.thirdParty.op('gin_trgm_ops')),
     index('operation_scheduler_id_value_date_idx')
       .on(table.schedulerId, table.valueDate)
       .where(sql`${table.schedulerId} is not null`),
