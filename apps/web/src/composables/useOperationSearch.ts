@@ -78,6 +78,19 @@ export function useOperationSearch(accountId: Ref<string>) {
       previousQuery?.queryKey[1] === accountId.value ? previous : undefined,
   });
 
+  // A page past the last one (its rows just deleted, or a stale ?page=) comes
+  // back empty with a positive total; step back to the last page that has
+  // rows instead of showing the account as empty with no pager.
+  watch(
+    () => query.data.value,
+    (result) => {
+      if (!result || result.page !== page.value || page.value <= 1) return;
+      if (result.items.length > 0) return;
+      page.value = Math.max(1, Math.ceil(result.total / result.pageSize));
+    },
+    { immediate: true },
+  );
+
   const list = computed(() => query.data.value ?? EMPTY_PAGE);
   const isError = computed(() => query.isError.value);
   const isPending = computed(() => query.isPending.value);

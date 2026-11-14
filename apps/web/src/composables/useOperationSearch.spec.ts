@@ -202,6 +202,57 @@ describe('useOperationSearch', () => {
     expect(search.isActive.value).toBe(false);
   });
 
+  it('steps back to the last page with rows when the page it is on comes back empty', async () => {
+    apiClient.GET.mockImplementation(
+      async (_path: string, { params }: { params: { query: { page: number } } }) =>
+        ok(
+          params.query.page === 1
+            ? page({ total: 20, items: [{ id: 'op-1' }] })
+            : page({ total: 20, page: params.query.page }),
+        ),
+    );
+    const router = createTestRouter();
+    await router.push({ name: 'operations', query: { page: '3' } });
+    const { search } = await run(ref('acc-1'), router);
+    await flushPromises();
+
+    expect(search.page.value).toBe(1);
+    expect(router.currentRoute.value.query.page).toBeUndefined();
+    expect(search.list.value.items).toEqual([{ id: 'op-1' }]);
+  });
+
+  it('steps back to the last page of a search whose last page was emptied', async () => {
+    apiClient.GET.mockResolvedValue(ok(page()));
+    apiClient.POST.mockImplementation(
+      async (_path: string, { params }: { params: { query: { page: number } } }) =>
+        ok(
+          params.query.page === 2
+            ? page({ total: 20, page: 2 })
+            : page({ total: 20, items: [{ id: 'op-1' }] }),
+        ),
+    );
+    const { search } = await run();
+    await flushPromises();
+    search.run({ thirdParty: 'Foo' });
+    await flushPromises();
+
+    search.page.value = 2;
+    await flushPromises();
+
+    expect(search.page.value).toBe(1);
+    expect(search.list.value.items).toEqual([{ id: 'op-1' }]);
+    expect(search.isActive.value).toBe(true);
+  });
+
+  it('keeps the first page when it is empty', async () => {
+    apiClient.GET.mockResolvedValue(ok(page()));
+    const { search } = await run();
+    await flushPromises();
+
+    expect(search.page.value).toBe(1);
+    expect(apiClient.GET).toHaveBeenCalledTimes(1);
+  });
+
   it('toasts a failed search and leaves the panel open', async () => {
     apiClient.GET.mockResolvedValue(ok(page()));
     apiClient.POST.mockResolvedValueOnce({
