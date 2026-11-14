@@ -33,8 +33,22 @@ export const queryKeys = {
   reports: ['reports'] as const,
   // `null` until a report is expanded (the query is disabled meanwhile).
   reportSeries: (reportId: string | null) => ['report-series', reportId] as const,
+  reportSeriesAll: ['report-series'] as const,
   reportDistribution: (reportId: string | null) => ['report-distribution', reportId] as const,
+  reportDistributionAll: ['report-distribution'] as const,
 } as const;
+
+// Every query that can change when a report changes: the list, and the
+// series/distribution a chart row drew from its settings. Those two sit
+// under their own keys, so invalidating the list alone leaves an open chart
+// showing the figures it computed from the old settings.
+export function invalidateReportData(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.reports }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.reportSeriesAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.reportDistributionAll }),
+  ]);
+}
 
 // Every query that can change when an account's operations change (direct
 // edits, batch actions, or scheduler-generated operations) — one call site

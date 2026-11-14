@@ -557,6 +557,31 @@ describe('ReportsPage', () => {
     expect(wrapper.findComponent(RankedChart).props('reportTitle')).toBe('Rent');
   });
 
+  it("loads the open chart's series again when its report is saved", async () => {
+    mockGet([report({ title: 'Rent', periodGrouping: 'year' })]);
+    apiClient.PATCH.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+    const rowButtons = () =>
+      wrapper!.findAll('[data-testid="report-row"] button.btn-outline-secondary');
+    await rowButtons()[0].trigger('click');
+    await flushPromises();
+    const seriesFetches = () =>
+      apiClient.GET.mock.calls.filter(([path]) => path === '/reports/{id}/series').length;
+    expect(seriesFetches()).toBe(1);
+
+    await rowButtons()[1].trigger('click');
+    await wrapper.find('#report-title').setValue('Rent updated');
+    await submitAndSettle(wrapper);
+    await flushPromises();
+
+    expect(seriesFetches()).toBe(2);
+  });
+
   it('opens the edit form for a report and reloads once saved', async () => {
     mockGet([report({ title: 'Rent' })]);
     apiClient.PATCH.mockResolvedValueOnce({

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
-import { queryKeys } from '../../api/queryKeys';
+import { invalidateReportData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useConfirm } from '../../composables/useConfirm';
 import {
@@ -41,7 +41,7 @@ const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 
 async function reloadReports() {
-  await queryClient.invalidateQueries({ queryKey: queryKeys.reports });
+  await invalidateReportData(queryClient);
 }
 
 const showForm = ref(false);

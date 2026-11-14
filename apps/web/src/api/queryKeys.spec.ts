@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { invalidateAccountData, queryKeys } from './queryKeys';
+import { invalidateAccountData, invalidateReportData, queryKeys } from './queryKeys';
 
 describe('queryKeys', () => {
   it('keeps every static (top-level array) key unique', () => {
@@ -11,6 +11,8 @@ describe('queryKeys', () => {
       queryKeys.dashboard.all,
       queryKeys.webauthnCredentials,
       queryKeys.reports,
+      queryKeys.reportSeriesAll,
+      queryKeys.reportDistributionAll,
     ].map((key) => key.join('/'));
 
     expect(new Set(staticKeys).size).toBe(staticKeys.length);
@@ -25,6 +27,8 @@ describe('queryKeys', () => {
     expect(queryKeys.schedulers.page('a1', 2).slice(0, 2)).toEqual(queryKeys.schedulers.all('a1'));
     expect(queryKeys.chart.range('a1', '24').slice(0, 2)).toEqual(queryKeys.chart.all('a1'));
     expect(queryKeys.dashboard.range('24').slice(0, 1)).toEqual(queryKeys.dashboard.all);
+    expect(queryKeys.reportSeries('r1').slice(0, 1)).toEqual(queryKeys.reportSeriesAll);
+    expect(queryKeys.reportDistribution('r1').slice(0, 1)).toEqual(queryKeys.reportDistributionAll);
   });
 });
 
@@ -42,5 +46,21 @@ describe('invalidateAccountData', () => {
     expect(invalidatedKeys).toContainEqual(queryKeys.chart.all('a1'));
     expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
     expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
+  });
+});
+
+describe('invalidateReportData', () => {
+  it('invalidates the reports list and every report chart (series and distribution)', async () => {
+    const invalidateQueries = vi.fn().mockResolvedValue(undefined);
+    const queryClient = { invalidateQueries } as unknown as Parameters<
+      typeof invalidateReportData
+    >[0];
+
+    await invalidateReportData(queryClient);
+
+    const invalidatedKeys = invalidateQueries.mock.calls.map((call) => call[0]?.queryKey);
+    expect(invalidatedKeys).toContainEqual(queryKeys.reports);
+    expect(invalidatedKeys).toContainEqual(queryKeys.reportSeriesAll);
+    expect(invalidatedKeys).toContainEqual(queryKeys.reportDistributionAll);
   });
 });
