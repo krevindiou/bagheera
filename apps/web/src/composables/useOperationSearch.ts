@@ -7,6 +7,7 @@ import { queryKeys } from '../api/queryKeys';
 import { unwrap } from '../api/unwrap';
 import type { SearchCriteria } from '../domain/referenceData';
 import { usePageQuery } from './usePageQuery';
+import { useStepBackToLastPage } from './useStepBackToLastPage';
 import { useToast } from './useToast';
 
 const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
@@ -78,18 +79,7 @@ export function useOperationSearch(accountId: Ref<string>) {
       previousQuery?.queryKey[1] === accountId.value ? previous : undefined,
   });
 
-  // A page past the last one (its rows just deleted, or a stale ?page=) comes
-  // back empty with a positive total; step back to the last page that has
-  // rows instead of showing the account as empty with no pager.
-  watch(
-    () => query.data.value,
-    (result) => {
-      if (!result || result.page !== page.value || page.value <= 1) return;
-      if (result.items.length > 0) return;
-      page.value = Math.max(1, Math.ceil(result.total / result.pageSize));
-    },
-    { immediate: true },
-  );
+  useStepBackToLastPage(page, () => query.data.value);
 
   const list = computed(() => query.data.value ?? EMPTY_PAGE);
   const isError = computed(() => query.isError.value);

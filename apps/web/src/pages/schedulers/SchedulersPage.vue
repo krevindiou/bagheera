@@ -10,6 +10,7 @@ import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
 import { usePageTitle } from '../../composables/useDocumentTitle';
 import { usePageQuery } from '../../composables/usePageQuery';
+import { useStepBackToLastPage } from '../../composables/useStepBackToLastPage';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -70,6 +71,7 @@ const schedulersQuery = useQuery({
   placeholderData: (previous, previousQuery) =>
     previousQuery?.queryKey[1] === accountId.value ? previous : undefined,
 });
+useStepBackToLastPage(page, () => schedulersQuery.data.value);
 const list = computed(
   () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: PAGE_SIZE },
 );

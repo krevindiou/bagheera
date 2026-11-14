@@ -405,6 +405,40 @@ describe('SchedulersPage', () => {
     });
   });
 
+  it('steps back to the last page with schedulers when its own page comes back empty', async () => {
+    // Like the real API: a page past the last one is empty but the total stays.
+    apiClient.GET.mockImplementation(
+      async (path: string, options?: { params?: { query?: { page?: number } } }) => {
+        const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+        if (path === '/accounts') return ok([account]);
+        if (path === '/banks') return ok([bank]);
+        if (path === '/reference-data/categories') return ok([category]);
+        if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+        if (path === '/schedulers') {
+          const requested = options?.params?.query?.page ?? 1;
+          return ok({
+            items: requested === 1 ? [scheduler()] : [],
+            total: 20,
+            page: requested,
+            pageSize: 20,
+          });
+        }
+        return ok(undefined);
+      },
+    );
+    await router.push({
+      name: 'schedulers',
+      params: { accountId: ACCOUNT_ID },
+      query: { page: '2' },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain('No scheduled operations yet.');
+    expect(wrapper.text()).toContain('Landlord');
+    expect(router.currentRoute.value.query.page).toBeUndefined();
+  });
+
   it.each([['0'], ['-1'], ['abc'], [undefined]])(
     'normalizes an invalid ?page=%s to page 1',
     async (raw) => {
