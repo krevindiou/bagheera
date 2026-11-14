@@ -76,6 +76,11 @@ export const categorySeeds: CategorySeed[] = [
     'Restaurants',
     'Takeaway and delivery',
     'Coffee and snacks',
+    'Bakery',
+    'Bars',
+    'Butcher and fishmonger',
+    'Markets and greengrocer',
+    'Wine and spirits',
   ]),
   group('Transport', 'debit', [
     'Fuel',

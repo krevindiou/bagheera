@@ -88,6 +88,8 @@ describe('categorySeeds', () => {
 
     it.each([
       'Groceries',
+      'Bakery',
+      'Bars',
       'Restaurants',
       'Insurance',
       'Taxes',
