@@ -9,7 +9,7 @@ import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { useToast } from '../../composables/useToast';
 import type { Preview, Upload } from './import.types';
 import { importDoneMessage } from './importDoneMessage';
-import { canReconcileRecorded } from './importRows';
+import { canReconcileRecorded, projectBalances } from './importRows';
 import type { ImportChoices } from './useImportChoices';
 
 /**
@@ -209,6 +209,17 @@ export function useImportSession(accountId: Readonly<Ref<string>>, choices: Impo
   const reconcileLines = computed(() => reconcilableLines.value.filter(reconcilesRecorded));
   const reconcileCount = computed(() => reconcileLines.value.length);
 
+  // The account's balances once the confirmation runs with the choices made.
+  const accountAfter = computed(() =>
+    preview.value
+      ? projectBalances(preview.value.account, preview.value.rows, {
+          included: included.value,
+          reconcileImported: reconcileImported.value,
+          reconcileLines: reconcileLines.value,
+        })
+      : null,
+  );
+
   function toggleReconcileRecorded(line: number) {
     recordedOverrides.value = new Map(recordedOverrides.value).set(line, !reconcilesRecorded(line));
   }
@@ -305,6 +316,7 @@ export function useImportSession(accountId: Readonly<Ref<string>>, choices: Impo
     accountMismatch,
     toImportCount,
     reconcileCount,
+    accountAfter,
     reconcilesRecorded,
     uploadFile,
     runPreview,

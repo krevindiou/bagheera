@@ -57,6 +57,7 @@ export interface Preview {
     accountCheck: string;
     otherAccountId: string | null;
   };
+  account: { balance: number; reconciledBalance: number };
   rows: {
     line: number;
     status: string;

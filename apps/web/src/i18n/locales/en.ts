@@ -249,6 +249,10 @@ export default {
         announceUpdated:
           'Preview updated: {imported} to import, {skipped} already recorded, {invalid} invalid.',
       },
+      account: {
+        title: 'Account after the import',
+        now: 'Now {amount}',
+      },
       statement: {
         title: 'In the file',
         period: 'Period',

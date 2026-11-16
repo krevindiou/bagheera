@@ -68,6 +68,36 @@ describe('bank file import: review aids', () => {
       expect(res.status).toBe(200);
     };
 
+    describe('account balances', () => {
+      it('gives the balance of the account and its reconciled part, in major units', async () => {
+        const fixture = await seedSignedInMember(app);
+        const accountId = await createAccount(fixture);
+        await enter(fixture, accountId);
+        await enter(fixture, accountId, { amount: 40.5, valueDate: '2026-03-02' });
+        const [first] = await operationsOf(accountId);
+        await getDb(app)
+          .update(operation)
+          .set({ reconciled: true })
+          .where(eq(operation.id, first.id));
+        const { importId } = await startImport(fixture, accountId, ofxFile(rows));
+
+        const { account } = await previewOf(fixture, importId);
+
+        expect(account.balance).toBe(140.5);
+        expect(account.reconciledBalance).toBe(100);
+      });
+
+      it('gives zeros for an account without operation', async () => {
+        const fixture = await seedSignedInMember(app);
+        const accountId = await createAccount(fixture);
+        const { importId } = await startImport(fixture, accountId, ofxFile(rows));
+
+        const { account } = await previewOf(fixture, importId);
+
+        expect(account).toEqual({ balance: 0, reconciledBalance: 0 });
+      });
+    });
+
     describe('statement summary', () => {
       it('gives the period and the totals of the file', async () => {
         const fixture = await seedSignedInMember(app);

@@ -70,6 +70,7 @@ const preview: Preview = {
   skippedCount: 1,
   invalidCount: 1,
   statement,
+  account: { balance: 100, reconciledBalance: 60 },
   rows: [
     {
       line: 1,
@@ -1661,6 +1662,21 @@ describe('ImportPage', () => {
         await confirm(wrapper);
 
         expect(lastConfirm()).toMatchObject({ reconcile: true, reconcileLines: [2] });
+      });
+
+      it('shows the account balances after the import, following the reconcile choices', async () => {
+        const wrapper = await startWith(preview);
+        const text = (id: string) => wrapper.find(`[data-testid="${id}"]`).text();
+
+        expect(text('import-after-balance')).toBe('€87.50');
+        expect(text('import-now-balance')).toBe('Now €100.00');
+        expect(text('import-after-reconciled')).toBe('€1,297.50');
+        expect(text('import-now-reconciled')).toBe('Now €60.00');
+
+        await wrapper.find('[data-testid="import-reconcile"]').setValue(false);
+
+        expect(text('import-after-balance')).toBe('€87.50');
+        expect(text('import-after-reconciled')).toBe('€60.00');
       });
 
       it('reconciles neither when the Member unticks the switch', async () => {

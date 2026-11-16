@@ -254,6 +254,10 @@ export default {
         announceUpdated:
           'Aperçu mis à jour : {imported} à importer, {skipped} déjà enregistrées, {invalid} invalides.',
       },
+      account: {
+        title: 'Compte après import',
+        now: 'Actuellement {amount}',
+      },
       statement: {
         title: 'Dans le fichier',
         period: 'Période',

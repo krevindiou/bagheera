@@ -11,6 +11,7 @@ import { useAccountsQuery, useBanksQuery } from '../../composables/useReferenceQ
 import { accountLabel } from '../../domain/accounts';
 import ImportDropZone from './ImportDropZone.vue';
 import ImportPreviewRow from './ImportPreviewRow.vue';
+import ImportAccountBalances from './ImportAccountBalances.vue';
 import ImportStatementSummary from './ImportStatementSummary.vue';
 import type { PreviewRow } from './import.types';
 import { useImportChoices } from './useImportChoices';
@@ -46,6 +47,7 @@ const {
   accountMismatch,
   toImportCount,
   reconcileCount,
+  accountAfter,
   reconcilesRecorded,
   uploadFile,
   runPreview,
@@ -147,6 +149,13 @@ const otherAccountName = computed(() => {
               }}
             </p>
           </div>
+
+          <ImportAccountBalances
+            v-if="accountAfter"
+            :current="preview.account"
+            :projected="accountAfter"
+            :currency="currency"
+          />
 
           <div
             class="d-flex flex-wrap gap-2 mb-3"

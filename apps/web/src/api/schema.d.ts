@@ -1155,6 +1155,10 @@ export interface components {
             accountCheck: "unknown" | "same" | "different" | "elsewhere";
             otherAccountId: string | null;
         };
+        AccountBalancesDto: {
+            balance: number;
+            reconciledBalance: number;
+        };
         RecordedMatchDto: {
             valueDate: string;
             thirdParty: string;
@@ -1192,6 +1196,7 @@ export interface components {
             skippedCount: number;
             invalidCount: number;
             statement: components["schemas"]["StatementSummaryDto"];
+            account: components["schemas"]["AccountBalancesDto"];
             rows: components["schemas"]["ImportPreviewRowDto"][];
             revision: string;
         };

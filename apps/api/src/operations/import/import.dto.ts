@@ -220,11 +220,19 @@ export class StatementSummaryDto {
   otherAccountId!: string | null;
 }
 
+export class AccountBalancesDto {
+  // Major units, as the account stands now: all its operations, and those
+  // reconciled.
+  balance!: number;
+  reconciledBalance!: number;
+}
+
 export class ImportPreviewDto {
   importCount!: number;
   skippedCount!: number;
   invalidCount!: number;
   statement!: StatementSummaryDto;
+  account!: AccountBalancesDto;
   rows!: ImportPreviewRowDto[];
   // A mark of what the rows record; a confirmation names the one it saw.
   revision!: string;

@@ -3,6 +3,7 @@ import { IMPORT_LIMITS } from '@bagheera/reference-data';
 import { and, eq, inArray, isNotNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../../common/filters/business-error';
+import { balancesByAccount, ZERO_BALANCE } from '../../common/balances';
 import { thirdPartyKeyOf } from '../../common/third-party-key';
 import { DRIZZLE } from '../../db/db.constants';
 import {
@@ -99,6 +100,12 @@ export class ImportHistory {
       .from(operation)
       .where(and(eq(operation.accountId, accountId), lte(operation.valueDate, date)));
     return Number(row.balance);
+  }
+
+  // The balance of the account and its reconciled part now, in minor units.
+  async balancesOf(accountId: string): Promise<{ balance: number; reconciledBalance: number }> {
+    const entry = (await balancesByAccount(this.db, [accountId])).get(accountId) ?? ZERO_BALANCE;
+    return { balance: entry.balance, reconciledBalance: entry.reconciledBalance };
   }
 
   async accountCheck(

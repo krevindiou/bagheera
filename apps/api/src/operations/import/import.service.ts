@@ -178,11 +178,19 @@ export class ImportService {
   ): Promise<ImportPreviewDto> {
     const evaluated = await this.evaluate(memberId, importId, dto);
     const { rows } = evaluated;
+    const [statement, balances] = await Promise.all([
+      this.summarize(memberId, evaluated),
+      this.history.balancesOf(evaluated.account.id),
+    ]);
     return {
       importCount: rows.filter((row) => row.status === 'import').length,
       skippedCount: rows.filter((row) => row.status === 'skipped').length,
       invalidCount: rows.filter((row) => row.status === 'invalid').length,
-      statement: await this.summarize(memberId, evaluated),
+      statement,
+      account: {
+        balance: balances.balance / MONEY_SCALE,
+        reconciledBalance: balances.reconciledBalance / MONEY_SCALE,
+      },
       rows: rows.map(toPreviewRow),
       revision: evaluated.revision,
     };
