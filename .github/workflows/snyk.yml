@@ -5,6 +5,11 @@ name: Snyk
 # what notifies and what a PR check can block on. The daily run catches
 # advisories published without any commit.
 #
+# The open-source scan includes devDependencies (--dev), as the Snyk project
+# monitored on snyk.io does, so both report the same issues. Only issues an
+# upgrade fixes (--fail-on=upgradable) fail the job; the SARIF still lists the
+# unfixable ones in the Security tab.
+#
 # Needs a SNYK_TOKEN secret, which fork PRs never get: they skip the job. It
 # is a Snyk personal access token, which expires after 90 days at most: renew
 # it before then (up to 3 can be active), or the daily run fails to sign in.
@@ -53,7 +58,7 @@ jobs:
         run: |
           set +e
           if [ "$SCAN" = open-source ]; then
-            snyk test --all-projects --prune-repeated-subdependencies --severity-threshold=high --sarif-file-output=snyk.sarif
+            snyk test --all-projects --dev --fail-on=upgradable --prune-repeated-subdependencies --severity-threshold=high --sarif-file-output=snyk.sarif
           else
             snyk code test --severity-threshold=high --sarif-file-output=snyk.sarif
           fi
