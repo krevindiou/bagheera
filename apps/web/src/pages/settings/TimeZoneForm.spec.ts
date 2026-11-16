@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
 import { queuedToastText } from '../../test-support/queuedToastText';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
@@ -67,6 +67,28 @@ describe('TimeZoneForm', () => {
     });
     expect(useSessionStore().member?.timeZone).toBe('America/New_York');
     expect(queuedToastText()).toContain('Time zone updated');
+  });
+
+  it('records the zone it sent, not one picked while the save was answering', async () => {
+    let answer!: (value: ReturnType<typeof result>) => void;
+    apiClient.POST.mockReturnValueOnce(
+      new Promise<ReturnType<typeof result>>((resolve) => {
+        answer = resolve;
+      }),
+    );
+    const wrapper = mountWithTimeZone('UTC');
+
+    await select(wrapper).setValue('Europe/Paris');
+    await submitAndSettle(wrapper);
+    await select(wrapper).setValue('America/New_York');
+    answer(result(200));
+    await flushPromises();
+
+    expect(apiClient.POST).toHaveBeenCalledTimes(1);
+    expect(apiClient.POST).toHaveBeenCalledWith('/members/time-zone', {
+      body: { timeZone: 'Europe/Paris' },
+    });
+    expect(useSessionStore().member?.timeZone).toBe('Europe/Paris');
   });
 
   it("keeps the session unchanged and shows the API's error message when saving fails", async () => {

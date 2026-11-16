@@ -23,15 +23,17 @@ const options = [...new Set([...Intl.supportedValuesOf('timeZone'), timeZone.val
 
 async function onSubmit(): Promise<void> {
   isSubmitting.value = true;
+  // The select stays editable while the save is answering.
+  const sent = timeZone.value;
   try {
     const { error, response } = await apiClient.POST('/members/time-zone', {
-      body: { timeZone: timeZone.value },
+      body: { timeZone: sent },
     });
     if (!response.ok) {
       toast(errorMessage(error) ?? t('settings.timeZone.genericError'), 'error');
       return;
     }
-    session.setTimeZone(timeZone.value);
+    session.setTimeZone(sent);
     toast(t('settings.timeZone.success'), 'success');
   } finally {
     isSubmitting.value = false;
