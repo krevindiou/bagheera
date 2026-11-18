@@ -234,7 +234,21 @@ describe('bank file import: confirmation', () => {
         confirmImport(fixture, importId, NO_CHANGES),
       ]);
 
-      expect([a.status, b.status].sort()).toEqual([200, 409].sort());
+      // The loser is refused while the winner holds the lock, or answered with
+      // the winner's outcome when that finished first: either way one import.
+      const imported = [a, b].filter(
+        (r) =>
+          r.status === 200 && (r.body as { alreadyImported: boolean }).alreadyImported === false,
+      );
+      expect(imported).toHaveLength(1);
+      expect(imported[0].body).toMatchObject({ importedCount: 3 });
+      const other = imported[0] === a ? b : a;
+      if (other.status === 200) {
+        expect(other.body).toMatchObject({ importedCount: 3, alreadyImported: true });
+      } else {
+        expect(other.status).toBe(409);
+        expect(other.body).toMatchObject({ code: 'import_in_progress' });
+      }
       expect(await operationsOf(accountId)).toHaveLength(3);
     });
 
