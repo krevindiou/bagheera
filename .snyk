@@ -1,8 +1,0 @@
-version: v1.25.0
-# Snyk Code ignores test files: their local HTTP ingest and throwaway
-# credentials are fixtures, not shipped code.
-exclude:
-  code:
-    - '**/*.spec.ts'
-    - '**/*.integration-spec.ts'
-    - '**/e2e/**'

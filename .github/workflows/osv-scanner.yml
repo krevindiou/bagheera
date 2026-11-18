@@ -1,0 +1,40 @@
+name: OSV-Scanner
+
+# Known vulnerabilities in the locked dependencies (devDependencies included),
+# from the OSV database, which aggregates GHSA among other sources. Findings
+# land in the Security tab like CodeQL's. The daily run catches advisories
+# published without any commit.
+#
+# OSV has no "fixable only" or severity filter: any finding fails the job.
+# Accept one that has no fix yet in osv-scanner.toml, with a reason and an
+# expiry date.
+#
+# Fork PRs get no security-events write access: they skip the job.
+on:
+  push:
+    branches: [main]
+    paths-ignore: &docs
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore: *docs
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: OSV-Scanner
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+    with:
+      scan-args: |-
+        --lockfile=pnpm-lock.yaml
