@@ -30,7 +30,7 @@
     "@nestjs/config": "^12.1.1",
     "@nestjs/core": "^12.4.2",
     "@nestjs/platform-express": "^12.4.2",
-    "@nestjs/swagger": "12.1.1",
+    "@nestjs/swagger": "12.1.2",
     "@sentry/node": "^11.11.0",
     "@simplewebauthn/server": "^14.1.0",
     "bullmq": "^6.7.2",
