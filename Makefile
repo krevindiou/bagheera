@@ -74,10 +74,11 @@ test-integration: ## Run api integration tests
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm test:integration
 
 test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
-	$(COMPOSE_E2E) up -d --build
+	# packages/*/dist is gitignored: a fresh checkout has none, and without it the api never compiles.
+	$(COMPOSE_E2E) run --rm --no-deps --workdir /app api pnpm --filter 'api^...' build
 	$(COMPOSE_E2E) --profile e2e build playwright
-	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
-	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done
+	# --wait bounds the wait (db:migrate runs as part of the api's startup command).
+	$(COMPOSE_E2E) up -d --build --wait --wait-timeout 300 || { $(COMPOSE_E2E) logs api; $(COMPOSE_E2E) down -v; exit 1; }
 	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
 	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status
 
