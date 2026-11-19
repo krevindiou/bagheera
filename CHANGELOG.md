@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/krevindiou/bagheera/compare/v1.0.1...v1.0.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **e2e:** build workspace packages and bound the api health wait ([84704b0](https://github.com/krevindiou/bagheera/commit/84704b0b5576b25635f1f289c07ae3856bca9270))
+
 ## [1.0.1](https://github.com/krevindiou/bagheera/compare/v1.0.0...v1.0.1) (2026-11-19)
 
 
