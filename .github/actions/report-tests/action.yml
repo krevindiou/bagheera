@@ -1,0 +1,54 @@
+name: Report test results
+description: Publishes a vitest run's JUnit report, coverage summary and Codecov uploads.
+
+inputs:
+  name:
+    description: Name of the test report check (e.g. API Unit Test Report).
+    required: true
+  title:
+    description: Heading for the coverage summary table.
+    required: true
+  dir:
+    description: Directory the tests ran from (e.g. apps/api).
+    required: true
+  flag:
+    description: Codecov flag.
+    required: true
+  junit:
+    description: JUnit file name, relative to `dir`.
+    default: junit-unit.xml
+  coverage:
+    description: Coverage directory name, relative to `dir`.
+    default: coverage
+  codecov-token:
+    description: Codecov upload token; a composite action can't read secrets itself.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # `!cancelled()` so a failing run still reports what it found.
+    - uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
+      if: '!cancelled()'
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.dir }}/${{ inputs.junit }}
+        reporter: java-junit
+    - uses: ./.github/actions/coverage-summary
+      if: '!cancelled()'
+      with:
+        path: ${{ inputs.dir }}/${{ inputs.coverage }}/coverage-summary.json
+        title: ${{ inputs.title }}
+    - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+      if: '!cancelled()'
+      with:
+        token: ${{ inputs.codecov-token }}
+        files: ${{ inputs.dir }}/${{ inputs.coverage }}/lcov.info
+        flags: ${{ inputs.flag }}
+    - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+      if: '!cancelled()'
+      with:
+        token: ${{ inputs.codecov-token }}
+        report_type: test_results
+        files: ${{ inputs.dir }}/${{ inputs.junit }}
+        flags: ${{ inputs.flag }}

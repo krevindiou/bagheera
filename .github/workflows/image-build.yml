@@ -1,0 +1,125 @@
+name: Build images
+
+# Called by release.yml to publish the images, and by release-check.yml to
+# check they build and pass the scan without pushing anything.
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: Push the images to GHCR, upload the Trivy findings and write the layer cache.
+        type: boolean
+        default: false
+      version:
+        description: Version to tag the published images with; required with `publish`.
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  # One job per image and architecture, each on a native runner: emulating
+  # arm64 under QEMU took most of the publish time. When publishing, each
+  # pushes its image by digest only; `publish` then tags both digests as one
+  # multi-arch image.
+  build:
+    name: Build ${{ matrix.image }} (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    strategy:
+      # A failed publish is abandoned anyway; a check wants every failure.
+      fail-fast: ${{ inputs.publish }}
+      matrix:
+        image: [bagheera-api, bagheera-web]
+        arch: [amd64, arm64]
+        include:
+          - image: bagheera-api
+            dockerfile: docker/Dockerfile.api
+          - image: bagheera-web
+            dockerfile: docker/Dockerfile.caddy
+          # amd64 keeps the Trivy category the images were scanned under
+          # before arm64 got its own scan, and that image-scan.yml updates.
+          - arch: amd64
+            runner: ubuntu-24.04
+            sarif-category-suffix: ''
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            sarif-category-suffix: '-arm64'
+    steps:
+      # The build context is the checkout: no token left in it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - id: registry
+        uses: ./.github/actions/ghcr-login
+        with:
+          login: ${{ inputs.publish }}
+      # Fails the job, before anything is pushed, on a critical or high CVE
+      # that already has a fix. Only a publish writes the layer cache, so a
+      # check's layers don't evict the release ones.
+      - uses: ./.github/actions/scan-image
+        with:
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          arch: ${{ matrix.arch }}
+          report: ${{ inputs.publish && 'sarif' || 'table' }}
+          sarif-category: trivy-${{ matrix.image }}${{ matrix.sarif-category-suffix }}
+          cache-write: ${{ inputs.publish }}
+      - id: push
+        if: inputs.publish
+        uses: ./.github/actions/build-image
+        with:
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          arch: ${{ matrix.arch }}
+          outputs: type=image,name=${{ steps.registry.outputs.namespace }}/${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
+          # Links the package to this repository on GitHub.
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+      # Matrix jobs can't return one output each, so every digest travels as
+      # an empty file named after it.
+      - if: inputs.publish
+        run: mkdir -p digests && touch "digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+      - if: inputs.publish
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: digest-${{ matrix.image }}-${{ matrix.arch }}
+          path: digests/*
+          retention-days: 1
+
+  publish:
+    name: Publish ${{ matrix.image }}
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image: [bagheera-api, bagheera-web]
+    steps:
+      # For the local actions.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - id: registry
+        uses: ./.github/actions/ghcr-login
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: digest-${{ matrix.image }}-*
+          path: digests
+          merge-multiple: true
+      - name: Tag both architectures as one image
+        working-directory: digests
+        env:
+          IMAGE: ${{ steps.registry.outputs.namespace }}/${{ matrix.image }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          refs=()
+          for digest in *; do refs+=("$IMAGE@sha256:$digest"); done
+          docker buildx imagetools create -t "$IMAGE:$VERSION" -t "$IMAGE:latest" "${refs[@]}"

@@ -1,16 +1,22 @@
-name: Build and scan an image
-description: Builds an image into the local daemon, then fails on a critical or high CVE that already has a fix.
+name: Scan an image
+description: Fails on a critical or high CVE that already has a fix, in an image built into the local daemon or in an already published one.
 
 inputs:
   image:
     description: Image name, bagheera-api or bagheera-web.
     required: true
+  build:
+    description: Whether to build the image first, as `true` or `false`; `false` scans `image-ref`.
+    default: 'true'
+  image-ref:
+    description: Image to scan when `build` is `false`.
+    default: ''
   dockerfile:
-    description: Dockerfile to build.
-    required: true
+    description: Dockerfile to build; required when `build` is `true`.
+    default: ''
   arch:
-    description: Architecture to build, amd64 or arm64.
-    required: true
+    description: Architecture to build, amd64 or arm64; required when `build` is `true`.
+    default: ''
   report:
     description: '`sarif` uploads the findings to the Security tab, `table` prints them in the job log.'
     default: table
@@ -26,20 +32,20 @@ runs:
   steps:
     # Loaded into the local daemon for the scan; a later push step reuses its
     # layer cache, so the image isn't built twice.
-    - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+    - uses: ./.github/actions/build-image
+      if: inputs.build == 'true'
       with:
-        context: .
-        file: ${{ inputs.dockerfile }}
-        platforms: linux/${{ inputs.arch }}
-        load: true
+        image: ${{ inputs.image }}
+        dockerfile: ${{ inputs.dockerfile }}
+        arch: ${{ inputs.arch }}
+        cache-write: ${{ inputs.cache-write }}
+        load: 'true'
         tags: ${{ inputs.image }}:scan
-        cache-from: type=gha,scope=${{ inputs.image }}-${{ inputs.arch }}
-        cache-to: ${{ inputs.cache-write == 'true' && format('type=gha,mode=max,scope={0}-{1}', inputs.image, inputs.arch) || '' }}
     # Unfixed CVEs can't be acted on. The SARIF format ignores `severity`
     # unless told otherwise.
     - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
-        image-ref: ${{ inputs.image }}:scan
+        image-ref: ${{ inputs.build == 'true' && format('{0}:scan', inputs.image) || inputs.image-ref }}
         format: ${{ inputs.report }}
         output: ${{ inputs.report == 'sarif' && format('trivy-{0}.sarif', inputs.image) || '' }}
         limit-severities-for-sarif: true

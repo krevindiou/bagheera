@@ -1,0 +1,49 @@
+name: Build an image
+description: Builds one image for one architecture, reading (and optionally writing) the shared GitHub Actions layer cache.
+
+inputs:
+  image:
+    description: Image name, bagheera-api or bagheera-web; scopes the layer cache.
+    required: true
+  dockerfile:
+    description: Dockerfile to build.
+    required: true
+  arch:
+    description: Architecture to build, amd64 or arm64.
+    required: true
+  cache-write:
+    description: Whether to write the layer cache, as `true` or `false`.
+    default: 'false'
+  load:
+    description: Whether to load the image into the local daemon, as `true` or `false`.
+    default: 'false'
+  tags:
+    description: Tags to give the image.
+    default: ''
+  outputs:
+    description: Build outputs, e.g. to push by digest.
+    default: ''
+  labels:
+    description: Image labels.
+    default: ''
+
+outputs:
+  digest:
+    description: Digest of the built image.
+    value: ${{ steps.build.outputs.digest }}
+
+runs:
+  using: composite
+  steps:
+    - id: build
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: .
+        file: ${{ inputs.dockerfile }}
+        platforms: linux/${{ inputs.arch }}
+        load: ${{ inputs.load }}
+        tags: ${{ inputs.tags }}
+        outputs: ${{ inputs.outputs }}
+        labels: ${{ inputs.labels }}
+        cache-from: type=gha,scope=${{ inputs.image }}-${{ inputs.arch }}
+        cache-to: ${{ inputs.cache-write == 'true' && format('type=gha,mode=max,scope={0}-{1}', inputs.image, inputs.arch) || '' }}

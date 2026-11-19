@@ -44,10 +44,9 @@ jobs:
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       # Shares release.yml's amd64 cache; only main writes it, so a PR's
       # layers don't evict the release ones.
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      - uses: ./.github/actions/build-image
         with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64
-          cache-from: type=gha,scope=${{ matrix.image }}-amd64
-          cache-to: ${{ github.event_name == 'push' && format('type=gha,mode=max,scope={0}-amd64', matrix.image) || '' }}
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          arch: amd64
+          cache-write: ${{ github.event_name == 'push' }}
