@@ -1,0 +1,55 @@
+name: Build and scan an image
+description: Builds an image into the local daemon, then fails on a critical or high CVE that already has a fix.
+
+inputs:
+  image:
+    description: Image name, bagheera-api or bagheera-web.
+    required: true
+  dockerfile:
+    description: Dockerfile to build.
+    required: true
+  arch:
+    description: Architecture to build, amd64 or arm64.
+    required: true
+  report:
+    description: '`sarif` uploads the findings to the Security tab, `table` prints them in the job log.'
+    default: table
+  sarif-category:
+    description: Code scanning category the SARIF report is uploaded under.
+    default: ''
+  cache-write:
+    description: Whether to write the layer cache, as `true` or `false`.
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    # Loaded into the local daemon for the scan; a later push step reuses its
+    # layer cache, so the image isn't built twice.
+    - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: .
+        file: ${{ inputs.dockerfile }}
+        platforms: linux/${{ inputs.arch }}
+        load: true
+        tags: ${{ inputs.image }}:scan
+        cache-from: type=gha,scope=${{ inputs.image }}-${{ inputs.arch }}
+        cache-to: ${{ inputs.cache-write == 'true' && format('type=gha,mode=max,scope={0}-{1}', inputs.image, inputs.arch) || '' }}
+    # Unfixed CVEs can't be acted on. The SARIF format ignores `severity`
+    # unless told otherwise.
+    - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        image-ref: ${{ inputs.image }}:scan
+        format: ${{ inputs.report }}
+        output: ${{ inputs.report == 'sarif' && format('trivy-{0}.sarif', inputs.image) || '' }}
+        limit-severities-for-sarif: true
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        trivyignores: .trivyignore
+        exit-code: '1'
+    # `always()` so a failing scan still reports what it found.
+    - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+      if: always() && inputs.report == 'sarif'
+      with:
+        sarif_file: trivy-${{ inputs.image }}.sarif
+        category: ${{ inputs.sarif-category }}

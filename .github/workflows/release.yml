@@ -1,8 +1,9 @@
 name: Release
 
 # release-please keeps a "chore(main): release x.y.z" PR open from the
-# Conventional Commits on main; merging it tags vx.y.z and creates the GitHub
-# release, then the jobs below test that commit and publish its images.
+# Conventional Commits on main (release-check.yml tests it before it is
+# merged); merging it tags vx.y.z and creates the GitHub release, then the jobs
+# below test that commit and publish its images.
 # Deploying is manual: roll one out with `make deploy TAG=x.y.z`.
 on:
   push:
@@ -20,6 +21,7 @@ jobs:
   release-please:
     name: Release PR
     runs-on: ubuntu-latest
+    # The fallback token is for forks, which have no app.
     permissions:
       contents: write
       pull-requests: write
@@ -27,11 +29,19 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       version: ${{ steps.release.outputs.version }}
     steps:
-      # A tag pushed with GITHUB_TOKEN triggers no workflow, so the jobs below
-      # hang off this job's outputs rather than a `push: tags` trigger.
+      # A PR or a tag pushed with GITHUB_TOKEN triggers no workflow, so the
+      # release PR would get no checks: the app's token pushes it instead. The
+      # jobs below hang off this job's outputs rather than a `push: tags` trigger.
+      - id: app-token
+        if: vars.RELEASE_APP_ID != ''
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
@@ -49,23 +59,9 @@ jobs:
 
   e2e:
     name: End-to-end tests
-    runs-on: ubuntu-latest
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/write-api-test-env
-        with:
-          secret-suffix: e2e
-      # The e2e containers run as uid 1000 (`node`), the runner checkout belongs to another uid.
-      - run: chmod -R a+rwX apps packages
-      - run: make test-e2e
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: failure()
-        with:
-          name: playwright-report
-          path: apps/web/playwright-report/
-          retention-days: 7
+    uses: ./.github/workflows/e2e.yml
 
   # One job per image and architecture, each on a native runner: emulating
   # arm64 under QEMU took most of the publish time. Each pushes its image by
@@ -109,37 +105,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      # Loaded into the local daemon for the scan; the push below reuses its
-      # layer cache, so the image isn't built twice.
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: ${{ matrix.dockerfile }}
-          platforms: linux/${{ matrix.arch }}
-          load: true
-          tags: ${{ matrix.image }}:scan
-          cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
       # Fails the job, before anything is pushed, on a critical or high CVE
-      # that already has a fix. Unfixed ones can't be acted on. The findings
-      # go to the Security tab as SARIF; the SARIF format ignores `severity`
-      # unless told otherwise.
-      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      # that already has a fix.
+      - uses: ./.github/actions/scan-image
         with:
-          image-ref: ${{ matrix.image }}:scan
-          format: sarif
-          output: trivy-${{ matrix.image }}.sarif
-          limit-severities-for-sarif: true
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          trivyignores: .trivyignore
-          exit-code: '1'
-      # `always()` so a failing scan still reports what it found.
-      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
-        if: always()
-        with:
-          sarif_file: trivy-${{ matrix.image }}.sarif
-          category: trivy-${{ matrix.image }}${{ matrix.sarif-category-suffix }}
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          arch: ${{ matrix.arch }}
+          report: sarif
+          sarif-category: trivy-${{ matrix.image }}${{ matrix.sarif-category-suffix }}
+          cache-write: 'true'
       - id: push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:

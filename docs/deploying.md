@@ -14,6 +14,13 @@ afterwards.
   `feat` bumps the minor version, `fix` the patch, a breaking change (`!` or a
   `BREAKING CHANGE:` footer) the major; `CHANGELOG.md` lists them. A
   `Release-As: x.y.z` footer in a commit message forces the next version.
+- That pull request runs the end-to-end tests and builds and scans both images
+  for amd64 and arm64 without pushing them (`.github/workflows/release-check.yml`),
+  so merge it once its checks are green. They start only because a GitHub App
+  opens the pull request (the `RELEASE_APP_ID` variable and
+  `RELEASE_APP_PRIVATE_KEY` secret, with Contents, Pull requests and Issues
+  write access): a pull request opened with `GITHUB_TOKEN` triggers no
+  workflow.
 - Merging that pull request tags `vx.y.z` and creates the GitHub release; the
   Release workflow (`.github/workflows/release.yml`) then runs CI and the
   end-to-end tests on that commit, builds `bagheera-api`
@@ -44,7 +51,8 @@ its Actions, and allow GitHub Actions to create pull requests (Settings →
 Actions → General → Workflow permissions). Pushes to your fork's `main` then
 open release pull requests; merging one publishes both images to
 `ghcr.io/<your-account>/bagheera-api` and `bagheera-web`, with no secret to set
-up. After the first publish, make both packages public (each package's
+up (without the GitHub App, release pull requests get no checks before the
+merge). After the first publish, make both packages public (each package's
 settings on GitHub, "Change visibility") so the host can pull them
 anonymously, and set `IMAGE_NAMESPACE=ghcr.io/<your-account>` in
 `docker/prod.env`.

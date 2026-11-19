@@ -1,0 +1,55 @@
+name: Release check
+
+# Runs what release.yml runs before it publishes, on the release pull request,
+# so a failure shows before the merge instead of after it. Nothing is pushed.
+# The Trivy findings are printed in the job log.
+on:
+  pull_request:
+    branches: [main]
+    # Only the release PR changes the manifest.
+    paths: ['.release-please-manifest.json']
+
+concurrency:
+  group: release-check-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: End-to-end tests
+    if: &release-pr startsWith(github.head_ref, 'release-please--') && github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/e2e.yml
+
+  build:
+    name: Build ${{ matrix.image }} (${{ matrix.arch }})
+    if: *release-pr
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [bagheera-api, bagheera-web]
+        arch: [amd64, arm64]
+        include:
+          - image: bagheera-api
+            dockerfile: docker/Dockerfile.api
+          - image: bagheera-web
+            dockerfile: docker/Dockerfile.caddy
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      # The build context is the checkout: no token left in it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # Reads the cache release.yml writes; only main writes it, so a PR's
+      # layers don't evict the release ones.
+      - uses: ./.github/actions/scan-image
+        with:
+          image: ${{ matrix.image }}
+          dockerfile: ${{ matrix.dockerfile }}
+          arch: ${{ matrix.arch }}
