@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/krevindiou/bagheera/compare/v1.0.2...v1.0.3) (2026-11-19)
+
+
+### Bug Fixes
+
+* **ci:** let the e2e containers write to the runner checkout ([e9cd497](https://github.com/krevindiou/bagheera/commit/e9cd4970cec506912d66f7ed2b0b0b71f53cce38))
+
 ## [1.0.2](https://github.com/krevindiou/bagheera/compare/v1.0.1...v1.0.2) (2026-11-19)
 
 
