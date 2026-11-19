@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/krevindiou/bagheera/compare/v1.0.3...v1.0.4) (2026-11-19)
+
+
+### Miscellaneous Chores
+
+* release 1.0.4 ([706234b](https://github.com/krevindiou/bagheera/commit/706234b151587348df262fec2eb0d3c7bf8a3502))
+
 ## [1.0.3](https://github.com/krevindiou/bagheera/compare/v1.0.2...v1.0.3) (2026-11-19)
 
 
