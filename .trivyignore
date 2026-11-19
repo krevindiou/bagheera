@@ -1,3 +1,9 @@
 # golang.org/x/net/html DoS in the caddy binary shipped by caddy:2-alpine;
 # Caddy doesn't parse untrusted HTML. Drop once the image bundles x/net >= 0.62.0.
 CVE-2026-78661 exp:2027-01-31
+
+# Go net/http panic when a handler reads a MaxBytesReader-limited body while
+# writing the response header, in the caddy binary shipped by caddy:2-alpine
+# (Go 1.27.3, fixed in 1.27.4). The Caddyfile only serves static files and sets
+# no request body limit. Drop once the image is built with Go >= 1.27.4.
+CVE-2026-97054 exp:2026-12-19
