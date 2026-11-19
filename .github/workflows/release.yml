@@ -57,6 +57,8 @@ jobs:
       - uses: ./.github/actions/write-api-test-env
         with:
           secret-suffix: e2e
+      # The e2e containers run as uid 1000 (`node`), the runner checkout belongs to another uid.
+      - run: chmod -R a+rwX apps packages
       - run: make test-e2e
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: failure()
