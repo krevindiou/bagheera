@@ -19,6 +19,20 @@
       "matchPackageNames": ["connect-redis"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "description": "Renovate finds no release timestamp for a digest bump and would hold it forever; the image-age workflow checks the digest's age on these PRs instead",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["digest"],
+      "matchDepNames": [
+        "caddy",
+        "postgres",
+        "valkey/valkey",
+        "docker/dockerfile",
+        "node",
+        "axllent/mailpit"
+      ],
+      "minimumReleaseAge": null
     }
   ]
 }

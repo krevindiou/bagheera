@@ -1,0 +1,35 @@
+name: Image age
+
+# Renovate finds no release timestamp for a pinned image digest bump, so its
+# renovate/stability-days check would stay pending forever; renovate.json
+# exempts those updates and this workflow posts an `image-age` status on their
+# PRs instead. The cron turns a pending status green once the 3 days have
+# passed, with no push to the PR.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+# The script goes through every open Renovate PR, so one run covers the others.
+concurrency:
+  group: image-age
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  image-age:
+    name: Image age
+    runs-on: ubuntu-latest
+    # A fork's token can't write statuses.
+    if: github.event_name != 'pull_request' || (startsWith(github.head_ref, 'renovate/') && github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: node .github/scripts/image-age.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

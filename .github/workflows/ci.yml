@@ -37,6 +37,7 @@ jobs:
       - run: pnpm run check:types
       - run: pnpm run check:specs
       - run: pnpm run check:hooks
+      - run: pnpm run check:image-age
       - run: pnpm run check:audit
       - run: pnpm run check:dedupe
       - run: pnpm run check:knip
