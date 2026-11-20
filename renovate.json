@@ -13,6 +13,12 @@
       "description": "Majors get their own PR, one per package",
       "matchUpdateTypes": ["major"],
       "groupName": null
+    },
+    {
+      "description": "connect-redis 11 is ESM-only (no require export); the API compiles to CommonJS and fails to boot",
+      "matchPackageNames": ["connect-redis"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }

@@ -229,7 +229,7 @@ importers:
         specifier: ^1.8.2
         version: 1.8.2(supports-color@10.2.2)
       connect-redis:
-        specifier: ^10.0.0
+        specifier: 10.0.0
         version: 10.0.0(express-session@1.19.0(supports-color@10.2.2))(redis@6.2.1(@opentelemetry/api@1.9.1))
       cookie-parser:
         specifier: ^1.4.7
