@@ -50,7 +50,7 @@
     "openapi-fetch": "^0.17.0",
     "openapi-typescript": "^7.13.0",
     "oxfmt": "^0.79.0",
-    "typescript": "~6.0.3",
+    "typescript": "~7.0.0",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.7",
     "vitest": "^5.1.0",
