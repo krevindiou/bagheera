@@ -218,7 +218,7 @@ importers:
         version: 14.1.0
       bullmq:
         specifier: ^6.7.2
-        version: 6.7.7(ioredis@6.0.0(supports-color@10.2.2))(pg@8.23.1)(redis@6.2.1(@opentelemetry/api@1.9.1))
+        version: 6.7.8(ioredis@6.0.0(supports-color@10.2.2))(pg@8.23.1)(redis@6.2.1(@opentelemetry/api@1.9.1))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -321,7 +321,7 @@ importers:
         version: 0.31.11
       fast-check:
         specifier: ^4.10.2
-        version: 4.10.2
+        version: 4.10.3
       oxfmt:
         specifier: ^0.79.0
         version: 0.79.0
@@ -2633,8 +2633,8 @@ packages:
     resolution: {integrity: sha512-lHblz4ahamxpTmnsk+MNTRWsjYKv965MwOrSJyeD588rR3Jcu7swE+0wN5F+PbL5cjgu/9ObkhfzEPuofEMwLA==}
     engines: {node: '>=10.0.0'}
 
-  bullmq@6.7.7:
-    resolution: {integrity: sha512-UYCta40FLxOTEYqFZmwvQhnqqYbUCkYRsjOhCyQ6/fH5vbRsHvQPEljorbE7Jm4w5uyfZV9ri3N1U95mskGgLg==}
+  bullmq@6.7.8:
+    resolution: {integrity: sha512-Mt0+nKGNFWAruuwwzEUVE+5yEgK5XgzjoR2BjSKp/JeqfgeYO0pFh6oy78Ls8u9upVTsaLhBzSaEZAhYvjPlJg==}
     engines: {node: '>=14.18.0'}
     peerDependencies:
       bullmq-otel: '>=2.0.0'
@@ -2857,8 +2857,8 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  cron-parser@5.10.5:
-    resolution: {integrity: sha512-zxFew0gkBdb9HudAqeNLIZ2Phczw8oQDGDMYc1HUYvAaxZqhML2gZyUwVqaOs23YKDWXRRvd/nNo0ycGdXt80A==}
+  cron-parser@5.10.6:
+    resolution: {integrity: sha512-kpoxgQyveO1l29nw+FWdvmotyV7eOSzGHQpxiXOEZIDOjqO1iR6kfgJ0PVHTuV26uBemKq3ppzma7dHFAG7viw==}
     engines: {node: '>=18'}
 
   cross-spawn@7.0.6:
@@ -3231,8 +3231,8 @@ packages:
   exsolve@1.1.1:
     resolution: {integrity: sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==}
 
-  fast-check@4.10.2:
-    resolution: {integrity: sha512-iK2f+YrcmoeGqk6fA0ea2bptcu/itMIm4NfEozq6N25+aG6h7s5HZbB/k1aV7b5w5sFLMCbbtRUsTVR+BgC3xw==}
+  fast-check@4.10.3:
+    resolution: {integrity: sha512-SBaU6nhh+sXxb05r2IHAKfxnR/1Pu6MqtHYaewM1BY6V5xzOxOk+4yoWO7WfeeyZG1iArFE6/DO/7iLYMUuOJg==}
     engines: {node: '>=12.17.0'}
 
   fast-copy@4.1.1:
@@ -6820,9 +6820,9 @@ snapshots:
   buildcheck@0.0.7:
     optional: true
 
-  bullmq@6.7.7(ioredis@6.0.0(supports-color@10.2.2))(pg@8.23.1)(redis@6.2.1(@opentelemetry/api@1.9.1)):
+  bullmq@6.7.8(ioredis@6.0.0(supports-color@10.2.2))(pg@8.23.1)(redis@6.2.1(@opentelemetry/api@1.9.1)):
     dependencies:
-      cron-parser: 5.10.5
+      cron-parser: 5.10.6
       msgpackr: 2.1.4
       node-abort-controller: 3.1.1
       semver: 7.8.6
@@ -7021,7 +7021,7 @@ snapshots:
 
   create-require@1.1.1: {}
 
-  cron-parser@5.10.5:
+  cron-parser@5.10.6:
     dependencies:
       luxon: 3.7.2
 
@@ -7360,7 +7360,7 @@ snapshots:
 
   exsolve@1.1.1: {}
 
-  fast-check@4.10.2:
+  fast-check@4.10.3:
     dependencies:
       pure-rand: 8.4.2
 
