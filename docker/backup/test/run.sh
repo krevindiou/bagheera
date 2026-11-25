@@ -237,5 +237,147 @@ test_run_log_holds_only_the_last_run() {
   esac
 }
 
+# Email fixtures. The URL's password is percent-encoded on purpose: curl must
+# decode the userinfo before authenticating.
+EMAIL_SMTP_URL='smtp://user:p%40ss@mailpit:1025'
+EMAIL_ENV=(
+  "EMAIL_SMTP_URL=$EMAIL_SMTP_URL"
+  EMAIL_FROM=backup@example.test
+  BACKUP_SMTP_ALLOW_PLAINTEXT=true
+  BACKUP_EMAIL_TO=ops@example.test
+)
+
+# Generates an age key pair in a fresh temp dir: $AGE_KEY_FILE holds the
+# private key, $AGE_RECIPIENT the public one. Call it directly, not in a command
+# substitution, so the variables reach the test.
+new_age_key() {
+  AGE_KEY_FILE=$(mktemp -d)/key.txt
+  age-keygen -o "$AGE_KEY_FILE" 2>/dev/null
+  AGE_RECIPIENT=$(age-keygen -y "$AGE_KEY_FILE")
+}
+
+# Runs backup-run with the email destination only (no restic), after
+# new_age_key, plus the given overrides.
+run_email_backup() {
+  env "${EMAIL_ENV[@]}" "BACKUP_EMAIL_AGE_RECIPIENT=$AGE_RECIPIENT" "$@" backup-run
+}
+
+# Adds a table of incompressible rows (about 4 MB once dumped) and drops it
+# again when the calling test ends, whatever its outcome.
+seed_big_table() {
+  PGPASSWORD=$PG_PASSWORD psql -h postgres -U bagheera -d bagheera -v ON_ERROR_STOP=1 -q <<'SQL'
+SET client_min_messages = warning;
+DROP TABLE IF EXISTS filler;
+CREATE TABLE filler AS
+  SELECT md5(random()::text) || md5(random()::text) AS v FROM generate_series(1, 120000);
+SQL
+  trap 'PGPASSWORD=$PG_PASSWORD psql -h postgres -U bagheera -d bagheera -q -c "DROP TABLE IF EXISTS filler"' EXIT
+}
+
+test_email_attachment_decrypts_to_valid_dump() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  run_email_backup >/dev/null 2>&1
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
+  local name
+  name=$(mailpit_attachment_name '[Bagheera backup]')
+  [[ $name =~ ^bagheera-[0-9]{4}-[0-9]{2}-[0-9]{2}\.pgdump\.age$ ]] || fail "attachment name [$name]"
+  assert_contains "$name" "$(date -u +%F)" "attachment name carries today's date"
+  mailpit_download_attachment '[Bagheera backup]' /tmp/attachment.age
+  age -d -i "$AGE_KEY_FILE" -o /tmp/attachment.pgdump /tmp/attachment.age
+  assert_contains "$(pg_restore -l /tmp/attachment.pgdump)" "members" "decrypted attachment lists the members table"
+  [ -z "$(ls /tmp/backup/*.age 2>/dev/null)" ] || fail "the encrypted file was left on disk after the run"
+  [ ! -e /tmp/backup/bagheera.pgdump ] || fail "the dump was left on disk after the run"
+}
+
+test_email_subject_reports_the_date_and_size() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  run_email_backup >/dev/null 2>&1
+  assert_eq 1 "$(mailpit_count "[Bagheera backup] $(date -u +%F) (")" "subject with the date"
+  mailpit_download_attachment '[Bagheera backup]' /tmp/attachment.age
+  local kib
+  kib=$(( ($(wc -c </tmp/attachment.age) + 1023) / 1024 ))
+  assert_eq 1 "$(mailpit_count " ($kib KiB)")" "subject size is the attachment size in KiB"
+}
+
+test_email_over_cap_fails_without_sending() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  seed_big_table
+  assert_fails "dump over the cap" run_email_backup BACKUP_EMAIL_MAX_MB=1
+  assert_contains "$ASSERT_OUTPUT" "exceeds BACKUP_EMAIL_MAX_MB" "message"
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+  [ -z "$(ls /tmp/backup/*.age 2>/dev/null)" ] || fail "the encrypted file was left on disk after the run"
+}
+
+test_email_requires_tls_by_default() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  assert_fails "plain SMTP without the opt-in" run_email_backup BACKUP_SMTP_ALLOW_PLAINTEXT=
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+  case $ASSERT_OUTPUT in
+    *p%40ss* | *p@ss*) fail "the SMTP password leaked into the output" ;;
+  esac
+}
+
+test_email_is_never_plaintext() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  run_email_backup >/dev/null 2>&1
+  mailpit_download_attachment '[Bagheera backup]' /tmp/attachment.age
+  # The probe is only meaningful if the clear-text dump does contain the table
+  # name: check that on the decrypted copy.
+  age -d -i "$AGE_KEY_FILE" -o /tmp/attachment.pgdump /tmp/attachment.age
+  grep -q members /tmp/attachment.pgdump || fail "the decrypted dump does not mention the members table"
+  if grep -q members /tmp/attachment.age; then fail "the attachment contains the table name in clear"; fi
+  if grep -q PGDMP /tmp/attachment.age; then fail "the attachment starts like a clear-text pg_dump archive"; fi
+}
+
+test_email_from_with_display_name() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  run_email_backup 'EMAIL_FROM=Bagheera <backup@example.test>' >/dev/null 2>&1
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
+  assert_contains "$(mailpit_raw '[Bagheera backup]')" 'From: Bagheera <backup@example.test>' "From header is EMAIL_FROM verbatim"
+  assert_eq backup@example.test "$(mailpit_envelope_sender '[Bagheera backup]')" "envelope sender"
+}
+
+test_email_from_bare_address_is_the_envelope_sender() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  run_email_backup >/dev/null 2>&1
+  assert_eq backup@example.test "$(mailpit_envelope_sender '[Bagheera backup]')" "envelope sender"
+}
+
+test_one_destination_failing_does_not_skip_the_other() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  seed_big_table
+  assert_fails "email over the cap" run_email_backup BACKUP_EMAIL_MAX_MB=1 "${RUN_ENV[@]}"
+  assert_contains "$ASSERT_OUTPUT" "exceeds BACKUP_EMAIL_MAX_MB" "email failure"
+  assert_contains "$ASSERT_OUTPUT" "backup failed: email" "only the email failed"
+  assert_eq 1 "$(snapshot_count)" "restic snapshot count"
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
+test_restic_failing_does_not_skip_email() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic init --quiet
+  assert_fails "wrong restic password" run_email_backup "${RUN_ENV[@]}" RESTIC_PASSWORD=other
+  assert_contains "$ASSERT_OUTPUT" "backup failed: restic" "only restic failed"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
 seed_database
 run_tests

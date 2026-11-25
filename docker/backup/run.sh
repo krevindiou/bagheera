@@ -6,6 +6,8 @@ set -euo pipefail
 
 # shellcheck source=lib.sh
 . /usr/local/lib/backup/lib.sh
+# shellcheck source=mail.sh
+. /usr/local/lib/backup/mail.sh
 
 BACKUP_DIR=/tmp/backup
 DUMP=$BACKUP_DIR/bagheera.pgdump
@@ -33,7 +35,7 @@ stop_log_capture() {
 }
 
 cleanup() {
-  rm -f "$DUMP" "$DUMP.partial"
+  rm -f "$DUMP" "$DUMP.partial" "$BACKUP_DIR"/bagheera-*.pgdump.age
 }
 
 # Dumps the database to $DUMP and checks that pg_restore can read it back. The
@@ -85,6 +87,36 @@ ship_restic() {
     --keep-monthly "$(cfg BACKUP_KEEP_MONTHLY 6)" || return 1
 }
 
+# Encrypts the dump to the age recipient, enforces the size cap on the
+# encrypted file, and emails it. Callers use it in a `||` list, where `set -e`
+# is off: every step is checked by hand.
+ship_email() {
+  local date name encrypted bytes max_mb
+  date=$(date -u +%F)
+  name=bagheera-$date.pgdump.age
+  encrypted=$BACKUP_DIR/$name
+
+  log info "encrypting the dump for email"
+  if ! age -r "${BACKUP_EMAIL_AGE_RECIPIENT:-}" -o "$encrypted" "$DUMP"; then
+    log error "age encryption failed"
+    return 1
+  fi
+
+  bytes=$(wc -c <"$encrypted") || return 1
+  max_mb=$(cfg BACKUP_EMAIL_MAX_MB 10)
+  if [ "$bytes" -gt $((max_mb * 1024 * 1024)) ]; then
+    log error "the encrypted dump is $bytes bytes, which exceeds BACKUP_EMAIL_MAX_MB=$max_mb"
+    return 1
+  fi
+
+  log info "emailing the encrypted dump ($bytes bytes)"
+  mail_send --to "$BACKUP_EMAIL_TO" \
+    --subject "[Bagheera backup] $date ($(((bytes + 1023) / 1024)) KiB)" \
+    --body "Encrypted PostgreSQL dump of the Bagheera database, attached as $name. Decrypt it with age -d -i <identity-file>, then restore it with pg_restore." \
+    --attach "$encrypted" --attach-name "$name" || return 1
+  log info "email sent to $BACKUP_EMAIL_TO"
+}
+
 main() {
   umask 077
   mkdir -p "$BACKUP_DIR"
@@ -104,6 +136,9 @@ main() {
   if dump_database; then
     if restic_enabled; then
       ship_restic || FAILURES+=("restic")
+    fi
+    if email_enabled; then
+      ship_email || FAILURES+=("email")
     fi
   else
     FAILURES+=("dump")
