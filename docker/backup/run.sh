@@ -13,6 +13,8 @@ BACKUP_DIR=/tmp/backup
 DUMP=$BACKUP_DIR/bagheera.pgdump
 LOCK=$BACKUP_DIR/run.lock
 RUN_LOG=$BACKUP_DIR/run.log
+# The log notify_failure and notify_success quote.
+ALERT_LOG=$RUN_LOG
 
 # One entry per destination (or step) that failed during this run.
 FAILURES=()
@@ -149,9 +151,15 @@ main() {
   else
     log error "backup failed: ${FAILURES[*]}"
   fi
+  # Only now is $RUN_LOG complete, so the notification quotes the whole run.
   stop_log_capture
 
-  [ "${#FAILURES[@]}" -eq 0 ]
+  if [ "${#FAILURES[@]}" -eq 0 ]; then
+    notify_success
+  else
+    notify_failure "${FAILURES[@]}"
+    return 1
+  fi
 }
 
 main "$@"

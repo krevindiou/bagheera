@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Sends one email over SMTP with curl. Sourced by the scripts that send mail.
+# Sends email over SMTP with curl (mail_send) and the operator notifications
+# built on it (notify_failure, notify_success). Sourced by the scripts that send
+# mail.
 set -euo pipefail
 
 # shellcheck source=lib.sh
@@ -119,4 +121,47 @@ mail_send() {
     log error "sending the email failed (curl exit status $status): ${out//"$EMAIL_SMTP_URL"/<EMAIL_SMTP_URL>}"
     return 1
   fi
+}
+
+# Prints stdin with the secrets of the environment replaced by <redacted>: the
+# SMTP URL, the restic and Postgres passwords, and the credentials of any
+# user:password@ URL.
+redact_secrets() {
+  local text secret
+  text=$(cat)
+  for secret in "${EMAIL_SMTP_URL:-}" "${RESTIC_PASSWORD:-}" "${POSTGRES_PASSWORD:-}"; do
+    [ -z "$secret" ] || text=${text//"$secret"/<redacted>}
+  done
+  printf '%s' "$text" | sed -E 's#(://[^/:@[:space:]]*):[^/@[:space:]]*@#\1:<redacted>@#g'
+}
+
+# notify_email <subject> <headline>: emails $BACKUP_ALERT_EMAIL the headline and
+# the last 20 lines of $ALERT_LOG (default: the run log), secrets redacted.
+# Never fails: a message that cannot be sent is only logged, so notifying can
+# neither change a run's exit status nor loop.
+notify_email() {
+  local subject=$1 headline=$2 log=${ALERT_LOG:-/tmp/backup/run.log} tail_text body
+  tail_text=$(tail -n 20 "$log" 2>/dev/null | redact_secrets) || tail_text=""
+  [ -n "$tail_text" ] || tail_text="(the log is empty)"
+  body=$(printf '%s\n\nLast 20 log lines:\n\n%s' "$headline" "$tail_text")
+  mail_send --to "$BACKUP_ALERT_EMAIL" --subject "$subject" --body "$body" ||
+    log error "could not send the '$subject' notification to $BACKUP_ALERT_EMAIL"
+  return 0
+}
+
+# notify_failure <failure...>: tells $BACKUP_ALERT_EMAIL which destinations or
+# steps failed. Does nothing without BACKUP_ALERT_EMAIL.
+notify_failure() {
+  alert_enabled || return 0
+  local failures
+  printf -v failures '%s, ' "$@"
+  notify_email "[Bagheera backup] FAILED" "The Bagheera backup failed: ${failures%, }."
+}
+
+# notify_success: reports a finished run to $BACKUP_ALERT_EMAIL, only when
+# BACKUP_REPORT=always.
+notify_success() {
+  [ "$(cfg BACKUP_REPORT failure)" = "always" ] || return 0
+  alert_enabled || return 0
+  notify_email "[Bagheera backup] OK" "The Bagheera backup finished successfully."
 }
