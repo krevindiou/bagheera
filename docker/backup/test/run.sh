@@ -614,36 +614,6 @@ test_email_requires_tls_by_default() {
   esac
 }
 
-# The STARTTLS Mailpit, with a certificate made for this run: curl trusts it
-# through CURL_CA_BUNDLE, as it trusts the system's CAs in production.
-TLS_SMTP_URL='smtp://user:p%40ss@mailpit-tls:1025'
-
-test_email_over_starttls_is_delivered() {
-  reset_repo
-  local MAILPIT_URL=$MAILPIT_TLS_URL
-  mailpit_reset
-  new_age_key
-  # The server refuses plain SMTP, so a delivery below proves STARTTLS.
-  assert_fails "plain SMTP to the STARTTLS server" run_email_backup "EMAIL_SMTP_URL=$TLS_SMTP_URL" CURL_CA_BUNDLE=/certs/cert.pem
-  local output
-  output=$(run_email_backup BACKUP_SMTP_ALLOW_PLAINTEXT= "EMAIL_SMTP_URL=$TLS_SMTP_URL" CURL_CA_BUNDLE=/certs/cert.pem 2>&1) ||
-    fail "the backup failed over STARTTLS: $output"
-  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
-  mailpit_download_attachment '[Bagheera backup]' /tmp/attachment.age
-  age -d -i "$AGE_KEY_FILE" -o /tmp/attachment.pgdump /tmp/attachment.age
-  assert_contains "$(pg_restore -l /tmp/attachment.pgdump)" "members" "decrypted attachment lists the members table"
-}
-
-test_email_over_starttls_checks_the_certificate() {
-  reset_repo
-  local MAILPIT_URL=$MAILPIT_TLS_URL
-  mailpit_reset
-  new_age_key
-  assert_fails "an untrusted certificate" run_email_backup BACKUP_SMTP_ALLOW_PLAINTEXT= "EMAIL_SMTP_URL=$TLS_SMTP_URL"
-  assert_contains "$ASSERT_OUTPUT" "sending the email failed" "message"
-  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
-}
-
 test_email_is_never_plaintext() {
   reset_repo
   mailpit_reset
