@@ -139,8 +139,32 @@ test_validate_rejects_local_repository_outside_backups() {
   done
   validate RESTIC_REPOSITORY=/backups/restic RESTIC_PASSWORD=secret >/dev/null 2>&1 ||
     fail "a repository under /backups was rejected"
-  validate RESTIC_REPOSITORY=s3:https://s3.example.test/bucket/bagheera RESTIC_PASSWORD=secret >/dev/null 2>&1 ||
+  validate RESTIC_REPOSITORY=s3:https://s3.example.test/bucket/bagheera RESTIC_PASSWORD=secret \
+    AWS_ACCESS_KEY_ID=id AWS_SECRET_ACCESS_KEY=key >/dev/null 2>&1 ||
     fail "a remote repository was rejected"
+}
+
+# Without them the first nightly run fails, long after the deploy check passed.
+test_validate_remote_repository_needs_credentials() {
+  assert_fails "s3 without keys" validate RESTIC_REPOSITORY=s3:https://s3.example.test/bucket RESTIC_PASSWORD=secret
+  assert_contains "$ASSERT_OUTPUT" "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required" "s3 message"
+  assert_fails "s3 with half the keys" validate RESTIC_REPOSITORY=s3:https://s3.example.test/bucket RESTIC_PASSWORD=secret AWS_ACCESS_KEY_ID=id
+  assert_fails "sftp without key" validate RESTIC_REPOSITORY=sftp:user@host:/repo RESTIC_PASSWORD=secret
+  assert_contains "$ASSERT_OUTPUT" "BACKUP_SFTP_PRIVATE_KEY is required for an sftp:" "sftp message"
+  validate RESTIC_REPOSITORY=sftp:user@host:/repo RESTIC_PASSWORD=secret BACKUP_SFTP_PRIVATE_KEY=key \
+    BACKUP_SFTP_KNOWN_HOSTS='host ssh-ed25519 AAAA' >/dev/null 2>&1 ||
+    fail "an sftp repository with its key was rejected"
+}
+
+test_validate_rejects_relative_local_repository() {
+  assert_fails "relative path" validate RESTIC_REPOSITORY=restic RESTIC_PASSWORD=secret
+  assert_contains "$ASSERT_OUTPUT" "RESTIC_REPOSITORY must be an absolute path under /backups or a remote repository" "message"
+}
+
+# An option given last, without its value, must fail instead of looping.
+test_mail_send_option_without_value_fails() {
+  assert_fails "--body without a value" timeout 10 bash -c \
+    '. /usr/local/lib/backup/mail.sh; mail_send --to a@example.com --subject s --body'
 }
 
 test_validate_reports_unwritable_backups() {

@@ -17,17 +17,13 @@ RUN apk upgrade --no-cache \
   && mkdir -p /home/backup /backups /tmp/backup /usr/local/lib/backup \
   && chown backup:backup /home/backup /backups /tmp/backup
 
-# The scripts are optional at build time: install whichever exist.
+# A script that is missing fails the build (install exits non-zero).
 COPY docker/backup/*.sh /opt/backup/
 RUN for name in validate run check entrypoint healthcheck; do \
-      if [ -f "/opt/backup/$name.sh" ]; then \
-        install -m 0755 "/opt/backup/$name.sh" "/usr/local/bin/backup-$name"; \
-      fi; \
+      install -m 0755 "/opt/backup/$name.sh" "/usr/local/bin/backup-$name"; \
     done \
   && for lib in lib.sh mail.sh; do \
-      if [ -f "/opt/backup/$lib" ]; then \
-        install -m 0755 "/opt/backup/$lib" "/usr/local/lib/backup/$lib"; \
-      fi; \
+      install -m 0755 "/opt/backup/$lib" "/usr/local/lib/backup/$lib"; \
     done \
   && rm -rf /opt/backup
 
