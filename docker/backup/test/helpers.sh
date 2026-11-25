@@ -67,10 +67,10 @@ mailpit_count() {
 mailpit_message_id() {
   local ids
   ids=$(mailpit_ids "$1") || return 1
-  [ -n "$ids" ] && [ "$(printf '%s\n' "$ids" | wc -l)" -eq 1 ] || {
+  if [ -z "$ids" ] || [ "$(printf '%s\n' "$ids" | wc -l)" -ne 1 ]; then
     printf 'expected exactly one message with subject containing [%s]\n' "$1" >&2
     return 1
-  }
+  fi
   printf '%s\n' "$ids"
 }
 

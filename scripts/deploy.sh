@@ -52,7 +52,7 @@ fi
 # and rolling out only those would pair them with the previous release.
 for image in bagheera-api bagheera-web bagheera-backup; do
 	if ! docker manifest inspect "$IMAGE_NAMESPACE/$image:$tag" >/dev/null 2>&1; then
-		echo "$IMAGE_NAMESPACE/$image:$tag is not published: wait for the Release workflow, or pick another version" >&2
+		echo "$IMAGE_NAMESPACE/$image:$tag is not published, or not public: wait for the Release workflow, make the package public (docs/deploying.md), or pick another version" >&2
 		exit 1
 	fi
 done

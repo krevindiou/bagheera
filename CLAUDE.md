@@ -69,7 +69,7 @@ Never commit or push unless the user explicitly asks.
 Run these in order; if any fail, fix and re-run before moving to the next. Do not commit until every step passes:
 
 1. Tests in sync with the codebase: new code has new tests, changed code has updated tests, removed code has its tests removed too. Compare coverage before/after (`pnpm test:cov`, see below) — it should not drop.
-2. `make precommit` — chains `format`, `lint`, `check`, `build`, `test-unit` in that order (the Makefile is the single definition of this list)
+2. `make precommit` — chains `format`, `lint`, `check`, `build`, `test-unit` in that order (the Makefile is the single definition of this list). Changes under `docker/backup/` (or `docker/Dockerfile.backup`) also need `make test-backup`, which `make precommit` does not run.
 3. `security-review` skill
 
 ## Architecture

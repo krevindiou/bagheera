@@ -37,6 +37,19 @@ jobs:
       - run: pnpm run check:types
       - run: pnpm run check:specs
       - run: pnpm run check:hooks
+      # The runner's own ShellCheck drifts with the image, and older versions
+      # report findings newer ones don't: put a pinned one first on PATH, the
+      # binary of the digest-pinned official image. Keep its version on the one
+      # docker/Dockerfile.check gets from Alpine for `make check` (0.11.0).
+      - name: Install ShellCheck 0.11.0
+        run: |
+          dir="$RUNNER_TEMP/shellcheck"
+          mkdir -p "$dir"
+          id=$(docker create koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d)
+          docker cp "$id:/bin/shellcheck" "$dir/shellcheck"
+          docker rm "$id" >/dev/null
+          "$dir/shellcheck" --version
+          echo "$dir" >>"$GITHUB_PATH"
       - run: pnpm run check:shellcheck
       - run: pnpm run check:image-age
       - run: pnpm run check:audit
@@ -130,6 +143,7 @@ jobs:
     name: Backup container tests
     runs-on: ubuntu-latest
     needs: lint
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: make test-backup

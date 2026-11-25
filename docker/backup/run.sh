@@ -45,22 +45,39 @@ cleanup() {
   rm -f "$DUMP" "$DUMP.partial" "$BACKUP_DIR"/bagheera-*.pgdump.age
 }
 
+# record_failure <name> <status>: adds a failed destination or step to
+# FAILURES, saying so when it ran out of time.
+record_failure() {
+  if [ "$2" -eq "$STEP_TIMED_OUT" ]; then
+    FAILURES+=("$1 (timed out)")
+  else
+    FAILURES+=("$1")
+  fi
+}
+
 # Dumps the database to $DUMP and checks that pg_restore can read it back. The
-# dump only takes its final name once pg_dump exited 0.
+# dump only takes its final name once pg_dump exited 0. Returns 1 on failure,
+# or $STEP_TIMED_OUT when pg_dump ran out of time.
 dump_database() {
-  local host port user db
+  local host port user db status=0
   host=$(cfg POSTGRES_HOST postgres)
   port=$(cfg POSTGRES_PORT 5432)
   user=$(cfg POSTGRES_USER bagheera)
   db=$(cfg POSTGRES_DB bagheera)
 
   log info "dumping database $db from $host:$port"
-  if ! PGPASSWORD="${POSTGRES_PASSWORD:-}" pg_dump -h "$host" -p "$port" -U "$user" -Fc -d "$db" -f "$DUMP.partial"; then
+  # --lock-wait-timeout: a session holding a table lock fails the dump after 10
+  # minutes instead of stalling it until the step's own timeout.
+  PGPASSWORD="${POSTGRES_PASSWORD:-}" run_step pg_dump pg_dump --lock-wait-timeout=10min \
+    -h "$host" -p "$port" -U "$user" -Fc -d "$db" -f "$DUMP.partial" || status=$?
+  if [ "$status" -ne 0 ]; then
     log error "pg_dump failed"
-    return 1
+    return "$status"
   fi
   mv "$DUMP.partial" "$DUMP"
-  if ! pg_restore -l "$DUMP" >/dev/null; then
+  # Restoring to nowhere reads and decompresses every block, where listing the
+  # table of contents (-l) would miss a dump cut short in its data.
+  if ! pg_restore -f /dev/null "$DUMP"; then
     log error "dump verification failed"
     return 1
   fi
@@ -68,19 +85,22 @@ dump_database() {
 }
 
 # Pushes the dump to the restic repository, creating the repository only when
-# restic says it does not exist, then applies the retention policy. `--retry-lock`
-# waits for a lock a concurrent restic command holds (the weekly check, for one)
-# instead of failing the run. Callers use it in a `||` list, where `set -e` is
-# off: every step is checked by hand.
+# restic says it does not exist. `--retry-lock` waits for a lock a concurrent
+# restic command holds (the weekly check, for one) instead of failing the run.
+# Callers use it in a `||` list, where `set -e` is off: every step is checked
+# by hand. Returns 1 on failure, or $STEP_TIMED_OUT when a step ran out of time.
 ship_restic() {
   local status=0
-  restic cat config >/dev/null || status=$?
+  run_step "restic cat config" restic cat config >/dev/null || status=$?
   case $status in
     0) ;;
     10)
-      restic init --quiet || return 1
-      log info "created restic repository"
+      run_step "restic init" restic init --quiet || return
+      # Expected on the first run only: anywhere else it may be a mistyped
+      # RESTIC_REPOSITORY, with the real snapshots elsewhere.
+      log warn "created restic repository: a new, empty one (expected on the first run only; otherwise check RESTIC_REPOSITORY)"
       ;;
+    "$STEP_TIMED_OUT") return "$status" ;;
     *)
       log error "restic repository is not usable (restic exit status $status)"
       return 1
@@ -88,12 +108,21 @@ ship_restic() {
   esac
 
   log info "pushing the dump to restic"
-  restic backup --retry-lock 10m --host "$RESTIC_HOST" --tag postgres "$DUMP" || return 1
+  run_step "restic backup" restic backup --retry-lock 10m --host "$RESTIC_HOST" --tag postgres "$DUMP" || return
+}
 
-  restic forget --retry-lock 10m --prune --host "$RESTIC_HOST" --group-by host --tag postgres \
+# Applies the retention policy, once the snapshot is in. Same contract as
+# ship_restic.
+apply_retention() {
+  local status=0
+  run_step "restic forget" restic forget --retry-lock 10m --prune --host "$RESTIC_HOST" --group-by host --tag postgres \
     --keep-daily "$(cfg BACKUP_KEEP_DAILY 7)" \
     --keep-weekly "$(cfg BACKUP_KEEP_WEEKLY 4)" \
-    --keep-monthly "$(cfg BACKUP_KEEP_MONTHLY 6)" || return 1
+    --keep-monthly "$(cfg BACKUP_KEEP_MONTHLY 6)" || status=$?
+  if [ "$status" -ne 0 ]; then
+    log error "the snapshot is saved, but applying the retention policy failed"
+    return "$status"
+  fi
 }
 
 # Encrypts the dump to the age recipient, enforces the size cap on the
@@ -144,13 +173,17 @@ main() {
 
   if dump_database; then
     if restic_enabled; then
-      ship_restic || FAILURES+=("restic")
+      if ship_restic; then
+        apply_retention || record_failure restic-retention "$?"
+      else
+        record_failure restic "$?"
+      fi
     fi
     if email_enabled; then
-      ship_email || FAILURES+=("email")
+      ship_email || record_failure email "$?"
     fi
   else
-    FAILURES+=("dump")
+    record_failure dump "$?"
   fi
 
   if [ "${#FAILURES[@]}" -eq 0 ]; then

@@ -7,7 +7,8 @@
 FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 # GNU coreutils for `realpath --relative-to`, bash + jq + git for
 # .claude/hooks/test.sh (alpine's busybox has none of them); shellcheck for
-# check:shellcheck.
+# check:shellcheck (0.11.0 on this Alpine: CI's lint job installs the same
+# version, see .github/workflows/ci.yml, so move both together).
 RUN apk add --no-cache bash coreutils git jq shellcheck
 # Node 25+ no longer bundles corepack. Installed from a lockfile (integrity
 # hashes) rather than `npm install -g`, so the version is pinned by hash.

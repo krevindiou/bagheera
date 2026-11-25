@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Backup container tests, run by `make test-backup` inside the built image.
-# shellcheck disable=SC2329 # the test_* functions are run by name by the runner loop
+# The test_* functions are run by name by the runner loop: ShellCheck sees them
+# as never called (SC2329 since 0.11.0, SC2317 before it).
+# shellcheck disable=SC2317,SC2329
 set -euo pipefail
 
 # shellcheck source=helpers.sh
@@ -103,7 +105,89 @@ test_validate_warns_without_alert_email() {
 
 test_validate_accepts_a_full_valid_config() {
   validate "${RESTIC_ENV[@]}" BACKUP_EMAIL_TO=me@example.com "BACKUP_EMAIL_AGE_RECIPIENT=$AGE_KEY" \
-    "BACKUP_SCHEDULE=15 2 * * 1-5" BACKUP_REPORT=always
+    "BACKUP_SCHEDULE=15 2 * * 1-5" BACKUP_REPORT=always BACKUP_STEP_TIMEOUT=90m
+}
+
+# supercronic takes a 6-field expression (seconds first), so only a field
+# count tells it from the 5-field one the docs promise.
+test_validate_requires_five_schedule_fields() {
+  assert_fails "six fields" validate "${RESTIC_ENV[@]}" "BACKUP_SCHEDULE=0 0 3 * * *"
+  assert_contains "$ASSERT_OUTPUT" "BACKUP_SCHEDULE must have exactly 5 fields" "message"
+}
+
+test_validate_rejects_bad_step_timeout() {
+  local value
+  for value in abc 2x 0 1.5h -1m '2 h'; do
+    assert_fails "BACKUP_STEP_TIMEOUT=$value" validate "${RESTIC_ENV[@]}" "BACKUP_STEP_TIMEOUT=$value"
+    assert_contains "$ASSERT_OUTPUT" "BACKUP_STEP_TIMEOUT must be a positive duration" "message for [$value]"
+  done
+}
+
+test_validate_accepts_step_timeouts() {
+  local value
+  for value in 90 90s 45m 2h 1d; do
+    validate "${RESTIC_ENV[@]}" "BACKUP_STEP_TIMEOUT=$value" >/dev/null 2>&1 || fail "BACKUP_STEP_TIMEOUT=$value was rejected"
+  done
+}
+
+# Only the backup_data volume at /backups outlives a redeploy.
+test_validate_rejects_local_repository_outside_backups() {
+  local repo
+  for repo in /tmp/restic /backupsx/restic /backups/../tmp/restic; do
+    assert_fails "RESTIC_REPOSITORY=$repo" validate RESTIC_REPOSITORY="$repo" RESTIC_PASSWORD=secret
+    assert_contains "$ASSERT_OUTPUT" "RESTIC_REPOSITORY must be under /backups" "message for $repo"
+  done
+  validate RESTIC_REPOSITORY=/backups/restic RESTIC_PASSWORD=secret >/dev/null 2>&1 ||
+    fail "a repository under /backups was rejected"
+  validate RESTIC_REPOSITORY=s3:https://s3.example.test/bucket/bagheera RESTIC_PASSWORD=secret >/dev/null 2>&1 ||
+    fail "a remote repository was rejected"
+}
+
+test_validate_reports_unwritable_backups() {
+  local mode
+  mode=$(stat -c %a /backups)
+  # shellcheck disable=SC2064 # the mode is read now, the trap fires later
+  trap "chmod $mode /backups" EXIT
+  chmod 555 /backups
+  assert_fails "read-only /backups" validate RESTIC_REPOSITORY=/backups/restic RESTIC_PASSWORD=secret
+  assert_contains "$ASSERT_OUTPUT" "/backups is not writable by the backup user" "message"
+}
+
+# curl's --mail-rcpt takes one bare address.
+test_validate_requires_single_bare_addresses() {
+  local var value
+  for var in BACKUP_EMAIL_TO BACKUP_ALERT_EMAIL; do
+    for value in 'Ops <ops@example.com>' 'a@example.com,b@example.com' 'a@example.com b@example.com' ops; do
+      assert_fails "$var=$value" validate "${RESTIC_ENV[@]}" "BACKUP_EMAIL_AGE_RECIPIENT=$AGE_KEY" "$var=$value"
+      assert_contains "$ASSERT_OUTPUT" "$var must be one bare address" "message for $var=$value"
+    done
+  done
+}
+
+# run_step, from lib.sh, under the given BACKUP_STEP_TIMEOUT.
+run_step_with() {
+  local limit=$1
+  shift
+  (
+    # shellcheck source=../lib.sh
+    . /usr/local/lib/backup/lib.sh
+    BACKUP_STEP_TIMEOUT=$limit run_step "the step" "$@"
+  )
+}
+
+test_run_step_stops_a_step_that_runs_too_long() {
+  local status=0 started=$SECONDS output
+  output=$(run_step_with 1s sleep 30 2>&1) || status=$?
+  assert_eq 124 "$status" "status"
+  [ $((SECONDS - started)) -lt 10 ] || fail "the step was not stopped in time"
+  assert_contains "$output" "ERROR the step timed out after 1s (BACKUP_STEP_TIMEOUT)" "message"
+}
+
+test_run_step_passes_the_command_status_through() {
+  local status=0 output
+  output=$(run_step_with 30s sh -c 'echo out; exit 7' 2>&1) || status=$?
+  assert_eq 7 "$status" "status"
+  assert_eq out "$output" "output"
 }
 
 test_restic_backup_creates_restorable_snapshot() {
@@ -111,6 +195,8 @@ test_restic_backup_creates_restorable_snapshot() {
   local output snapshots
   output=$(run_backup 2>&1)
   assert_contains "$output" "created restic repository" "first run initialises the repository"
+  # A warning, so a mistyped RESTIC_REPOSITORY stands out in the logs.
+  assert_contains "$output" "WARN created restic repository" "the new repository is logged as a warning"
   snapshots=$(RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic snapshots --json)
   assert_eq 1 "$(snapshot_count)" "snapshot count"
   assert_contains "$snapshots" '"tags":["postgres"]' "snapshot tag"
@@ -233,6 +319,140 @@ test_postgres_unreachable_fails() {
   reset_repo
   assert_fails "unreachable postgres" run_backup POSTGRES_HOST=nowhere
   assert_contains "$ASSERT_OUTPUT" "pg_dump failed" "message"
+}
+
+# Puts in $FAKE_BIN a pg_dump that cuts the last bytes off the dump it writes,
+# in the data of the last table, and keeps a copy at /tmp/cut.pgdump. The table
+# of contents, at the start of the file, stays readable.
+truncating_pg_dump() {
+  FAKE_BIN=$(mktemp -d)
+  cat >"$FAKE_BIN/pg_dump" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+/usr/local/bin/pg_dump "$@"
+out=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "-f" ]; then out=$2; fi
+  shift
+done
+size=$(wc -c <"$out")
+head -c "$((size - 32))" "$out" >"$out.cut"
+mv "$out.cut" "$out"
+cp "$out" /tmp/cut.pgdump
+EOF
+  chmod +x "$FAKE_BIN/pg_dump"
+}
+
+test_dump_cut_short_in_its_data_is_rejected() {
+  reset_repo
+  init_repo
+  rm -f /tmp/cut.pgdump
+  truncating_pg_dump
+  assert_fails "a dump cut short" run_backup "PATH=$FAKE_BIN:$PATH"
+  # Without this the test could not tell reading the data from listing the
+  # table of contents.
+  pg_restore -l /tmp/cut.pgdump >/dev/null 2>&1 ||
+    fail "the cut dump's table of contents is unreadable: the test would prove nothing"
+  assert_contains "$ASSERT_OUTPUT" "dump verification failed" "message"
+  assert_eq 0 "$(snapshot_count)" "snapshot count"
+}
+
+# Holds an exclusive lock on the members table, from a session that then
+# sleeps, until release_table_lock (the calling test's EXIT trap): pg_dump has
+# to wait for it.
+hold_table_lock() {
+  PGPASSWORD=$PG_PASSWORD PGAPPNAME=lock-holder psql -h postgres -U bagheera -d bagheera -q >/dev/null 2>&1 <<'SQL' &
+BEGIN;
+LOCK TABLE members IN ACCESS EXCLUSIVE MODE;
+SELECT pg_sleep(30);
+SQL
+  trap release_table_lock EXIT
+  local waited=0
+  while [ "$(table_lock_holders)" != 1 ] && [ "$waited" -lt 50 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  [ "$(table_lock_holders)" = 1 ] || fail "the lock holder never locked the members table"
+}
+
+table_lock_holders() {
+  PGPASSWORD=$PG_PASSWORD psql -h postgres -U bagheera -d bagheera -qAt -c \
+    "SELECT count(*) FROM pg_locks l JOIN pg_stat_activity a USING (pid)
+     WHERE a.application_name = 'lock-holder' AND l.mode = 'AccessExclusiveLock' AND l.granted"
+}
+
+release_table_lock() {
+  PGPASSWORD=$PG_PASSWORD psql -h postgres -U bagheera -d bagheera -qAt -c \
+    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE application_name = 'lock-holder'" >/dev/null
+}
+
+# A dump stuck behind a lock ends at BACKUP_STEP_TIMEOUT, as a failure that
+# alerts and says it timed out. In this test and the two below, the outer
+# timeout turns a regression (a run that waits on) into a failure rather than a
+# hang: SIGKILL, because the run would wait for its step before acting on
+# SIGTERM.
+test_dump_stuck_behind_a_lock_times_out() {
+  reset_repo
+  mailpit_reset
+  hold_table_lock
+  local status=0 started=$SECONDS body
+  timeout -s KILL 60 env "${RUN_ENV[@]}" "${ALERT_ENV[@]}" BACKUP_STEP_TIMEOUT=3s backup-run >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  [ $((SECONDS - started)) -lt 20 ] || fail "the run took $((SECONDS - started))s"
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "The Bagheera backup failed: dump (timed out)." "the headline"
+  assert_contains "$body" "pg_dump timed out after 3s (BACKUP_STEP_TIMEOUT)" "the log tail"
+}
+
+# Listens on port 18000 and never answers: a repository server gone silent
+# (restic, which retries for minutes, would hang on a refused connection too).
+# Stopped when the calling test ends.
+SILENT_REPOSITORY=rest:http://127.0.0.1:18000/
+start_silent_peer() {
+  sleep 60 | nc -l -p 18000 >/dev/null 2>&1 &
+  # shellcheck disable=SC2064 # $! is the listener now
+  trap "kill $! 2>/dev/null || true" EXIT
+  sleep 0.5
+}
+
+test_hung_restic_step_times_out_and_alerts() {
+  reset_repo
+  mailpit_reset
+  start_silent_peer
+  local status=0 started=$SECONDS body
+  timeout -s KILL 60 env "${RUN_ENV[@]}" "${ALERT_ENV[@]}" RESTIC_REPOSITORY="$SILENT_REPOSITORY" BACKUP_STEP_TIMEOUT=3s \
+    backup-run >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  [ $((SECONDS - started)) -lt 20 ] || fail "the run took $((SECONDS - started))s"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] FAILED')" "alert count"
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "The Bagheera backup failed: restic (timed out)." "the headline"
+  assert_contains "$body" "restic cat config timed out after 3s (BACKUP_STEP_TIMEOUT)" "the log tail"
+}
+
+test_hung_check_times_out_and_alerts() {
+  mailpit_reset
+  start_silent_peer
+  local status=0 started=$SECONDS
+  timeout -s KILL 60 env "${RUN_ENV[@]}" "${ALERT_ENV[@]}" RESTIC_REPOSITORY="$SILENT_REPOSITORY" BACKUP_STEP_TIMEOUT=3s \
+    backup-check >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  [ $((SECONDS - started)) -lt 20 ] || fail "the check took $((SECONDS - started))s"
+  assert_contains "$(mailpit_body '[Bagheera backup] FAILED')" "The Bagheera backup failed: restic check (timed out)." "the headline"
+}
+
+# The snapshot is in, only the pruning failed: the alert must not read as if
+# no backup was taken.
+test_failed_retention_is_its_own_failure() {
+  reset_repo
+  mailpit_reset
+  local status=0 body
+  run_backup "${ALERT_ENV[@]}" BACKUP_KEEP_DAILY=not-a-number >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_eq 1 "$(snapshot_count)" "snapshot count"
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "The Bagheera backup failed: restic-retention." "the headline"
+  assert_contains "$body" "the snapshot is saved, but applying the retention policy failed" "the log tail"
 }
 
 test_wrong_restic_password_fails_without_init() {
@@ -368,6 +588,36 @@ test_email_requires_tls_by_default() {
   case $ASSERT_OUTPUT in
     *p%40ss* | *p@ss*) fail "the SMTP password leaked into the output" ;;
   esac
+}
+
+# The STARTTLS Mailpit, with a certificate made for this run: curl trusts it
+# through CURL_CA_BUNDLE, as it trusts the system's CAs in production.
+TLS_SMTP_URL='smtp://user:p%40ss@mailpit-tls:1025'
+
+test_email_over_starttls_is_delivered() {
+  reset_repo
+  local MAILPIT_URL=$MAILPIT_TLS_URL
+  mailpit_reset
+  new_age_key
+  # The server refuses plain SMTP, so a delivery below proves STARTTLS.
+  assert_fails "plain SMTP to the STARTTLS server" run_email_backup "EMAIL_SMTP_URL=$TLS_SMTP_URL" CURL_CA_BUNDLE=/certs/cert.pem
+  local output
+  output=$(run_email_backup BACKUP_SMTP_ALLOW_PLAINTEXT= "EMAIL_SMTP_URL=$TLS_SMTP_URL" CURL_CA_BUNDLE=/certs/cert.pem 2>&1) ||
+    fail "the backup failed over STARTTLS: $output"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
+  mailpit_download_attachment '[Bagheera backup]' /tmp/attachment.age
+  age -d -i "$AGE_KEY_FILE" -o /tmp/attachment.pgdump /tmp/attachment.age
+  assert_contains "$(pg_restore -l /tmp/attachment.pgdump)" "members" "decrypted attachment lists the members table"
+}
+
+test_email_over_starttls_checks_the_certificate() {
+  reset_repo
+  local MAILPIT_URL=$MAILPIT_TLS_URL
+  mailpit_reset
+  new_age_key
+  assert_fails "an untrusted certificate" run_email_backup BACKUP_SMTP_ALLOW_PLAINTEXT= "EMAIL_SMTP_URL=$TLS_SMTP_URL"
+  assert_contains "$ASSERT_OUTPUT" "sending the email failed" "message"
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
 }
 
 test_email_is_never_plaintext() {
@@ -555,8 +805,17 @@ send_alert_for_fake_log() {
     printf 'log line %s\n' "$i" >>"$log"
   done
   printf 'secrets: %s %s %s\n' "restic-pw-s3cret" "pg-pw-s3cret" "$EMAIL_SMTP_URL" >>"$log"
+  send_alert_quoting "$log" RESTIC_PASSWORD=restic-pw-s3cret POSTGRES_PASSWORD=pg-pw-s3cret
+}
+
+# send_alert_quoting <log> [VAR=value...]: the real notify_failure, quoting the
+# given log, with ALERT_ENV and the given variables in its environment.
+send_alert_quoting() {
+  local log=$1
+  shift
   (
-    export "${ALERT_ENV[@]}" RESTIC_PASSWORD=restic-pw-s3cret POSTGRES_PASSWORD=pg-pw-s3cret
+    # shellcheck disable=SC2163 # "$@" holds VAR=value assignments to export
+    export "${ALERT_ENV[@]}" "$@"
     # shellcheck source=../mail.sh
     . /usr/local/lib/backup/mail.sh
     # shellcheck disable=SC2034 # read by notify_failure
@@ -584,6 +843,32 @@ test_alert_redacts_secrets() {
   case $body in
     *restic-pw-s3cret* | *pg-pw-s3cret* | *p%40ss*) fail "the alert leaked a secret" ;;
   esac
+}
+
+# The log holds the S3 secret and the SFTP key without its first two lines, as
+# a 20-line tail cut through the key would.
+test_alert_redacts_the_s3_secret_and_the_sftp_key() {
+  mailpit_reset
+  local key_dir key log=/tmp/alert-keys.log body line
+  key_dir=$(mktemp -d)
+  ssh-keygen -q -t ed25519 -N '' -f "$key_dir/id" >/dev/null
+  key=$(cat "$key_dir/id")
+  {
+    printf 'aws: %s\n' aws-s3cret-key
+    sed 1,2d "$key_dir/id"
+  } >"$log"
+  send_alert_quoting "$log" AWS_SECRET_ACCESS_KEY=aws-s3cret-key "BACKUP_SFTP_PRIVATE_KEY=$key"
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "aws: <redacted>" "the S3 secret"
+  case $body in
+    *aws-s3cret-key*) fail "the alert leaked AWS_SECRET_ACCESS_KEY" ;;
+  esac
+  while IFS= read -r line; do
+    case $line in "" | -----*) continue ;; esac
+    case $body in
+      *"$line"*) fail "the alert leaked a line of BACKUP_SFTP_PRIVATE_KEY: $line" ;;
+    esac
+  done <<<"$key"
 }
 
 test_check_passes_on_healthy_repo() {
@@ -683,6 +968,11 @@ test_entrypoint_writes_sftp_material() {
   assert_contains "$config" "UserKnownHostsFile $ssh_dir/known_hosts" "known hosts file"
   assert_contains "$config" "StrictHostKeyChecking yes" "host key checking"
   assert_contains "$config" "BatchMode yes" "batch mode"
+  # A server gone silent drops the connection after 4 unanswered 30 s probes.
+  assert_contains "$config" "ServerAliveInterval 30" "keepalive interval"
+  assert_contains "$config" "ServerAliveCountMax 4" "keepalive count"
+  ssh -G -F "$ssh_dir/config" sftp.example.test 2>/dev/null | grep -qx 'serveraliveinterval 30' ||
+    fail "ssh does not read the keepalive interval from the config"
   assert_eq "$(ssh-keygen -y -f "$key_dir/id")" "$(ssh-keygen -y -f "$ssh_dir/id_backup")" "the written key is the given key and ssh accepts it"
 }
 
