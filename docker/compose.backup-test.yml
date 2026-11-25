@@ -1,8 +1,7 @@
-# Test harness for the backup container: `make test-backup`. Runs
-# docker/backup/test/run.sh inside the freshly built image, against a real
-# Postgres and a Mailpit that catches the emails.
-
-name: bagheera-backup-test
+# Test harness for the backup container: `make test-backup`, which names the
+# project. Runs docker/backup/test/run.sh inside the freshly built image,
+# against a real Postgres and two Mailpits that catch the emails: one plain,
+# one that requires STARTTLS, as production's SMTP server does.
 
 services:
   postgres:
@@ -28,6 +27,43 @@ services:
       timeout: 5s
       retries: 15
 
+  # A self-signed certificate for mailpit-tls, made at each run so that no key
+  # is committed. The postgres image has no openssl: it is added on top.
+  certs:
+    build:
+      dockerfile_inline: |
+        FROM postgres:18-alpine@sha256:9ba53c7d41ea093baf5c1ba635ba5434c4f979880527d49bb7d9237d3193085b
+        RUN apk add --no-cache openssl
+    entrypoint: ['sh', '-c']
+    command:
+      - >-
+        openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes
+        -days 1 -subj /CN=mailpit-tls -addext subjectAltName=DNS:mailpit-tls
+        -keyout /certs/key.pem -out /certs/cert.pem 2>/dev/null
+        && chmod 644 /certs/cert.pem
+    volumes:
+      - certs:/certs
+
+  mailpit-tls:
+    image: axllent/mailpit:v1.34.0@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: '1'
+      MP_SMTP_TLS_CERT: /certs/cert.pem
+      MP_SMTP_TLS_KEY: /certs/key.pem
+      # Refuses a client that does not switch to TLS, so a delivery proves
+      # STARTTLS was used.
+      MP_SMTP_REQUIRE_STARTTLS: 'true'
+    volumes:
+      - certs:/certs:ro
+    depends_on:
+      certs:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8025/readyz']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
   test:
     build:
       context: ..
@@ -39,10 +75,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       MAILPIT_URL: http://mailpit:8025
+      MAILPIT_TLS_URL: http://mailpit-tls:8025
     volumes:
       - ./backup/test:/tests:ro
+      # Only the certificate is read: mailpit-tls's, to trust it.
+      - certs:/certs:ro
     depends_on:
       postgres:
         condition: service_healthy
       mailpit:
         condition: service_healthy
+      mailpit-tls:
+        condition: service_healthy
+
+volumes:
+  certs:

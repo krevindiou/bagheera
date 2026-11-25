@@ -112,7 +112,10 @@ mail_send() {
   # the command line (`ps`). Inside the quotes, \ and " are escapes.
   local url=${EMAIL_SMTP_URL//\\/\\\\}
   url=${url//\"/\\\"}
-  out=$(curl --silent --show-error --max-time 120 "${tls[@]}" \
+  # A capped dump is about 14 MB on the wire: rather than one short overall
+  # limit, give up on a server that does not answer or a transfer that stalls
+  # (under 1 KiB/s for 2 minutes), with a generous ceiling over everything.
+  out=$(curl --silent --show-error --connect-timeout 30 --speed-limit 1024 --speed-time 120 --max-time 900 "${tls[@]}" \
     --mail-from "$sender" --mail-rcpt "$to" --upload-file "$message" \
     --config <(printf 'url = "%s"\n' "$url") 2>&1) || status=$?
   rm -f "$message"
@@ -124,13 +127,28 @@ mail_send() {
 }
 
 # Prints stdin with the secrets of the environment replaced by <redacted>: the
-# SMTP URL, the restic and Postgres passwords, and the credentials of any
-# user:password@ URL.
+# SMTP URL, the restic and Postgres passwords, the S3 secret key, the SFTP
+# private key, and the credentials of any user:password@ URL. A multi-line
+# secret is also redacted line by line, since the quoted log may hold only part
+# of it.
 redact_secrets() {
-  local text secret
+  local text secret line
   text=$(cat)
-  for secret in "${EMAIL_SMTP_URL:-}" "${RESTIC_PASSWORD:-}" "${POSTGRES_PASSWORD:-}"; do
-    [ -z "$secret" ] || text=${text//"$secret"/<redacted>}
+  for secret in "${EMAIL_SMTP_URL:-}" "${RESTIC_PASSWORD:-}" "${POSTGRES_PASSWORD:-}" \
+    "${AWS_SECRET_ACCESS_KEY:-}" "${BACKUP_SFTP_PRIVATE_KEY:-}"; do
+    [ -n "$secret" ] || continue
+    text=${text//"$secret"/<redacted>}
+    case $secret in
+      *$'\n'*)
+        while IFS= read -r line; do
+          line=${line%$'\r'}
+          # Not the -----BEGIN/END ...----- markers: they are not secret, and
+          # every key has the same ones.
+          case $line in "" | -----*) continue ;; esac
+          text=${text//"$line"/<redacted>}
+        done <<<"$secret"
+        ;;
+    esac
   done
   printf '%s' "$text" | sed -E 's#(://[^/:@[:space:]]*):[^/@[:space:]]*@#\1:<redacted>@#g'
 }

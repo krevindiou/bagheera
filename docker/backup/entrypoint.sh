@@ -14,7 +14,9 @@ BACKUP_DIR=/tmp/backup
 CRONTAB=$BACKUP_DIR/crontab
 
 # Writes the key, the pinned host keys and an ssh config that never trusts an
-# unknown host, under ~/.ssh where restic's `ssh` finds them.
+# unknown host, under ~/.ssh where restic's `ssh` finds them. The keepalives
+# end a connection whose server went silent after two minutes, rather than
+# leaving the transfer to the step timeout.
 write_sftp_material() {
   local ssh_dir=$HOME/.ssh
   mkdir -p "$ssh_dir"
@@ -29,6 +31,8 @@ Host *
   UserKnownHostsFile $ssh_dir/known_hosts
   StrictHostKeyChecking yes
   BatchMode yes
+  ServerAliveInterval 30
+  ServerAliveCountMax 4
 EOF
   log info "wrote the SFTP key and pinned host keys under $ssh_dir"
 }

@@ -28,7 +28,7 @@ main() {
 
   local status=0
   log info "checking the restic repository" >"$CHECK_LOG"
-  restic check --retry-lock 10m >>"$CHECK_LOG" 2>&1 || status=$?
+  run_step "restic check" restic check --retry-lock 10m >>"$CHECK_LOG" 2>&1 || status=$?
   if [ "$status" -eq 0 ]; then
     log info "the restic repository is healthy" >>"$CHECK_LOG"
   else
@@ -36,7 +36,10 @@ main() {
   fi
   cat "$CHECK_LOG"
 
-  if [ "$status" -ne 0 ]; then
+  if [ "$status" -eq "$STEP_TIMED_OUT" ]; then
+    notify_failure "restic check (timed out)"
+    return 1
+  elif [ "$status" -ne 0 ]; then
     notify_failure "restic check"
     return 1
   fi
