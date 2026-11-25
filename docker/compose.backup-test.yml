@@ -1,0 +1,45 @@
+# Test harness for the backup container: `make test-backup`. Runs
+# docker/backup/test/run.sh inside the freshly built image, against a real
+# Postgres and a Mailpit that catches the emails.
+
+name: bagheera-backup-test
+
+services:
+  postgres:
+    image: postgres:18-alpine@sha256:9ba53c7d41ea093baf5c1ba635ba5434c4f979880527d49bb7d9237d3193085b
+    environment:
+      POSTGRES_USER: bagheera
+      POSTGRES_DB: bagheera
+      POSTGRES_PASSWORD: test
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bagheera -d bagheera']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  mailpit:
+    image: axllent/mailpit:v1.34.0@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: '1'
+      MP_SMTP_AUTH_ALLOW_INSECURE: '1'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8025/readyz']
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backup
+    entrypoint: ['bash', '/tests/run.sh']
+    environment:
+      POSTGRES_PASSWORD: test
+      MAILPIT_URL: http://mailpit:8025
+    volumes:
+      - ./backup/test:/tests:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy

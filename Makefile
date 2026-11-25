@@ -7,8 +7,9 @@ export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
+COMPOSE_BACKUP_TEST := docker compose -p bagheera-backup-test -f docker/compose.backup-test.yml
 
-.PHONY: help check precommit build build-images deploy up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
+.PHONY: help check precommit build build-images deploy up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e test-backup lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -81,6 +82,9 @@ test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
 	$(COMPOSE_E2E) up -d --build --wait --wait-timeout 300 || { $(COMPOSE_E2E) logs api; $(COMPOSE_E2E) down -v; exit 1; }
 	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
 	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status
+
+test-backup: ## Run the backup container's tests (shell, against real Postgres and Mailpit)
+	$(COMPOSE_BACKUP_TEST) up --build --abort-on-container-exit --exit-code-from test; status=$$?; $(COMPOSE_BACKUP_TEST) down -v; exit $$status
 
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm lint
