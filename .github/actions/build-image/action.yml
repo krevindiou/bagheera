@@ -3,7 +3,7 @@ description: Builds one image for one architecture, reading (and optionally writ
 
 inputs:
   image:
-    description: Image name, bagheera-api or bagheera-web; scopes the layer cache.
+    description: Image name, bagheera-api, bagheera-web or bagheera-backup; scopes the layer cache.
     required: true
   dockerfile:
     description: Dockerfile to build.

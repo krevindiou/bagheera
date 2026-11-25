@@ -14,6 +14,7 @@ set -euo pipefail
 BACKUP_DIR=/tmp/backup
 CHECK_LOG=$BACKUP_DIR/check.log
 # The log notify_failure quotes.
+# shellcheck disable=SC2034 # read by notify_failure
 ALERT_LOG=$CHECK_LOG
 
 main() {

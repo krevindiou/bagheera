@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [bagheera-api, bagheera-web]
+        image: [bagheera-api, bagheera-web, bagheera-backup]
     steps:
       # For .trivyignore.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

@@ -31,6 +31,7 @@ assert_fails() {
   local label=$1
   shift
   local status=0
+  # shellcheck disable=SC2034 # read by the tests that source this file
   ASSERT_OUTPUT=$("$@" 2>&1) || status=$?
   [ "$status" -ne 0 ] || fail "$label: command succeeded, expected a failure"
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Backup container tests, run by `make test-backup` inside the built image.
+# shellcheck disable=SC2329 # the test_* functions are run by name by the runner loop
 set -euo pipefail
 
 # shellcheck source=helpers.sh
@@ -678,6 +679,53 @@ test_disabled_mode_stays_up_and_healthy() {
   done
   ! kill -0 "$pid" 2>/dev/null || fail "SIGTERM did not stop the disabled-mode entrypoint"
   ! kill -0 "$sleeper" 2>/dev/null || fail "the sleeping child outlived the entrypoint"
+}
+
+# `backup-entrypoint <command>` runs the command instead of the scheduler: the
+# x-pre_deploy hook is `backup-validate` as the container's command, which the
+# image's entrypoint receives as an argument. The timeout makes a regression
+# (supercronic, or disabled mode's sleep, never exiting) a failure, not a hang;
+# busybox's timeout exits 143 when it had to kill the command.
+# Usage: entrypoint_command [VAR=value...] <command> [args...]
+entrypoint_command() {
+  local -a vars=()
+  while [[ ${1:-} == *=* ]]; do
+    vars+=("$1")
+    shift
+  done
+  env -i PATH="$PATH" HOME="$PREPARE_HOME" "${vars[@]}" timeout 10 backup-entrypoint "$@"
+}
+
+test_entrypoint_runs_validate_and_exits() {
+  prepare_home
+  entrypoint_command "${RESTIC_ENV[@]}" backup-validate >/dev/null 2>&1
+  ! pgrep -x supercronic >/dev/null || fail "the scheduler was started"
+  [ ! -e /tmp/backup/crontab ] || fail "a crontab was written: the entrypoint did not dispatch"
+}
+
+test_entrypoint_validate_command_reports_invalid_config() {
+  prepare_home
+  local status=0
+  ASSERT_OUTPUT=$(entrypoint_command backup-validate 2>&1) || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_contains "$ASSERT_OUTPUT" "no backup destination configured" "message"
+}
+
+test_entrypoint_validate_command_exits_in_disabled_mode() {
+  prepare_home
+  # Disabled mode ends cleanly (status 0) on the timeout's SIGTERM, so only the
+  # elapsed time tells a command that returned from one that was killed.
+  local start=$SECONDS
+  entrypoint_command BACKUP_DISABLED=true backup-validate >/dev/null 2>&1
+  [ $((SECONDS - start)) -lt 5 ] || fail "backup-validate did not return promptly in disabled mode"
+}
+
+test_entrypoint_runs_any_command_given() {
+  prepare_home
+  local status=0
+  ASSERT_OUTPUT=$(entrypoint_command "${RESTIC_ENV[@]}" sh -c 'echo ran-dispatched; exit 7' 2>&1) || status=$?
+  assert_eq 7 "$status" "the command's exit status"
+  assert_eq "ran-dispatched" "$ASSERT_OUTPUT" "the command's output"
 }
 
 test_healthcheck_fails_without_scheduler() {

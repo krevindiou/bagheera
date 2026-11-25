@@ -48,9 +48,9 @@ if [ -f docker/prod.env ]; then
 fi
 : "${IMAGE_NAMESPACE:?set IMAGE_NAMESPACE in docker/prod.env}"
 
-# Both images must exist for the tag: a publish cancelled halfway leaves one,
-# and rolling out only that one would pair it with the previous release.
-for image in bagheera-api bagheera-web; do
+# All images must exist for the tag: a publish cancelled halfway leaves some,
+# and rolling out only those would pair them with the previous release.
+for image in bagheera-api bagheera-web bagheera-backup; do
 	if ! docker manifest inspect "$IMAGE_NAMESPACE/$image:$tag" >/dev/null 2>&1; then
 		echo "$IMAGE_NAMESPACE/$image:$tag is not published: wait for the Release workflow, or pick another version" >&2
 		exit 1

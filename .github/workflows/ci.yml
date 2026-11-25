@@ -37,6 +37,7 @@ jobs:
       - run: pnpm run check:types
       - run: pnpm run check:specs
       - run: pnpm run check:hooks
+      - run: pnpm run check:shellcheck
       - run: pnpm run check:image-age
       - run: pnpm run check:audit
       - run: pnpm run check:dedupe
@@ -124,3 +125,11 @@ jobs:
           junit: junit-integration.xml
           coverage: coverage-integration
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
+  backup:
+    name: Backup container tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: make test-backup
