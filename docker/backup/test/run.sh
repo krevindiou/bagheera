@@ -133,6 +133,24 @@ test_second_run_adds_snapshot_without_reinit() {
   assert_eq 2 "$(snapshot_count)" "snapshot count"
 }
 
+# Host names of the snapshots in the repository, one per line, sorted.
+snapshot_hosts() {
+  local json
+  json=$(RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic snapshots --json) || return 1
+  printf '%s\n' "$json" | { grep -o '"hostname":"[^"]*"' || true; } | sed 's/"hostname":"\(.*\)"/\1/' | sort
+}
+
+# Snapshots are recorded under the fixed host name `bagheera`, whatever the
+# container's own host name is: retention groups by host, so a host name that
+# changed with every deploy would leave every deploy's snapshots unpruned.
+test_snapshots_use_the_pinned_host_name() {
+  reset_repo
+  # Without this the test could not tell a pinned name from the default one.
+  [ "$(hostname)" != "bagheera" ] || fail "the test container's host name is bagheera: the test would prove nothing"
+  run_backup >/dev/null 2>&1
+  assert_eq "bagheera" "$(snapshot_hosts)" "snapshot host name"
+}
+
 # Seeds one snapshot per month of 2020 (four different days, ISO weeks and
 # months, all long gone), runs backup-run with the given retention variables and
 # prints how many snapshots are left. The run adds a fifth snapshot, today's.
@@ -147,7 +165,7 @@ retained_after() {
   RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic init --quiet
   printf 'seed\n' >/tmp/seed.txt
   for day in 2020-01-06 2020-02-03 2020-03-02 2020-04-06; do
-    RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic backup --quiet --tag postgres \
+    RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic backup --quiet --host bagheera --tag postgres \
       --time "$day 03:00:00" /tmp/seed.txt >/dev/null
   done
   assert_eq 4 "$(snapshot_count)" "seeded snapshots"
@@ -174,6 +192,32 @@ test_retention_applies_keep_monthly() {
 # The defaults (7 daily, 4 weekly, 6 monthly) keep all five.
 test_retention_defaults_keep_recent_snapshots() {
   assert_eq 5 "$(retained_after)" "kept with the defaults"
+}
+
+# Retention only considers the snapshots of the pinned host: those another host
+# name wrote (the earlier host-side backup, whose snapshots carry the deploy
+# host's name) are left alone, and are removed by hand. Two of them, because
+# restic's keep rules would keep a lone snapshot of an unpinned group anyway:
+# with the old group in play, KEEP_DAILY=1 would drop the older of the two.
+test_retention_leaves_other_hosts_snapshots_alone() {
+  local day
+  reset_repo
+  RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic init --quiet
+  printf 'seed\n' >/tmp/seed.txt
+  for day in 2020-01-06 2020-02-03; do
+    RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic backup --quiet --host old-container-id --tag postgres \
+      --time "$day 03:00:00" /tmp/seed.txt >/dev/null
+  done
+  for day in 2020-03-02 2020-04-06; do
+    RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic backup --quiet --host bagheera --tag postgres \
+      --time "$day 03:00:00" /tmp/seed.txt >/dev/null
+  done
+  assert_eq 4 "$(snapshot_count)" "seeded snapshots"
+  run_backup BACKUP_KEEP_DAILY=1 BACKUP_KEEP_WEEKLY=1 BACKUP_KEEP_MONTHLY=1 >/dev/null 2>&1
+  # The pinned host's seeds obey the keep flags: only today's snapshot is left.
+  assert_eq "bagheera
+old-container-id
+old-container-id" "$(snapshot_hosts)" "snapshot hosts after the run"
 }
 
 test_failed_dump_ships_nothing() {
