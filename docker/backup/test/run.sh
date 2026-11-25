@@ -379,5 +379,204 @@ test_restic_failing_does_not_skip_email() {
   assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "message count"
 }
 
+# Alert fixtures: SMTP configured and an alert address, no email destination.
+ALERT_ENV=(
+  "EMAIL_SMTP_URL=$EMAIL_SMTP_URL"
+  EMAIL_FROM=backup@example.test
+  BACKUP_SMTP_ALLOW_PLAINTEXT=true
+  BACKUP_ALERT_EMAIL=alerts@example.test
+)
+
+# Runs backup-check against the default repository with the given overrides.
+run_check() {
+  env "${RUN_ENV[@]}" "$@" backup-check
+}
+
+# A repository that already exists, so a wrong password fails the restic step
+# instead of creating a new repository.
+init_repo() {
+  RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic init --quiet
+}
+
+test_failure_sends_alert() {
+  reset_repo
+  mailpit_reset
+  init_repo
+  local status=0 body
+  run_backup "${ALERT_ENV[@]}" RESTIC_PASSWORD=wrong-restic-secret >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] FAILED')" "alert count"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "total message count"
+  assert_contains "$(mailpit_raw '[Bagheera backup] FAILED')" 'To: alerts@example.test' "recipient"
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "The Bagheera backup failed: restic." "the failed destination"
+  assert_contains "$body" "restic repository is not usable" "the log tail"
+  assert_contains "$body" "ERROR backup failed: restic" "the last line of the log"
+  case $body in
+    *wrong-restic-secret*) fail "the alert leaked RESTIC_PASSWORD" ;;
+  esac
+}
+
+test_alert_lists_every_failure() {
+  reset_repo
+  mailpit_reset
+  new_age_key
+  init_repo
+  local status=0
+  run_email_backup "${RUN_ENV[@]}" "${ALERT_ENV[@]}" RESTIC_PASSWORD=other BACKUP_EMAIL_MAX_MB=0 >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] FAILED')" "alert count"
+  assert_contains "$(mailpit_body '[Bagheera backup] FAILED')" "restic, email" "both destinations"
+}
+
+test_dump_failure_sends_alert() {
+  reset_repo
+  mailpit_reset
+  local status=0
+  run_backup "${ALERT_ENV[@]}" POSTGRES_PASSWORD=wrong >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] FAILED')" "alert count"
+  assert_contains "$(mailpit_body '[Bagheera backup] FAILED')" "dump" "the failed step"
+}
+
+test_no_alert_email_means_log_only() {
+  reset_repo
+  mailpit_reset
+  init_repo
+  local status=0 output
+  output=$(run_backup "${ALERT_ENV[@]}" BACKUP_ALERT_EMAIL= RESTIC_PASSWORD=other 2>&1) || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_contains "$output" "backup failed: restic" "the failure is logged"
+  case $output in
+    *"notification"*) fail "a notification was attempted without BACKUP_ALERT_EMAIL" ;;
+  esac
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
+test_success_is_silent_by_default() {
+  reset_repo
+  mailpit_reset
+  run_backup "${ALERT_ENV[@]}" >/dev/null 2>&1
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
+test_report_always_sends_ok() {
+  reset_repo
+  mailpit_reset
+  run_backup "${ALERT_ENV[@]}" BACKUP_REPORT=always >/dev/null 2>&1
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] OK')" "report count"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup]')" "total message count"
+  assert_contains "$(mailpit_raw '[Bagheera backup] OK')" 'To: alerts@example.test' "recipient"
+  assert_contains "$(mailpit_body '[Bagheera backup] OK')" "backup finished" "the log tail"
+}
+
+test_report_always_without_alert_email_is_silent() {
+  reset_repo
+  mailpit_reset
+  local output
+  output=$(run_backup "${ALERT_ENV[@]}" BACKUP_ALERT_EMAIL= BACKUP_REPORT=always 2>&1)
+  case $output in
+    *"notification"*) fail "a report was attempted without BACKUP_ALERT_EMAIL" ;;
+  esac
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
+test_failing_alert_only_changes_the_log() {
+  reset_repo
+  mailpit_reset
+  init_repo
+  local status=0 output
+  output=$(run_backup "${ALERT_ENV[@]}" EMAIL_SMTP_URL=smtp://nobody:hunter2@nowhere:1025 RESTIC_PASSWORD=other 2>&1) || status=$?
+  assert_eq 1 "$status" "a failed run still exits 1"
+  assert_contains "$output" "sending the email failed" "the alert failure is logged"
+  case $output in
+    *hunter2*) fail "the SMTP password leaked into the output" ;;
+  esac
+  # A successful run stays successful when its report cannot be sent.
+  reset_repo
+  status=0
+  output=$(run_backup "${ALERT_ENV[@]}" EMAIL_SMTP_URL=smtp://nobody:hunter2@nowhere:1025 BACKUP_REPORT=always 2>&1) || status=$?
+  assert_eq 0 "$status" "a successful run still exits 0"
+  assert_contains "$output" "sending the email failed" "the report failure is logged"
+}
+
+# Sends a failure alert quoting a fabricated log, from the real notify_failure.
+# The log's 30 numbered lines are followed by one holding every secret.
+send_alert_for_fake_log() {
+  mailpit_reset
+  local log=/tmp/alert-test.log i
+  : >"$log"
+  for i in $(seq -w 1 30); do
+    printf 'log line %s\n' "$i" >>"$log"
+  done
+  printf 'secrets: %s %s %s\n' "restic-pw-s3cret" "pg-pw-s3cret" "$EMAIL_SMTP_URL" >>"$log"
+  (
+    export "${ALERT_ENV[@]}" RESTIC_PASSWORD=restic-pw-s3cret POSTGRES_PASSWORD=pg-pw-s3cret
+    # shellcheck source=../mail.sh
+    . /usr/local/lib/backup/mail.sh
+    # shellcheck disable=SC2034 # read by notify_failure
+    ALERT_LOG=$log
+    notify_failure dump
+  )
+}
+
+test_alert_quotes_the_last_20_log_lines() {
+  send_alert_for_fake_log
+  local body
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "secrets:" "the newest line"
+  assert_contains "$body" "log line 12" "the 20th line from the end"
+  case $body in
+    *"log line 11"*) fail "the alert quotes more than 20 lines" ;;
+  esac
+}
+
+test_alert_redacts_secrets() {
+  send_alert_for_fake_log
+  local body
+  body=$(mailpit_body '[Bagheera backup] FAILED')
+  assert_contains "$body" "secrets: <redacted> <redacted> <redacted>" "the redacted line"
+  case $body in
+    *restic-pw-s3cret* | *pg-pw-s3cret* | *p%40ss*) fail "the alert leaked a secret" ;;
+  esac
+}
+
+test_check_passes_on_healthy_repo() {
+  reset_repo
+  mailpit_reset
+  run_backup >/dev/null 2>&1
+  run_check "${ALERT_ENV[@]}" >/dev/null 2>&1
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
+# `restic check` without --read-data must notice a pack the index lists but the
+# repository no longer holds.
+test_check_detects_corruption() {
+  reset_repo
+  mailpit_reset
+  run_backup >/dev/null 2>&1
+  run_check >/dev/null 2>&1 || fail "the check failed on a healthy repository"
+  local pack status=0
+  pack=$(find /backups/data -type f -print -quit)
+  [ -n "$pack" ] || fail "no pack file under /backups/data"
+  rm "$pack"
+  run_check >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status without an alert address"
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count without an alert address"
+  status=0
+  run_check "${ALERT_ENV[@]}" >/dev/null 2>&1 || status=$?
+  assert_eq 1 "$status" "exit status"
+  assert_eq 1 "$(mailpit_count '[Bagheera backup] FAILED')" "alert count"
+  assert_contains "$(mailpit_body '[Bagheera backup] FAILED')" "restic check" "the failed step"
+}
+
+test_check_without_restic_has_nothing_to_do() {
+  mailpit_reset
+  local output
+  output=$(env "${ALERT_ENV[@]}" backup-check 2>&1)
+  assert_contains "$output" "nothing to check" "message"
+  assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
+}
+
 seed_database
 run_tests

@@ -80,6 +80,23 @@ mailpit_raw() {
   curl -fsS "$MAILPIT_URL/api/v1/message/$id/raw"
 }
 
+# The decoded text body of the one message whose subject contains $1 (the first
+# base64 part of the message mail_build writes). Fails when there is no such
+# message or the body is empty.
+mailpit_body() {
+  local raw body
+  raw=$(mailpit_raw "$1") || return 1
+  body=$(printf '%s\n' "$raw" | tr -d '\r' | awk '
+    /^Content-Transfer-Encoding: base64$/ && !seen { seen = 1; grab = 1; getline; next }
+    grab && (/^$/ || /^--/) { exit }
+    grab { print }' | base64 -d) || return 1
+  [ -n "$body" ] || {
+    printf 'empty body in the message with subject containing [%s]\n' "$1" >&2
+    return 1
+  }
+  printf '%s\n' "$body"
+}
+
 # The envelope sender (Return-Path) Mailpit recorded for the message.
 mailpit_envelope_sender() {
   local id json
