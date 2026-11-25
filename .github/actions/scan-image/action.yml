@@ -3,7 +3,7 @@ description: Fails on a critical or high CVE that already has a fix, in an image
 
 inputs:
   image:
-    description: Image name, bagheera-api or bagheera-web.
+    description: Image name, bagheera-api, bagheera-web or bagheera-backup.
     required: true
   build:
     description: Whether to build the image first, as `true` or `false`; `false` scans `image-ref`.

@@ -82,7 +82,7 @@ services:
   # No archive_mode/archive_command: WAL archiving without a periodic
   # pg_basebackup to replay it onto isn't point-in-time recovery, it's just
   # unbounded disk growth. Recovery point objective is the nightly pg_dump
-  # in scripts/backup.sh — up to 24h of data — documented in
+  # taken by the backup service below — up to 24h of data — documented in
   # docs/backup-restore.md.
   postgres:
     # Pinned by digest so a floated `postgres:18-alpine` retag can't
@@ -131,6 +131,58 @@ services:
       timeout: 5s
       retries: 10
 
+  # Nightly pg_dump, shipped to restic and/or emailed age-encrypted (see
+  # docker/prod.env.example). prod.env is not backed up. Its own scheduler runs
+  # in the container: it sends nothing while stopped.
+  backup:
+    image: ${IMAGE_NAMESPACE:?}/bagheera-backup:${TAG:?set TAG to a published image tag}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Fails the deploy on a bad backup configuration, with a readable message,
+    # before any backup container is replaced: same mechanism as the api's
+    # migration above.
+    x-pre_deploy:
+      command: backup-validate
+    environment:
+      TZ: ${APP_TIMEZONE:-Europe/Paris}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      # Unset (empty) means the script's own default.
+      BACKUP_DISABLED: ${BACKUP_DISABLED:-}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      BACKUP_SFTP_PRIVATE_KEY: ${BACKUP_SFTP_PRIVATE_KEY:-}
+      BACKUP_SFTP_KNOWN_HOSTS: ${BACKUP_SFTP_KNOWN_HOSTS:-}
+      BACKUP_KEEP_DAILY: ${BACKUP_KEEP_DAILY:-}
+      BACKUP_KEEP_WEEKLY: ${BACKUP_KEEP_WEEKLY:-}
+      BACKUP_KEEP_MONTHLY: ${BACKUP_KEEP_MONTHLY:-}
+      BACKUP_EMAIL_TO: ${BACKUP_EMAIL_TO:-}
+      BACKUP_EMAIL_AGE_RECIPIENT: ${BACKUP_EMAIL_AGE_RECIPIENT:-}
+      BACKUP_EMAIL_MAX_MB: ${BACKUP_EMAIL_MAX_MB:-}
+      BACKUP_ALERT_EMAIL: ${BACKUP_ALERT_EMAIL:-}
+      BACKUP_REPORT: ${BACKUP_REPORT:-}
+      BACKUP_SMTP_ALLOW_PLAINTEXT: ${BACKUP_SMTP_ALLOW_PLAINTEXT:-}
+      # The same mail settings as the api.
+      EMAIL_SMTP_URL: ${EMAIL_SMTP_URL:?}
+      EMAIL_FROM: ${EMAIL_FROM:?}
+    volumes:
+      # The local restic repository, when RESTIC_REPOSITORY=/backups/...
+      - backup_data:/backups
+    # The postgres base image declares /var/lib/postgresql a volume, which
+    # Docker would create anonymously for every backup container.
+    tmpfs:
+      - /var/lib/postgresql
+    healthcheck:
+      test: ['CMD', 'backup-healthcheck']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
   valkey_data:
+  backup_data:

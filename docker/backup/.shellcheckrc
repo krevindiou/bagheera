@@ -1,0 +1,3 @@
+# The scripts source /usr/local/lib/backup/*.sh at runtime; their `source=`
+# directives name the files next to the script.
+source-path=SCRIPTDIR

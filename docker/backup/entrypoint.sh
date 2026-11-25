@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Container entrypoint: validates the configuration, writes the SFTP material
 # and the crontab, then becomes supercronic. `--prepare` stops before the last
-# step (the tests use it to inspect what would run).
+# step (the tests use it to inspect what would run). Any other argument is a
+# command to run instead (`backup-entrypoint backup-validate`), so a one-off
+# container, such as the x-pre_deploy hook, runs that and exits whether or not
+# the runtime replaces the entrypoint.
 set -euo pipefail
 
 # shellcheck source=lib.sh
@@ -41,6 +44,10 @@ write_crontab() {
 }
 
 main() {
+  if [ "$#" -gt 0 ] && [ "$1" != "--prepare" ]; then
+    exec "$@"
+  fi
+
   umask 077
 
   if backup_disabled; then

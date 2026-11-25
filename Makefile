@@ -83,8 +83,10 @@ test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
 	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
 	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status
 
+# `run` rather than `up --abort-on-container-exit`: it streams the test
+# container's output reliably and returns its exit status.
 test-backup: ## Run the backup container's tests (shell, against real Postgres and Mailpit)
-	$(COMPOSE_BACKUP_TEST) up --build --abort-on-container-exit --exit-code-from test; status=$$?; $(COMPOSE_BACKUP_TEST) down -v; exit $$status
+	$(COMPOSE_BACKUP_TEST) run --build --rm test; status=$$?; $(COMPOSE_BACKUP_TEST) down -v; exit $$status
 
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm lint

@@ -14,6 +14,7 @@ DUMP=$BACKUP_DIR/bagheera.pgdump
 LOCK=$BACKUP_DIR/run.lock
 RUN_LOG=$BACKUP_DIR/run.log
 # The log notify_failure and notify_success quote.
+# shellcheck disable=SC2034 # read by notify_failure
 ALERT_LOG=$RUN_LOG
 
 # One entry per destination (or step) that failed during this run.
