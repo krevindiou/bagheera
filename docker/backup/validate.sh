@@ -47,6 +47,27 @@ if restic_enabled && [[ $RESTIC_REPOSITORY == /* ]]; then
   fi
 fi
 
+# Credentials a remote repository cannot work without: missing, they only fail
+# at the first nightly run.
+if restic_enabled; then
+  case $RESTIC_REPOSITORY in
+    sftp:*)
+      if [ -z "${BACKUP_SFTP_PRIVATE_KEY:-}" ]; then
+        error "BACKUP_SFTP_PRIVATE_KEY is required for an sftp: RESTIC_REPOSITORY"
+      fi
+      ;;
+    s3:*)
+      if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+        error "AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required for an s3: RESTIC_REPOSITORY"
+      fi
+      ;;
+    /* | *:*) ;;
+    *)
+      error "RESTIC_REPOSITORY must be an absolute path under /backups or a remote repository such as sftp: or s3: (got '$RESTIC_REPOSITORY'): a relative path is lost at the next deploy"
+      ;;
+  esac
+fi
+
 # curl takes one recipient per address: a display name or a list fails at send
 # time (silently, for the alert address, whose failure has no one to alert).
 single_address() {

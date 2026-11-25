@@ -63,11 +63,11 @@ mail_send() {
   local to="" subject="" body="" attach="" attach_name=""
   while [ "$#" -gt 0 ]; do
     case $1 in
-      --to) to=${2-}; shift 2 ;;
-      --subject) subject=${2-}; shift 2 ;;
-      --body) body=${2-}; shift 2 ;;
-      --attach) attach=${2-}; shift 2 ;;
-      --attach-name) attach_name=${2-}; shift 2 ;;
+      --to) to=${2-}; shift 2 || return 1 ;;
+      --subject) subject=${2-}; shift 2 || return 1 ;;
+      --body) body=${2-}; shift 2 || return 1 ;;
+      --attach) attach=${2-}; shift 2 || return 1 ;;
+      --attach-name) attach_name=${2-}; shift 2 || return 1 ;;
       *)
         log error "mail_send: unknown option $1"
         return 1

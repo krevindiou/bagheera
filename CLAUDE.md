@@ -41,7 +41,7 @@ make test-integration    # api integration tests (vitest.integration.config.mts,
 make test-e2e            # boots a separate `bagheera-e2e` compose stack, seeds it, runs Playwright (E2E_ARGS="auth.spec.ts" for one spec)
 make test-backup         # the backup container's shell tests (`docker/backup/test/`), run in Docker against real Postgres and Mailpit; not part of `make test`
 
-make check               # every root `check:*` script (lint, format, types, specs, hooks, audit, dedupe, knip), in parallel, in the `check` service (~1 min warm)
+make check               # every root `check:*` script (lint, format, types, specs, hooks, shellcheck, image-age, audit, dedupe, knip), in parallel, in the `check` service (~1 min warm)
 make check-knip          # one of them: `make check-<name>` runs the root `check:<name>` script
 make precommit           # the "Before committing" commands: format + lint + check + build + test-unit
 ```
