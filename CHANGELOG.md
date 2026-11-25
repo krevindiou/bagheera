@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0](https://github.com/krevindiou/bagheera/compare/v1.0.4...v2.0.0) (2026-11-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **backup:** backups no longer run from GitHub Actions. The new backup service needs at least one destination configured in docker/prod.env (BACKUP_* variables) or BACKUP_DISABLED=true, otherwise make deploy fails at the backup-validate pre-deploy step. The secrets BACKUP_SSH_PRIVATE_KEY, DEPLOY_HOST and DEPLOY_HOST_KNOWN_HOSTS and the host-side backup user are no longer used. The bagheera-backup GHCR package must be made public after its first publish.
+
+### Features
+
+* **backup:** add backup image, test harness and config validation ([c9a643a](https://github.com/krevindiou/bagheera/commit/c9a643a6e9c1ebb5bf3a6e25bf9a808501865826))
+* **backup:** add backup-run with the restic destination ([c46acc4](https://github.com/krevindiou/bagheera/commit/c46acc4e5d8d53759f319b6f364d75e53f221801))
+* **backup:** add entrypoint, scheduler, SFTP material and healthcheck ([43bd8b4](https://github.com/krevindiou/bagheera/commit/43bd8b43022a1feedaa5709ec7493a29b687fe07))
+* **backup:** add failure alerts, success report and weekly restic check ([2bcc5e1](https://github.com/krevindiou/bagheera/commit/2bcc5e1c3594b5b842097fe99fff6c9fa41c5ced))
+* **backup:** add the age-encrypted email destination ([462f522](https://github.com/krevindiou/bagheera/commit/462f522a26b176b435e97625d0a4cdc77983efb9))
+* **backup:** replace the GitHub-triggered backup with the backup container ([d5c0a9d](https://github.com/krevindiou/bagheera/commit/d5c0a9d11e9c3a0a95f0c6970bb941c80276d35d))
+* **backup:** wire the backup service into the stack, CI and image pipeline ([04b3f81](https://github.com/krevindiou/bagheera/commit/04b3f81eb2ee9cb900a74a6adbfd1efeb68250d6))
+
+
+### Bug Fixes
+
+* **backup:** fix review findings ([be46d4b](https://github.com/krevindiou/bagheera/commit/be46d4bb375d4502eaf6fba988476104755ebb2e))
+* **backup:** harden after the final review ([7b14880](https://github.com/krevindiou/bagheera/commit/7b1488085b993b5ef333d1459417d8e173a3d3f8))
+
 ## [1.0.4](https://github.com/krevindiou/bagheera/compare/v1.0.3...v1.0.4) (2026-11-19)
 
 
