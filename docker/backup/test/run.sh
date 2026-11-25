@@ -578,5 +578,181 @@ test_check_without_restic_has_nothing_to_do() {
   assert_eq 0 "$(mailpit_count '[Bagheera backup]')" "message count"
 }
 
+# Runs `backup-entrypoint --prepare` with exactly the given variables (and PATH),
+# with $PREPARE_HOME as the home directory so ~/.ssh stays out of the real one.
+# Call prepare_home first.
+prepare_home() {
+  PREPARE_HOME=$(mktemp -d)
+  rm -f /tmp/backup/crontab
+}
+
+entrypoint_prepare() {
+  env -i PATH="$PATH" HOME="$PREPARE_HOME" "$@" backup-entrypoint --prepare
+}
+
+test_entrypoint_refuses_invalid_config() {
+  prepare_home
+  assert_fails "no destination" entrypoint_prepare
+  assert_contains "$ASSERT_OUTPUT" "no backup destination configured" "message"
+  [ ! -e /tmp/backup/crontab ] || fail "a crontab was written for an invalid configuration"
+}
+
+test_entrypoint_renders_crontab() {
+  prepare_home
+  entrypoint_prepare "${RESTIC_ENV[@]}" "BACKUP_SCHEDULE=15 2 * * *" >/dev/null 2>&1
+  assert_eq 2 "$(wc -l </tmp/backup/crontab)" "crontab line count"
+  assert_eq "15 2 * * * backup-run" "$(sed -n 1p /tmp/backup/crontab)" "backup line"
+  assert_eq "30 4 * * 0 backup-check" "$(sed -n 2p /tmp/backup/crontab)" "weekly check line"
+  supercronic -test /tmp/backup/crontab >/dev/null 2>&1 || fail "supercronic rejects the generated crontab"
+}
+
+test_entrypoint_defaults_to_a_nightly_backup() {
+  prepare_home
+  entrypoint_prepare "${RESTIC_ENV[@]}" >/dev/null 2>&1
+  assert_eq "0 3 * * * backup-run" "$(sed -n 1p /tmp/backup/crontab)" "default schedule"
+}
+
+test_entrypoint_omits_check_without_restic() {
+  prepare_home
+  entrypoint_prepare BACKUP_EMAIL_TO=me@example.com "BACKUP_EMAIL_AGE_RECIPIENT=$AGE_KEY" "BACKUP_SCHEDULE=15 2 * * *" >/dev/null 2>&1
+  assert_eq 1 "$(wc -l </tmp/backup/crontab)" "crontab line count"
+  assert_eq "15 2 * * * backup-run" "$(cat /tmp/backup/crontab)" "backup line"
+}
+
+test_entrypoint_writes_sftp_material() {
+  prepare_home
+  local key_dir known_hosts='[sftp.example.test]:2222 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPinnedHostKeyForTheTest'
+  key_dir=$(mktemp -d)
+  ssh-keygen -q -t ed25519 -N '' -f "$key_dir/id" >/dev/null
+  # $(...) drops the trailing newline, as a value read from an env file may lack it.
+  local private_key
+  private_key=$(cat "$key_dir/id")
+  entrypoint_prepare "${RESTIC_ENV[@]}" "BACKUP_SFTP_PRIVATE_KEY=$private_key" "BACKUP_SFTP_KNOWN_HOSTS=$known_hosts" >/dev/null 2>&1
+  local ssh_dir=$PREPARE_HOME/.ssh
+  assert_eq 600 "$(stat -c %a "$ssh_dir/id_backup")" "private key mode"
+  assert_eq 700 "$(stat -c %a "$ssh_dir")" ".ssh mode"
+  assert_eq "$known_hosts" "$(cat "$ssh_dir/known_hosts")" "known_hosts content"
+  local config
+  config=$(cat "$ssh_dir/config")
+  assert_contains "$config" "IdentityFile $ssh_dir/id_backup" "identity file"
+  assert_contains "$config" "UserKnownHostsFile $ssh_dir/known_hosts" "known hosts file"
+  assert_contains "$config" "StrictHostKeyChecking yes" "host key checking"
+  assert_contains "$config" "BatchMode yes" "batch mode"
+  assert_eq "$(ssh-keygen -y -f "$key_dir/id")" "$(ssh-keygen -y -f "$ssh_dir/id_backup")" "the written key is the given key and ssh accepts it"
+}
+
+test_entrypoint_never_prints_the_private_key() {
+  prepare_home
+  local output
+  output=$(entrypoint_prepare "${RESTIC_ENV[@]}" "BACKUP_SFTP_PRIVATE_KEY=top-secret-key-material" "BACKUP_SFTP_KNOWN_HOSTS=host ssh-ed25519 AAAA" 2>&1)
+  case $output in
+    *top-secret-key-material*) fail "the private key leaked into the output" ;;
+  esac
+}
+
+test_entrypoint_without_sftp_key_writes_no_ssh_material() {
+  prepare_home
+  entrypoint_prepare "${RESTIC_ENV[@]}" >/dev/null 2>&1
+  [ ! -e "$PREPARE_HOME/.ssh" ] || fail "\$HOME/.ssh was created without BACKUP_SFTP_PRIVATE_KEY"
+}
+
+# busybox's timeout reports 143, not 124, for a child its signal ended, and the
+# entrypoint ends cleanly on SIGTERM, so check by hand that it is still running
+# after a while and that SIGTERM stops it.
+test_disabled_mode_stays_up_and_healthy() {
+  env -i PATH="$PATH" HOME="$(mktemp -d)" BACKUP_DISABLED=true backup-entrypoint >/tmp/disabled.log 2>&1 &
+  local pid=$! waited=0
+  # shellcheck disable=SC2064
+  trap "kill $pid 2>/dev/null || true" EXIT
+  sleep 1
+  kill -0 "$pid" 2>/dev/null || fail "backup-entrypoint exited in disabled mode"
+  env -i PATH="$PATH" BACKUP_DISABLED=true backup-healthcheck
+  assert_contains "$(cat /tmp/disabled.log)" "WARN" "level"
+  assert_contains "$(cat /tmp/disabled.log)" "BACKUP_DISABLED" "message"
+  local sleeper
+  sleeper=$(pgrep -P "$pid") || fail "the entrypoint has no sleeping child"
+  kill -TERM "$pid"
+  while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 50 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  ! kill -0 "$pid" 2>/dev/null || fail "SIGTERM did not stop the disabled-mode entrypoint"
+  ! kill -0 "$sleeper" 2>/dev/null || fail "the sleeping child outlived the entrypoint"
+}
+
+test_healthcheck_fails_without_scheduler() {
+  assert_fails "no supercronic running" env -i PATH="$PATH" "${RESTIC_ENV[@]}" backup-healthcheck
+}
+
+# The real entrypoint: it must become supercronic (so docker's signals reach it),
+# the healthcheck must then pass, and SIGTERM must stop it.
+test_entrypoint_execs_the_scheduler() {
+  prepare_home
+  env -i PATH="$PATH" HOME="$PREPARE_HOME" "${RESTIC_ENV[@]}" backup-entrypoint >/dev/null 2>&1 &
+  local pid=$! waited=0
+  # shellcheck disable=SC2064
+  trap "kill $pid 2>/dev/null || true" EXIT
+  while ! pgrep -x supercronic >/dev/null && [ "$waited" -lt 50 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  assert_eq supercronic "$(cat "/proc/$pid/comm")" "the entrypoint process became supercronic"
+  env -i PATH="$PATH" "${RESTIC_ENV[@]}" backup-healthcheck
+  kill -TERM "$pid"
+  waited=0
+  while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 50 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  ! kill -0 "$pid" 2>/dev/null || fail "SIGTERM did not stop the scheduler"
+}
+
+# Holds a non-exclusive lock on the restic repository until $RELEASE exists (a
+# restic backup whose source command waits for the file). Prints nothing; waits
+# until the lock is on disk. `restic forget --prune` and `restic check` need an
+# exclusive lock, so both conflict with it.
+hold_restic_lock() {
+  RELEASE=/tmp/release-restic-lock
+  rm -f "$RELEASE"
+  RESTIC_REPOSITORY=/backups RESTIC_PASSWORD=pw restic backup --quiet --stdin --stdin-from-command --tag holder -- \
+    sh -c "while [ ! -e $RELEASE ]; do sleep 0.1; done; echo held" >/dev/null 2>&1 &
+  HOLDER=$!
+  # shellcheck disable=SC2064
+  trap "touch $RELEASE; kill $HOLDER 2>/dev/null || true" EXIT
+  local waited=0
+  while [ -z "$(ls /backups/locks 2>/dev/null)" ] && [ "$waited" -lt 100 ]; do
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+  [ -n "$(ls /backups/locks)" ] || fail "the holder never took the repository lock"
+}
+
+# Releases the lock $delay seconds from now, from a background process.
+release_restic_lock_in() {
+  (sleep "$1"; touch "$RELEASE") &
+}
+
+test_backup_waits_for_a_held_restic_lock() {
+  reset_repo
+  init_repo
+  hold_restic_lock
+  release_restic_lock_in 3
+  local started=$SECONDS output
+  output=$(run_backup 2>&1) || fail "the backup failed instead of waiting for the lock: $output"
+  [ $((SECONDS - started)) -ge 2 ] || fail "the backup finished before the lock was released, so it never had to wait"
+  wait "$HOLDER"
+  assert_eq 2 "$(snapshot_count)" "snapshots: the holder's and the backup's"
+}
+
+test_check_waits_for_a_held_restic_lock() {
+  reset_repo
+  init_repo
+  hold_restic_lock
+  release_restic_lock_in 3
+  local started=$SECONDS output
+  output=$(run_check 2>&1) || fail "the check failed instead of waiting for the lock: $output"
+  [ $((SECONDS - started)) -ge 2 ] || fail "the check finished before the lock was released, so it never had to wait"
+}
+
 seed_database
 run_tests

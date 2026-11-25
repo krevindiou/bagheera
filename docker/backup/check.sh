@@ -27,7 +27,7 @@ main() {
 
   local status=0
   log info "checking the restic repository" >"$CHECK_LOG"
-  restic check >>"$CHECK_LOG" 2>&1 || status=$?
+  restic check --retry-lock 10m >>"$CHECK_LOG" 2>&1 || status=$?
   if [ "$status" -eq 0 ]; then
     log info "the restic repository is healthy" >>"$CHECK_LOG"
   else
