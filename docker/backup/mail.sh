@@ -57,7 +57,8 @@ mail_build() {
 # Returns 0 when the SMTP server accepted the message, 1 otherwise. Reads
 # EMAIL_SMTP_URL (credentials in its userinfo), EMAIL_FROM and
 # BACKUP_SMTP_ALLOW_PLAINTEXT. STARTTLS is required unless the latter is
-# `true`. The URL is never printed: it is handed to curl through a config file
+# `true`, which only the tests set: production's compose does not pass it on,
+# so no deployment can turn TLS off. The URL is never printed: it is handed to curl through a config file
 # descriptor, and curl's own output is scrubbed of it.
 mail_send() {
   local to="" subject="" body="" attach="" attach_name=""
