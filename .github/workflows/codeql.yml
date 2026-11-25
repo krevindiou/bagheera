@@ -1,16 +1,12 @@
 name: CodeQL
 
 # Static analysis of the TypeScript sources and the workflows themselves;
-# findings land in the Security tab.
+# findings land in the Security tab. No paths filter: Scorecard's SAST check
+# counts every commit CodeQL skipped, docs-only ones included.
 on:
   push:
     branches: [main]
-    paths-ignore: &docs
-      - '**.md'
-      - 'docs/**'
-      - 'LICENSE'
   pull_request:
-    paths-ignore: *docs
   schedule:
     - cron: '41 4 * * 1'
 
