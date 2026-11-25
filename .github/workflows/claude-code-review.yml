@@ -10,6 +10,8 @@ on:
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
 
+permissions: {}
+
 jobs:
   claude-review:
     # The action refuses bot-authored PRs (renovate), and a digest bump needs no review.
