@@ -11,6 +11,10 @@ set -euo pipefail
 
 BACKUP_DIR=/tmp/backup
 DUMP=$BACKUP_DIR/bagheera.pgdump
+# The host name every snapshot is recorded under. `restic forget --group-by host`
+# retains per host name, and a container's own host name changes with every
+# deploy: left to default, each deploy would start a new group that never ages out.
+RESTIC_HOST=bagheera
 LOCK=$BACKUP_DIR/run.lock
 RUN_LOG=$BACKUP_DIR/run.log
 # The log notify_failure and notify_success quote.
@@ -84,9 +88,9 @@ ship_restic() {
   esac
 
   log info "pushing the dump to restic"
-  restic backup --retry-lock 10m --tag postgres "$DUMP" || return 1
+  restic backup --retry-lock 10m --host "$RESTIC_HOST" --tag postgres "$DUMP" || return 1
 
-  restic forget --retry-lock 10m --prune --group-by host --tag postgres \
+  restic forget --retry-lock 10m --prune --host "$RESTIC_HOST" --group-by host --tag postgres \
     --keep-daily "$(cfg BACKUP_KEEP_DAILY 7)" \
     --keep-weekly "$(cfg BACKUP_KEEP_WEEKLY 4)" \
     --keep-monthly "$(cfg BACKUP_KEEP_MONTHLY 6)" || return 1

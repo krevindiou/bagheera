@@ -33,6 +33,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.backup
     entrypoint: ['bash', '/tests/run.sh']
+    # Not `bagheera`, the host name the backup pins its snapshots to: the tests
+    # of that need the two to differ.
+    hostname: backup-test
     environment:
       POSTGRES_PASSWORD: test
       MAILPIT_URL: http://mailpit:8025
