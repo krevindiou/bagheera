@@ -63,8 +63,10 @@ dump_database() {
 }
 
 # Pushes the dump to the restic repository, creating the repository only when
-# restic says it does not exist, then applies the retention policy. Callers use
-# it in a `||` list, where `set -e` is off: every step is checked by hand.
+# restic says it does not exist, then applies the retention policy. `--retry-lock`
+# waits for a lock a concurrent restic command holds (the weekly check, for one)
+# instead of failing the run. Callers use it in a `||` list, where `set -e` is
+# off: every step is checked by hand.
 ship_restic() {
   local status=0
   restic cat config >/dev/null || status=$?
@@ -81,9 +83,9 @@ ship_restic() {
   esac
 
   log info "pushing the dump to restic"
-  restic backup --tag postgres "$DUMP" || return 1
+  restic backup --retry-lock 10m --tag postgres "$DUMP" || return 1
 
-  restic forget --prune --group-by host --tag postgres \
+  restic forget --retry-lock 10m --prune --group-by host --tag postgres \
     --keep-daily "$(cfg BACKUP_KEEP_DAILY 7)" \
     --keep-weekly "$(cfg BACKUP_KEEP_WEEKLY 4)" \
     --keep-monthly "$(cfg BACKUP_KEEP_MONTHLY 6)" || return 1

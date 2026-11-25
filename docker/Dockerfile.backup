@@ -25,6 +25,9 @@ RUN for name in validate run check entrypoint healthcheck; do \
     done \
   && rm -rf /opt/backup
 
+# The postgres base image sets STOPSIGNAL SIGINT; supercronic stops on SIGTERM.
+STOPSIGNAL SIGTERM
+
 USER backup
 WORKDIR /home/backup
 ENTRYPOINT ["backup-entrypoint"]
