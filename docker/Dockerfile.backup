@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+
+# Nightly Postgres backup: pg_dump pushed to a restic repository and/or
+# age-encrypted and emailed, scheduled by supercronic. The base is the same
+# pinned image production's postgres runs, so pg_dump always matches the server
+# major version.
+FROM postgres:18-alpine@sha256:9ba53c7d41ea093baf5c1ba635ba5434c4f979880527d49bb7d9237d3193085b
+
+RUN apk add --no-cache restic age curl tzdata openssh-client-default supercronic \
+  && adduser -D -u 10001 backup \
+  && mkdir -p /home/backup /backups /tmp/backup /usr/local/lib/backup \
+  && chown backup:backup /home/backup /backups /tmp/backup
+
+# The scripts are optional at build time: install whichever exist.
+COPY docker/backup/*.sh /opt/backup/
+RUN for name in validate run check entrypoint healthcheck; do \
+      if [ -f "/opt/backup/$name.sh" ]; then \
+        install -m 0755 "/opt/backup/$name.sh" "/usr/local/bin/backup-$name"; \
+      fi; \
+    done \
+  && for lib in lib.sh mail.sh; do \
+      if [ -f "/opt/backup/$lib" ]; then \
+        install -m 0755 "/opt/backup/$lib" "/usr/local/lib/backup/$lib"; \
+      fi; \
+    done \
+  && rm -rf /opt/backup
+
+USER backup
+WORKDIR /home/backup
+ENTRYPOINT ["backup-entrypoint"]
