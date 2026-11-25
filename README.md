@@ -44,6 +44,7 @@ make ps        # container status
 make build     # build api + web and their packages/* deps
 make migrate   # run db migrations
 make test      # unit + integration + e2e (or test-unit/test-integration/test-e2e individually)
+make test-backup # the backup container's tests (shell, in Docker)
 make lint      # lint api + web + packages/*
 make format    # format api + web + packages/*
 make check     # every workspace-wide check CI runs (lint, format, types, audit, knip, ...)
@@ -70,14 +71,14 @@ apps/
 packages/
   money/           cross-stack code shared by api and web (minor-units money math)
   reference-data/  reference data, enums, limits and constants shared by api and web
-docker/      Dockerfiles, Compose files (compose.yml for dev, compose.prod.yml for production), Caddyfile
+docker/      Dockerfiles, Compose files (compose.yml for dev, compose.prod.yml for production), Caddyfile, backup/ (the backup container's scripts and tests)
 docs/        deploying.md, backup-restore.md
-scripts/     backup.sh, deploy.sh
+scripts/     deploy.sh
 ```
 
 ## Deploy it on your own server
 
-Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images are pre-built and public on GitHub Container Registry (`ghcr.io/krevindiou/bagheera-api` and `ghcr.io/krevindiou/bagheera-web`), so you only deploy them: nothing to build or publish.
+Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images are pre-built and public on GitHub Container Registry (`ghcr.io/krevindiou/bagheera-api`, `ghcr.io/krevindiou/bagheera-web` and `ghcr.io/krevindiou/bagheera-backup`), so you only deploy them: nothing to build or publish.
 
 1. **Host.** A Linux server reachable over SSH, with a DNS A record for `<your-domain>` pointing at it. Open ports 80 and 443 for Uncloud's Caddy; 51820/udp only matters once there are several machines (it carries the WireGuard mesh between them).
 2. **`uc`.** Install the CLI on your machine ([install guide](https://uncloud.run/docs/getting-started/install-cli)), then run `uc machine init <user>@<host>`. It installs Docker and the Uncloud daemon on the host and starts Caddy.
@@ -86,7 +87,7 @@ Production runs on [Uncloud](https://uncloud.run), on one Linux host. The images
 
 Then check that the pages, `/api/…` and `/health` all resolve over HTTPS on `<your-domain>`, and that passkey sign-up works (a passkey is bound to the domain).
 
-Rolling back, schema changes, Valkey persistence and backups are in [`docs/deploying.md`](docs/deploying.md) and [`docs/backup-restore.md`](docs/backup-restore.md).
+Rolling back, schema changes, Valkey persistence and backups (a nightly `backup` service: set a restic repository and/or an encrypted-email destination in `docker/prod.env`, or `BACKUP_DISABLED=true`, before the first deploy) are in [`docs/deploying.md`](docs/deploying.md) and [`docs/backup-restore.md`](docs/backup-restore.md).
 
 ## Contributing
 

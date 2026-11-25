@@ -1,166 +1,246 @@
-# Restoring from a backup
+# Backups and restoring
 
-## Deploy host SSH setup (one-time)
+A `backup` service in `docker/compose.prod.yml` dumps the database every night
+and ships the dump to the destinations you configure in `docker/prod.env`.
+`make deploy` installs it with the rest of the stack: there is no host
+crontab, no GitHub workflow and no dedicated SSH user. Its scripts, image and
+tests live in `docker/backup/` and `docker/Dockerfile.backup`.
 
-Two different SSH identities reach the deploy host, and neither should be a
-root login:
+## What is backed up and what is not
 
-- **Deploys** (`make deploy`) run from your own machine with your own SSH
-  key. CI holds no deploy credential.
-- **Backups** (`backup.yml`) use their own key, `BACKUP_SSH_PRIVATE_KEY`,
-  which on the host can do exactly one thing: run the backup script.
+Only the Postgres dump (`pg_dump -Fc`, role `bagheera`, over the internal
+network). **`docker/prod.env` is not backed up, and it is your job to keep a
+copy of it somewhere safe and off the server.** `CRYPTO_KEYS` above all: the
+encrypted fields in the database cannot be read without them, so a backup
+restored without `CRYPTO_KEYS` is unusable. Keep alongside it:
 
-The backup workflow pins the host's SSH key in a `DEPLOY_HOST_KNOWN_HOSTS`
-secret rather than trusting whatever `ssh-keyscan` returns on each run (that
-accepts whichever key answers, which a DNS/routing MITM could exploit). Your
-own `ssh` pins the key in `~/.ssh/known_hosts` on first connection, so check
-the fingerprint then. Everything below is done once, and again if the host is
-rebuilt or its key rotated.
+- `RESTIC_PASSWORD`: the restic repository is encrypted with it, and a lost
+  password makes the whole repository unreadable.
+- The age private key (see below), if you use the email destination.
 
-### 1. Pin the host key
+Valkey (sessions, queued jobs, rate-limit counters) is not backed up either;
+step 6 of the restore flushes its sessions.
 
-Capture it from a trusted connection (e.g. right after provisioning the
-host, or over a connection you've already verified out of band):
+There is no WAL archiving, so the nightly dump is the only recovery point: the
+recovery point objective is however old the last successful run is (up to
+24h).
 
-```sh
-ssh-keyscan -H <deploy-host> > known_hosts_line
-cat known_hosts_line   # sanity-check: one non-empty line per key type
-gh secret set DEPLOY_HOST_KNOWN_HOSTS < known_hosts_line
-rm known_hosts_line
-```
+## Choosing destinations
 
-### 2. Backups: own key, one forced command
+The service refuses to deploy without at least one destination, or an explicit
+`BACKUP_DISABLED=true`. Both destinations can be on at once; they are
+independent, and one failing does not stop the other. The settings, with
+their defaults, are documented in `docker/prod.env.example`.
 
-A leaked backup key should be able to start a backup and nothing else — not
-read the database, not reach a shell, not point the dump at someone else's
-restic repository. So the restic and Postgres configuration lives **on the
-host**, and the key is tied to a single root-owned script.
+**restic** (`RESTIC_REPOSITORY`, `RESTIC_PASSWORD`): an encrypted, deduplicated
+repository, created on first use. It can be:
 
-On the deploy host, as root:
+- S3-compatible storage: `s3:https://s3.example.com/<bucket>/bagheera`, with
+  `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
+- An SFTP server: `sftp:<user>@<host>:/path/to/repo`, with
+  `BACKUP_SFTP_PRIVATE_KEY` and `BACKUP_SFTP_KNOWN_HOSTS` (the output of
+  `ssh-keyscan <host>`; the backup never trusts an unknown host).
+- The local volume `backup_data`, mounted at `/backups`: set
+  `RESTIC_REPOSITORY=/backups/restic`. A local path must be under `/backups`,
+  the only place in the container that outlives a deploy, and the volume must
+  be writable by the container's `backup` user (uid 10001): the deploy refuses
+  anything else. **A local volume alone does not protect against losing the
+  host**: it lives on the same machine as the database.
 
-```sh
-useradd --create-home --shell /bin/bash backup
-usermod -aG docker backup          # find and docker exec into the postgres container
-install -d -m 700 -o backup -g backup /home/backup/.ssh
+Give each Bagheera instance a repository of its own: every instance records
+its snapshots under the same host name and tag, so two sharing a repository
+would prune each other's snapshots.
 
-# The script the key is allowed to run. Root-owned, so the backup user (and
-# anyone holding its key) cannot edit it. Re-run this after scripts/backup.sh
-# changes in the repo.
-install -m 755 -o root -g root scripts/backup.sh /usr/local/bin/backup.sh
+Retention is `BACKUP_KEEP_DAILY`/`WEEKLY`/`MONTHLY` (7/4/6), applied after each
+backup with
+`restic forget --host bagheera --group-by host --tag postgres --prune` and the
+three `--keep-*` values. Every snapshot is recorded under the fixed host name
+`bagheera`, and `forget` only looks at that host's snapshots. This is on
+purpose: retention groups by host name, and a container's own host name changes
+with every deploy, so snapshots left under it would form a new group each time,
+which never ages out. A failing `forget` after a successful backup alerts as
+`restic-retention`: that night's snapshot is saved, only the pruning failed.
 
-# Its configuration: the env vars listed in scripts/backup.sh's header.
-# Readable by the backup user, writable by nobody but root.
-install -m 640 -o root -g backup /dev/null /etc/bagheera-backup.env
-$EDITOR /etc/bagheera-backup.env
-```
+A `restic check` runs every Sunday at 04:30 and alerts on error. restic waits up
+to 10 minutes for a repository lock (`--retry-lock 10m`), so a weekly check and
+a backup that overlap do not fail.
 
-`/etc/bagheera-backup.env` holds plain `KEY=value` lines (no `export`, no
-quoting needed for simple values):
+**Email** (`BACKUP_EMAIL_TO`, `BACKUP_EMAIL_AGE_RECIPIENT`): the dump,
+encrypted with [age](https://age-encryption.org) to a public key and attached
+to a message sent through the stack's `EMAIL_SMTP_URL` and `EMAIL_FROM`. It is
+never sent in clear, and the SMTP connection must use TLS. `BACKUP_EMAIL_TO`
+(like `BACKUP_ALERT_EMAIL`) takes one bare address, such as `ops@example.com`.
 
-```
-RESTIC_REPOSITORY=...
-RESTIC_PASSWORD=...
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-POSTGRES_PASSWORD=...
-```
+The backup sends with curl, not with the API's nodemailer, so `EMAIL_SMTP_URL`
+must be a URL both read: `smtp://user:password@host:587` (STARTTLS, usually
+port 587) or `smtps://user:password@host:465` (TLS from the start, usually port
+465), without nodemailer's query options (`?secure=...`). A URL written
+`smtp://host:465` may work for the API, but curl would try STARTTLS on a port
+that expects TLS from the start: write `smtps://` there.
 
-`POSTGRES_SERVICE` (default `postgres`, the service in
-`docker/compose.prod.yml`) is optional. The script finds that service's
-container by its `uncloud.service.name` label, because Uncloud names
-containers itself.
-
-Generate the key pair somewhere safe (not on the host), authorize the public
-half with the restrictions, and give CI the private half:
-
-```sh
-ssh-keygen -t ed25519 -N "" -C bagheera-backup -f backup_key
-gh secret set BACKUP_SSH_PRIVATE_KEY < backup_key
-# On the host, as root (replace the key material with backup_key.pub's):
-printf 'restrict,command="/usr/local/bin/backup.sh" %s\n' "$(cat backup_key.pub)" \
-  > /home/backup/.ssh/authorized_keys
-chown backup:backup /home/backup/.ssh/authorized_keys
-chmod 600 /home/backup/.ssh/authorized_keys
-rm backup_key backup_key.pub
-```
-
-`restrict` turns off port/agent/X11 forwarding, PTY allocation and
-`~/.ssh/rc`; `command=` runs the script whatever the client asks for.
-
-What this does _not_ do: the `docker` group is root-equivalent for anyone
-with a shell as that user. The forced command is what keeps the _key_ away
-from a shell; the account itself is still privileged. A rootless backup
-container with only the postgres socket mounted is a further step, not
-required by this one.
-
-### 3. Deploys: a non-root account (optional)
-
-`uc machine init` is usually pointed at `root@<deploy-host>`, and `uc` keeps
-connecting as whoever its context names. To stop root being reachable with
-your deploy key, give deploys an account of their own:
+Generate the key pair on your own machine, not the server:
 
 ```sh
-useradd --create-home --shell /bin/bash deploy
-usermod -aG docker deploy
-install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-cp /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys   # your own public key
-chown deploy:deploy /home/deploy/.ssh/authorized_keys
-chmod 600 /home/deploy/.ssh/authorized_keys
+age-keygen -o bagheera-backup.key
 ```
 
-Then check that `uc` works through it: `uc --connect ssh://deploy@<deploy-host> ps`.
-Whether a non-root account may use the Uncloud daemon depends on its socket's
-permissions, so if `uc` is refused, keep the root login for deploys and skip
-this step. Once it works, point your context at the new account (`uc ctx
-connection`) and remove root's SSH access (`PermitRootLogin no`, or delete
-root's `authorized_keys`).
+Put the public key it prints (`age1...`) in `BACKUP_EMAIL_AGE_RECIPIENT`, and
+keep `bagheera-backup.key` off the server: it is the only way to read these
+backups, and whoever holds it can read every one of them.
+
+`BACKUP_EMAIL_MAX_MB` (default 10) is in MiB and caps the **encrypted** file.
+Base64 adds about a third on the wire, so if your mail provider's limit is
+around 10 MB, lower it. Over the cap the email destination fails and, if
+`BACKUP_ALERT_EMAIL` is set, alerts (otherwise it is only in the container
+logs); it never skips silently, but it also means the database has outgrown this
+channel and you need restic.
+
+## Alerts, and what they cannot tell you
+
+A failed run emails `BACKUP_ALERT_EMAIL` with the last 20 lines of its log, with
+secrets redacted (without that variable, failures only show in the container
+logs, and the deploy prints a warning). `BACKUP_REPORT=always` also emails each
+success; the default `failure` only emails failures. A failing weekly
+`restic check` sends the same alert. There is no ping URL.
+
+Know what this does not cover:
+
+- **A stopped container, or a scheduler that does not run, sends nothing.** The
+  alert is sent by the backup itself. Check now and then that `uc ps` shows the
+  `backup` service healthy and that the latest snapshot (or email) is recent.
+- **A run that hangs is cut short, not detected at once.** Each step (the dump,
+  each restic command) gets at most `BACKUP_STEP_TIMEOUT` (default `2h`; a
+  number, optionally followed by `s`, `m`, `h` or `d`), after which the run
+  fails and alerts with the step marked `(timed out)`. `pg_dump` also gives up
+  after 10 minutes waiting for a table lock, and an SFTP connection whose server
+  stops answering is dropped after about two minutes. Until then the run holds
+  the run lock, and a run started meanwhile refuses with the log line
+  `another backup is already running` and sends nothing.
+- **A deploy during a run loses that night's backup, without an alert**: the
+  container being replaced stops mid-run. Deploy outside the backup window
+  (03:00 in `APP_TIMEZONE` by default, see `BACKUP_SCHEDULE`).
+- **No alert can be sent when SMTP itself is down**: the failure is only in the
+  container logs.
+
+## Installing, and changing the configuration
+
+The backup runs at `BACKUP_SCHEDULE` (a 5-field cron expression, default
+`0 3 * * *`), and the weekly `restic check` on Sundays at 04:30. Both follow
+`APP_TIMEZONE` (the container's `TZ`), not UTC.
+
+`make deploy` runs `backup-validate` (`x-pre_deploy`) before replacing the
+backup container: an invalid configuration, or no destination, aborts the
+deploy with a readable message. `BACKUP_DISABLED=true` is the explicit opt-out:
+the container stays up, healthy, and does nothing. Settings are read from
+`docker/prod.env` at deploy time, so apply a change by deploying again.
+
+After the first deploy, and after changing a destination or the mail settings,
+take one backup by hand (see the next section) and check that it lands: the
+snapshot in `restic snapshots`, the message in the `BACKUP_EMAIL_TO` mailbox.
+If `BACKUP_ALERT_EMAIL` is set, check the alert path too, with a run that
+reports its success:
+
+```sh
+uc exec backup env BACKUP_REPORT=always backup-run
+```
+
+and confirm that the `[Bagheera backup] OK` message arrives. Validation checks
+the settings' form, not that the SMTP server or the repository accepts them.
+
+Upgrading from the release that backed up through a GitHub workflow: see
+"Upgrading from the GitHub-triggered backup" in
+[`deploying.md`](deploying.md).
+
+## Running commands in the backup container
+
+Everything below runs inside the `backup` container, which has `restic`,
+`age`, `pg_dump` and `pg_restore`, and the repository and database settings
+already in its environment. From your machine:
+
+```sh
+uc exec backup backup-run    # take a backup now
+uc exec backup sh            # open a shell
+```
+
+`uc exec` ("Execute a command in a running service container") is documented
+by Uncloud, but this repository's docs have not been checked against it: confirm the
+invocation, and how it gives you a terminal, with `uc exec --help`. The
+fallback that needs nothing from Uncloud is `docker exec` on the deploy host,
+finding the container by its label, as the commands below do for the other
+services:
+
+```sh
+docker exec -it "$(docker ps -q --filter label=uncloud.service.name=backup)" sh
+```
 
 ## Restoring
-
-`scripts/backup.sh` pushes a `pg_dump` snapshot (custom format) to a restic
-repository nightly. There's no WAL archiving, so this is the only recovery
-point — the recovery point objective is however old the last successful
-nightly run is (up to 24h).
-
-Retention (`BACKUP_KEEP_DAILY`/`WEEKLY`/`MONTHLY`) is applied with
-`restic forget --group-by host`: each snapshot has its own dump path and day
-tag, so grouping by paths (restic's default) or by tags would leave every
-snapshot alone in its group and nothing would ever be pruned.
 
 A restore rolls back more than data. A passkey removal exists only as a
 missing `webauthn_credential` row, so restoring a snapshot taken before it
 brings the passkey back — and if it was removed because it was compromised,
 its holder can sign in again, with no alert and no audit row left to show the
-removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
+removal happened. Steps 4 and 6 below undo that; don't skip them. To restore,
+open a shell in the backup container (above) and point the Postgres tools at
+the database:
 
-1. **Find the snapshot.**
+```sh
+export PGHOST=postgres PGUSER=bagheera PGPASSWORD="$POSTGRES_PASSWORD"
+mkdir -p /tmp/bagheera-restore
+```
+
+1. **Find the dump.**
+
+   restic channel: list the snapshots (the dump is the file
+   `bagheera.pgdump`, tagged `postgres`) and note the time of the one you want.
 
    ```sh
    restic snapshots --tag postgres
    ```
 
-2. **Restore the file.**
+   Email channel: find the message `[Bagheera backup] YYYY-MM-DD (<N> KiB)`
+   in the mailbox you configured, with its attachment
+   `bagheera-YYYY-MM-DD.pgdump.age`.
+
+2. **Get the file into the container.**
+
+   restic channel:
 
    ```sh
-   restic restore <snapshot-id> --target /tmp/bagheera-restore
+   restic restore <snapshot-id> --target /tmp/bagheera-restore   # or `latest --tag postgres`
    ```
 
-   This drops the `pg_dump` file (under a path like
-   `/tmp/bagheera-backup-XXXXXX.pgdump`) into `/tmp/bagheera-restore`.
+   This puts the dump at `/tmp/bagheera-restore/tmp/backup/bagheera.pgdump`.
+   (Snapshots taken by the earlier host-side script hold it as
+   `/tmp/bagheera-backup-XXXXXX.pgdump` instead.)
+
+   Email channel: save the attachment and decrypt it with the private key
+   from `age-keygen`, on your own machine so the key never reaches the server.
+   Both commands below run on **your machine**: the second sends the
+   decrypted dump to the container over SSH (`docker exec -i` runs on the deploy
+   host, and needs the container's stdin). The decrypted dump is plaintext:
+   delete `bagheera.pgdump` from your machine once restored.
+
+   ```sh
+   age -d -i bagheera-backup.key bagheera-YYYY-MM-DD.pgdump.age > bagheera.pgdump
+   ssh <deploy-host> 'docker exec -i "$(docker ps -q --filter label=uncloud.service.name=backup)" sh -c "cat > /tmp/bagheera-restore/bagheera.pgdump"' < bagheera.pgdump
+   ```
+
+   The dump is then at `/tmp/bagheera-restore/bagheera.pgdump`. (`age` is also
+   in the container, if you accept putting the private key there.)
 
 3. **Load the dump into Postgres.**
    Against a fresh/scratch database (never the live one directly — restore
-   to a scratch DB first, verify, then swap):
+   to a scratch DB first, verify, then swap). Use the path from step 2:
 
    ```sh
-   createdb -U bagheera bagheera_restore
-   pg_restore -U bagheera -d bagheera_restore --no-owner \
-     /tmp/bagheera-restore/tmp/bagheera-backup-XXXXXX.pgdump
+   createdb bagheera_restore
+   pg_restore -d bagheera_restore --no-owner <path-to-bagheera.pgdump>
    ```
 
 4. **Reconcile passkeys with the live database.** Do this before cut-over,
-   while the live database is still readable, with the API stopped
-   (`docker stop "$(docker ps -q --filter label=uncloud.service.name=api)"`)
+   while the live database is still readable, with the API stopped (on the
+   deploy host, not in the backup container:
+   `docker stop "$(docker ps -q --filter label=uncloud.service.name=api)"`)
    so live can't change under you. If the live database is lost, see "Live database lost" below
    instead.
 
@@ -218,8 +298,8 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
    SQL
    ```
 
-   Keep the two CSVs until step 6 and any recovery below are done, then
-   delete them.
+   Keep the two CSVs until step 6 and any recovery below are done; step 7
+   deletes them.
 
 5. **Verify, then cut over.** Once `bagheera_restore` looks right (row
    counts, spot-checked rows), swap it in for the live database using
@@ -229,8 +309,9 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
    restore doesn't touch, so sessions opened after the snapshot (including
    any opened with a since-removed passkey) would otherwise outlive it.
    Before starting the API again, delete every session and per-member
-   session set — only those: `FLUSHALL` would also drop queued emails and
+   session set (on the deploy host) — only those: `FLUSHALL` would also drop queued emails and
    rate-limit lockouts.
+
    ```sh
    docker exec "$(docker ps -q --filter label=uncloud.service.name=valkey)" sh -c '
      for pattern in "sess:*" "member:*:sessions"; do
@@ -238,16 +319,25 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
          xargs -r valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" unlink
      done'
    ```
+
    Then email every member (`SELECT email, locale FROM member`) from
    outside the app: their data was restored to the snapshot's date, anything
    entered since is gone, and they should review their passkeys in settings,
    remove any they don't recognise, and report any passkey they had removed
    that shows up again.
 
-Steps 1–3 were run once end-to-end against a scratch database as part of
-building the backup script: a real snapshot was created, restored, and
-`pg_restore`'d into a fresh database, and its row counts were checked
-against the original.
+7. **Clean up.** Once step 6 and any recovery below are done, delete what the
+   restore left in the backup container (the dump, decrypted, and the CSVs of
+   live passkeys), from its shell:
+
+   ```sh
+   rm -rf /tmp/bagheera-restore
+   ```
+
+The backup's own tests (`make test-backup`) take a dump, push it to a restic
+repository and read it back, and decrypt an emailed attachment into a valid
+dump, but a full restore into a scratch database is worth rehearsing before you
+need it.
 
 If a tighter recovery point objective is ever needed, the option is
 point-in-time recovery: a periodic `pg_basebackup` (or pgBackRest/WAL-G)
