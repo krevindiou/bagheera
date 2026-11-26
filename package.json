@@ -20,7 +20,7 @@
     "check:knip": "pnpm dlx knip@6.41.0"
   },
   "devDependencies": {
-    "oxfmt": "^0.79.0"
+    "oxfmt": "^0.80.0"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
