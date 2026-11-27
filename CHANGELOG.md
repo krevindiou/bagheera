@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/krevindiou/bagheera/compare/v2.0.0...v2.1.0) (2026-11-27)
+
+
+### Features
+
+* **web:** collapse closed banks on the accounts page ([3e4a805](https://github.com/krevindiou/bagheera/commit/3e4a8051fef16c04c79fa8acae144e68ce141c7a))
+
+
+### Bug Fixes
+
+* **web:** wait for accounts and reword the close-bank confirmation ([800e256](https://github.com/krevindiou/bagheera/commit/800e2565f1400f8e22a5f32c48c84ca91ef07432))
+
 ## [2.0.0](https://github.com/krevindiou/bagheera/compare/v1.0.4...v2.0.0) (2026-11-25)
 
 
