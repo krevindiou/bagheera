@@ -136,7 +136,7 @@ export default {
     accountClosed: 'Compte clôturé',
     accountDeleted: 'Compte supprimé',
     confirmCloseBank:
-      'Clôturer la banque « {name} » ? Ses comptes restent visibles, mais leurs opérations ne peuvent plus être ajoutées, modifiées ni rapprochées, et leurs opérations planifiées s’arrêtent. Cette action est irréversible.',
+      'Clôturer la banque « {name} » ? Ses comptes restent consultables en la dépliant, mais leurs opérations ne peuvent plus être ajoutées, modifiées ni rapprochées, et leurs opérations planifiées s’arrêtent. Cette action est irréversible.',
     confirmDeleteBank:
       'Supprimer la banque « {name} » et tous ses comptes ? Leurs opérations et opérations planifiées seront aussi supprimées, et les virements avec ces comptes dans vos autres comptes apparaîtront comme externes. Cette action est irréversible.',
     confirmCloseAccount:
