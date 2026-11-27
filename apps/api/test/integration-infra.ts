@@ -7,7 +7,7 @@ import { seedDatabase } from '../src/db/seed';
 
 // Real Postgres/Valkey, started once for the whole `pnpm test:integration`
 // run.
-const POSTGRES_IMAGE = 'postgres:18-alpine';
+const POSTGRES_IMAGE = 'postgres:19-alpine';
 const VALKEY_IMAGE = 'valkey/valkey:9-alpine';
 const POSTGRES_USER = 'bagheera';
 const POSTGRES_PASSWORD = 'bagheera';

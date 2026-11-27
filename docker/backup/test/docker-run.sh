@@ -2,23 +2,24 @@
 # `make test-backup`: builds the backup image, starts a throwaway Postgres and
 # Mailpit on a private network, runs run.sh in the image against them, and
 # removes everything. Only the docker CLI runs on the host. The service images
-# are the ones docker/compose.yml pins (Renovate keeps them current there).
+# are pinned by digest where Renovate keeps them current: Postgres as the
+# backup image's base, Mailpit in docker/compose.yml.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
 
-# pinned_image <name>: the digest-pinned reference of <name> in docker/compose.yml.
+# pinned_image <name> <file>: the digest-pinned reference of <name> in <file>.
 pinned_image() {
   local ref
-  ref=$(grep -m1 -oE "$1:[^[:space:]'\"]+@sha256:[0-9a-f]{64}" docker/compose.yml) || {
-    echo "no digest-pinned $1 image in docker/compose.yml" >&2
+  ref=$(grep -m1 -oE "$1:[^[:space:]'\"]+@sha256:[0-9a-f]{64}" "$2") || {
+    echo "no digest-pinned $1 image in $2" >&2
     return 1
   }
   printf '%s\n' "$ref"
 }
 
-POSTGRES_IMAGE=$(pinned_image postgres)
-MAILPIT_IMAGE=$(pinned_image axllent/mailpit)
+POSTGRES_IMAGE=$(pinned_image postgres docker/Dockerfile.backup)
+MAILPIT_IMAGE=$(pinned_image axllent/mailpit docker/compose.yml)
 NAME=bagheera-backup-test-$$
 IMAGE=bagheera-backup:test
 

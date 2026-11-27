@@ -85,11 +85,13 @@ services:
   # taken by the backup service below — up to 24h of data — documented in
   # docs/backup-restore.md.
   postgres:
-    # Pinned by digest so a floated `postgres:18-alpine` retag can't
-    # silently change what production runs; Renovate's docker:pinDigests
-    # preset (renovate.json) keeps this current as the tag moves.
-    image: postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
+    # The official image plus the previous major's binaries: a volume holding
+    # the previous major is upgraded before the server starts
+    # (docker/Dockerfile.postgres, docs/deploying.md "Postgres major upgrades").
+    image: ${IMAGE_NAMESPACE:?}/bagheera-postgres:${TAG:?set TAG to a published image tag}
     restart: unless-stopped
+    # Time for the server, or the old one an upgrade runs, to shut down cleanly.
+    stop_grace_period: 1m
     environment:
       POSTGRES_USER: bagheera
       POSTGRES_DB: bagheera
@@ -104,9 +106,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      # A major upgrade runs before the server answers.
+      start_period: 5m
 
   valkey:
-    # Pinned by digest — same reasoning as postgres above.
+    # Pinned by digest so a floated `valkey:9-alpine` retag can't silently
+    # change what production runs; Renovate's docker:pinDigests preset
+    # (renovate.json) keeps this current as the tag moves.
     image: valkey/valkey:9-alpine@sha256:c8e2d17498838af5d91e12eb7c11220b3434a7b7131a333e3af52ad5e0b80882
     restart: unless-stopped
     # maxmemory bounds how much of the host an anonymous flood (sessions,

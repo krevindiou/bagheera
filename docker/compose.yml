@@ -3,8 +3,12 @@
 # which should be reachable from the rest of the network.
 services:
   postgres:
-    image: postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
+    # Upgrades a volume holding the previous major before starting.
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.postgres
     restart: unless-stopped
+    stop_grace_period: 1m
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-bagheera}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bagheera}
@@ -21,6 +25,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+      # A major upgrade runs before the server answers.
+      start_period: 5m
 
   valkey:
     image: valkey/valkey:9-alpine@sha256:c8e2d17498838af5d91e12eb7c11220b3434a7b7131a333e3af52ad5e0b80882

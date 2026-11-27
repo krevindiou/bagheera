@@ -2,8 +2,8 @@
 
 # Nightly Postgres backup: pg_dump pushed to a restic repository and/or
 # age-encrypted and emailed, scheduled by supercronic. The base is the same
-# pinned image production's postgres runs, so pg_dump always matches the server
-# major version.
+# pinned image Dockerfile.postgres builds the server from, so pg_dump always
+# matches the server major version.
 FROM postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
 
 # `apk upgrade`: the digest-pinned base can lag behind Alpine's security fixes,
