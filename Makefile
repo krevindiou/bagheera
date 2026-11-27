@@ -8,7 +8,7 @@ export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help check precommit build build-images deploy up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e test-backup lint format
+.PHONY: help check precommit build build-images deploy up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e test-backup test-postgres lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -86,6 +86,9 @@ test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
 # network, runs the tests and removes them, whatever the outcome.
 test-backup: ## Run the backup container's tests (shell, against real Postgres and Mailpit)
 	docker/backup/test/docker-run.sh
+
+test-postgres: ## Run the postgres image's upgrade tests (shell, against real Postgres)
+	docker/postgres/test/run.sh
 
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm lint

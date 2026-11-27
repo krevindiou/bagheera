@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+
+# The database server, dev and production: the official image plus the previous
+# major's binaries, so that a volume holding the previous major is upgraded
+# with pg_upgrade before the server starts (docker/postgres/upgrade.sh).
+# Renovate keeps the base digest current. A major bump of the base also moves
+# PG_PREVIOUS_MAJOR, and the tests in docker/postgres/test/ with it.
+FROM postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
+
+ENV PG_PREVIOUS_MAJOR=18
+
+# `apk upgrade`: the digest-pinned base can lag behind Alpine's security fixes,
+# which the image scan would then fail on. gosu (the base's root-to-postgres
+# switch, a Go binary with CVEs of its own) is replaced by su-exec, under the
+# name the base entrypoint calls it by.
+RUN apk upgrade --no-cache \
+  && apk add --no-cache "postgresql${PG_PREVIOUS_MAJOR}" "postgresql${PG_PREVIOUS_MAJOR}-contrib" su-exec \
+  && rm -f /usr/local/bin/gosu \
+  && ln -s "$(command -v su-exec)" /usr/local/bin/gosu
+
+# A script that is missing fails the build (install exits non-zero).
+COPY docker/postgres/*.sh /opt/postgres/
+RUN for name in entrypoint upgrade; do \
+      install -m 0755 "/opt/postgres/$name.sh" "/usr/local/bin/bagheera-$name"; \
+    done \
+  && rm -rf /opt/postgres
+
+ENTRYPOINT ["bagheera-entrypoint"]
+# Setting an entrypoint drops the base image's command.
+CMD ["postgres"]
