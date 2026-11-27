@@ -55,4 +55,20 @@ test('create a bank and an account, then edit the bank and close the account', a
   // Closed stays listed.
   await expect(accountRow).toBeVisible();
   await expect(accountRow.getByText(en.accounts.closed)).toBeVisible();
+
+  const renamedBankRow = page.getByTestId('bank-row').filter({ hasText: renamedBankName });
+  await renamedBankRow
+    .getByRole('button', { name: en.accounts.closeBank, exact: false })
+    .first()
+    .click();
+  await confirmDialog(page)
+    .getByRole('button', { name: en.accounts.closeBank, exact: true })
+    .click();
+  await expect(alertWithText(page, en.accounts.bankClosed)).toBeVisible();
+
+  // A closed bank is collapsed until its header is clicked.
+  const toggle = renamedBankRow.getByRole('button', { expanded: false });
+  await expect(accountRow).toBeHidden();
+  await toggle.click();
+  await expect(accountRow).toBeVisible();
 });

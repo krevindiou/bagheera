@@ -134,7 +134,7 @@ describe('AccountsPage', () => {
 
   it('lists banks and accounts, with closed badges and a no-accounts message', async () => {
     mockData(
-      [bank('b1', 'Chase'), bank('b2', 'Old Bank', true)],
+      [bank('b1', 'Chase'), bank('b2', 'Empty Bank'), bank('b3', 'Old Bank', true)],
       [account('a1', 'b1', 'Checking')],
     );
     await router.push({ name: 'accounts' });
@@ -142,12 +142,121 @@ describe('AccountsPage', () => {
     await flushPromises();
 
     const rows = wrapper.findAll('[data-testid="bank-row"]');
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(3);
     expect(rows[0].text()).toContain('Chase');
     expect(rows[0].find('[data-testid="account-row"]').text()).toContain('Checking (USD)');
-    expect(rows[1].text()).toContain('Old Bank');
-    expect(rows[1].find('.pill').text()).toBe('Closed');
     expect(rows[1].text()).toContain('No account');
+    expect(rows[2].text()).toContain('Old Bank');
+    expect(rows[2].find('.pill-closed').text()).toBe('Closed');
+  });
+
+  it('marks a closed account of an open bank with the closed badge', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Savings', 'USD', true)]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const row = wrapper.get('[data-testid="account-row"]');
+    expect(row.get('.pill-closed').text()).toBe('Closed');
+    expect(row.get('.pill-closed').find('svg').exists()).toBe(true);
+    // Badge first, so badges line up down the column.
+    expect(row.get('td').text()).toBe('ClosedSavings (USD)');
+  });
+
+  it('lists closed banks after open ones, keeping the order within each group', async () => {
+    mockData(
+      [
+        bank('b1', 'Alpha', true),
+        bank('b2', 'Bravo'),
+        bank('b3', 'Charlie', true),
+        bank('b4', 'Delta'),
+      ],
+      [],
+    );
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.findAll('[data-testid="bank-row"] h2').map((h) => h.text())).toEqual([
+      'Bravo',
+      'Delta',
+      'ClosedAlpha',
+      'ClosedCharlie',
+    ]);
+  });
+
+  it("collapses a closed bank's accounts until its header is clicked, and collapses them again", async () => {
+    mockData([bank('b1', 'Old Bank', true)], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const toggle = wrapper.get('h2 button');
+    expect(toggle.attributes('aria-expanded')).toBe('false');
+    expect(wrapper.find('[data-testid="account-row"]').exists()).toBe(false);
+
+    await toggle.trigger('click');
+    expect(toggle.attributes('aria-expanded')).toBe('true');
+    expect(wrapper.get('[data-testid="account-row"]').text()).toContain('Checking (USD)');
+
+    await toggle.trigger('click');
+    expect(toggle.attributes('aria-expanded')).toBe('false');
+    expect(wrapper.find('[data-testid="account-row"]').exists()).toBe(false);
+  });
+
+  it('expands each closed bank on its own', async () => {
+    mockData(
+      [bank('b1', 'Alpha', true), bank('b2', 'Bravo', true)],
+      [account('a1', 'b1', 'Checking'), account('a2', 'b2', 'Savings')],
+    );
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.findAll('h2 button')[1].trigger('click');
+
+    const rows = wrapper.findAll('[data-testid="account-row"]');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].text()).toContain('Savings');
+  });
+
+  it('keeps open banks expanded, without a toggle', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('h2 button').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="account-row"]').exists()).toBe(true);
+  });
+
+  it('shows only the header for a closed bank without accounts', async () => {
+    mockData([bank('b1', 'Old Bank', true)], []);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('h2 button').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('No account');
+    // The chevron's room is kept, so its badge lines up with the other
+    // closed banks'.
+    expect(wrapper.get('h2 svg.bank-chevron').classes()).toContain('invisible');
+  });
+
+  it('offers only deletion, and no closed badge, on the accounts of a closed bank', async () => {
+    mockData(
+      [bank('b1', 'Old Bank', true)],
+      [account('a1', 'b1', 'Checking'), account('a2', 'b1', 'Savings', 'USD', true)],
+    );
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+    await wrapper.get('h2 button').trigger('click');
+
+    expect(
+      wrapper.findAll('[data-testid="account-row"] button').map((b) => b.attributes('aria-label')),
+    ).toEqual(['Delete Checking', 'Delete Savings']);
+    expect(wrapper.find('[data-testid="account-row"] .pill-closed').exists()).toBe(false);
   });
 
   it('names each row action button for its own bank/account, not just the action', async () => {

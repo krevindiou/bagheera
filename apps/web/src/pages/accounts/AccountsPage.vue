@@ -96,6 +96,24 @@ function accountsForBank(bankId: string) {
 
 const activeBanks = computed(() => banks.value.filter((bank) => !bank.closed && !bank.deleted));
 
+// Closed banks go last; the sort is stable, so each group keeps the API's
+// order.
+const listedBanks = computed(() =>
+  [...banks.value].sort((a, b) => Number(a.closed) - Number(b.closed)),
+);
+
+// Closed banks start collapsed on every visit: nothing remembers which ones
+// were opened.
+const expandedBankIds = ref(new Set<string>());
+
+function isCollapsible(bank: Bank): boolean {
+  return bank.closed && accountsForBank(bank.id).length > 0;
+}
+
+function toggleBank(bank: Bank) {
+  if (!expandedBankIds.value.delete(bank.id)) expandedBankIds.value.add(bank.id);
+}
+
 // Names each row action button for its own bank/account, so a screen reader
 // doesn't hear a run of identical "Edit"/"Close"/"Delete" buttons.
 function bankActionLabel(action: string, bank: Bank): string {
@@ -229,10 +247,34 @@ function onAccountCreated(accountId: string) {
       :empty-text="$t('accounts.empty')"
       error-testid="accounts-error"
     >
-      <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
+      <section v-for="bank in listedBanks" :key="bank.id" class="mb-4" data-testid="bank-row">
         <div class="d-flex align-items-center gap-2 mb-2">
-          <h2 class="h6 mb-0" style="font-size: 15px">{{ bank.name }}</h2>
-          <span v-if="bank.closed" class="pill pill-warning">{{ $t('accounts.closed') }}</span>
+          <h2 class="h6 mb-0" style="font-size: 15px">
+            <component
+              :is="isCollapsible(bank) ? 'button' : 'span'"
+              v-bind="
+                isCollapsible(bank)
+                  ? { type: 'button', 'aria-expanded': expandedBankIds.has(bank.id) }
+                  : {}
+              "
+              class="bank-heading d-inline-flex align-items-center gap-2"
+              @click="isCollapsible(bank) && toggleBank(bank)"
+            >
+              <!-- Kept, unseen, when there is nothing to expand, so closed badges line up. -->
+              <AppIcon
+                v-if="bank.closed"
+                name="chevron"
+                :size="16"
+                class="bank-chevron"
+                :class="{ invisible: !isCollapsible(bank) }"
+              />
+              <span v-if="bank.closed" class="pill pill-closed">
+                <AppIcon name="archive" :size="12" />
+                {{ $t('accounts.closed') }}
+              </span>
+              <span :class="{ 'text-muted': bank.closed }">{{ bank.name }}</span>
+            </component>
+          </h2>
           <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
           <div class="ms-auto d-flex gap-2">
             <IconButton
@@ -260,10 +302,18 @@ function onAccountCreated(accountId: string) {
           </div>
         </div>
 
-        <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-1 mb-0">
+        <p
+          v-if="!bank.closed && accountsForBank(bank.id).length === 0"
+          class="text-muted ms-1 mb-0"
+        >
           {{ $t('accounts.noAccountsForBank') }}
         </p>
-        <div v-else class="table-responsive">
+        <div
+          v-else-if="
+            accountsForBank(bank.id).length > 0 && (!bank.closed || expandedBankIds.has(bank.id))
+          "
+          class="table-responsive"
+        >
           <table class="table">
             <thead>
               <tr>
@@ -283,15 +333,16 @@ function onAccountCreated(accountId: string) {
               >
                 <td>
                   <div class="d-flex align-items-center gap-2">
+                    <span v-if="account.closed && !bank.closed" class="pill pill-closed">
+                      <AppIcon name="archive" :size="12" />
+                      {{ $t('accounts.closed') }}
+                    </span>
                     <router-link
                       :to="{ name: 'operations', params: { accountId: account.id } }"
                       @click.stop
                     >
                       {{ account.name }} ({{ account.currency }})
                     </router-link>
-                    <span v-if="account.closed" class="pill pill-warning">{{
-                      $t('accounts.closed')
-                    }}</span>
                     <span v-if="account.deleted" class="pill pill-danger">{{
                       $t('accounts.deleted')
                     }}</span>
@@ -317,14 +368,14 @@ function onAccountCreated(accountId: string) {
                 <td @click.stop>
                   <div class="d-flex justify-content-end gap-2">
                     <IconButton
-                      v-if="!account.closed && !account.deleted"
+                      v-if="!bank.closed && !account.closed && !account.deleted"
                       icon="edit"
                       :label="$t('accounts.edit')"
                       :aria-label="accountActionLabel($t('accounts.edit'), account)"
                       @click="startEditAccount(account)"
                     />
                     <IconButton
-                      v-if="!account.closed && !account.deleted"
+                      v-if="!bank.closed && !account.closed && !account.deleted"
                       icon="archive"
                       :label="$t('accounts.closeAccount')"
                       :aria-label="accountActionLabel($t('accounts.closeAccount'), account)"
@@ -378,3 +429,27 @@ function onAccountCreated(accountId: string) {
     />
   </div>
 </template>
+
+<style scoped>
+.bank-heading {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+.bank-chevron {
+  transform: rotate(-90deg);
+}
+[aria-expanded='true'] .bank-chevron {
+  transform: none;
+}
+/* Solid, unlike the other pills: "closed" has to stand out at a glance. */
+.pill-closed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--text-muted);
+  color: var(--surface);
+}
+</style>
