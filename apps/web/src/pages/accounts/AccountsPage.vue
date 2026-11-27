@@ -28,9 +28,9 @@ const queryClient = useQueryClient();
 
 const { banks, banksQuery } = useBanksQuery();
 const { accounts, accountsQuery } = useAccountsQuery();
-const banksPending = computed(() => banksQuery.isPending.value);
-// Rows pair a bank with its accounts, so either query failing leaves the
-// list unusable.
+// Rows pair a bank with its accounts, so the list waits for both queries and
+// either one failing leaves it unusable.
+const listPending = computed(() => banksQuery.isPending.value || accountsQuery.isPending.value);
 const listError = computed(() => banksQuery.isError.value || accountsQuery.isError.value);
 
 async function reload() {
@@ -242,7 +242,7 @@ function onAccountCreated(accountId: string) {
 
     <ListState
       :error="listError"
-      :loading="banksPending"
+      :loading="listPending"
       :empty="banks.length === 0"
       :empty-text="$t('accounts.empty')"
       error-testid="accounts-error"
@@ -436,6 +436,7 @@ function onAccountCreated(accountId: string) {
   border: 0;
   background: none;
   font: inherit;
+  letter-spacing: inherit;
   color: inherit;
 }
 .bank-chevron {

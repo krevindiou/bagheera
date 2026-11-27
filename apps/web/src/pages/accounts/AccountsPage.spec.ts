@@ -110,6 +110,28 @@ describe('AccountsPage', () => {
     expect(wrapper.text()).toContain("You don't have any bank yet.");
   });
 
+  it('keeps loading until the accounts arrive too, rather than claiming a bank has none', async () => {
+    let resolveAccounts!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/banks') {
+        return { data: [bank('b1', 'Chase')], error: undefined, response: new Response() };
+      }
+      if (path === '/accounts') return new Promise((resolve) => (resolveAccounts = resolve));
+      return { data: undefined, error: undefined, response: new Response() };
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain('No account');
+
+    resolveAccounts({ data: [], error: undefined, response: new Response() });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('No account');
+  });
+
   it('shows an error message instead of the empty state when banks fail to load', async () => {
     apiClient.GET.mockImplementation(async (path: string) => {
       if (path === '/banks') {
@@ -457,7 +479,7 @@ describe('AccountsPage', () => {
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
     expect(useConfirm().state.options).toEqual({
-      body: "Close bank “Chase”? Its accounts stay visible, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
+      body: "Close bank “Chase”? Its accounts stay available when you expand it, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
       confirmLabel: 'Close bank',
     });
     useConfirm().settle(true);

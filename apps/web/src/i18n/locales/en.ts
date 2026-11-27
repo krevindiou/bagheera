@@ -132,7 +132,7 @@ export default {
     accountClosed: 'Account closed',
     accountDeleted: 'Account deleted',
     confirmCloseBank:
-      "Close bank “{name}”? Its accounts stay visible, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
+      "Close bank “{name}”? Its accounts stay available when you expand it, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
     confirmDeleteBank:
       "Delete bank “{name}” and all its accounts? Their operations and scheduled operations will be deleted too, and transfers with them in your other accounts will show as external. This can't be undone.",
     confirmCloseAccount:
