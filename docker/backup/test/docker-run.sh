@@ -55,7 +55,9 @@ docker run -d --name "$NAME-mailpit" --network "$NAME" --network-alias mailpit \
   -e MP_SMTP_AUTH_ACCEPT_ANY=1 -e MP_SMTP_AUTH_ALLOW_INSECURE=1 \
   "$MAILPIT_IMAGE" >/dev/null
 
-wait_ready "$NAME-postgres" pg_isready -U bagheera -d bagheera
+# Over TCP, which the temporary server of the initialisation never listens on:
+# its socket answers before the server the tests connect to is up.
+wait_ready "$NAME-postgres" pg_isready -h 127.0.0.1 -U bagheera -d bagheera
 wait_ready "$NAME-mailpit" wget -qO- http://localhost:8025/readyz
 
 # Not `bagheera`, the host name the backup pins its snapshots to: the tests of
