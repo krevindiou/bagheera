@@ -17,6 +17,8 @@ staging=$new.upgrading
 old=$root/$PG_PREVIOUS_MAJOR/docker
 old_bin=/usr/libexec/postgresql$PG_PREVIOUS_MAJOR
 new_bin=/usr/local/bin
+# The service's name in both Compose files, which resolves to its containers.
+service=postgres
 
 log() {
   printf 'postgres-upgrade: %s\n' "$*"
@@ -62,6 +64,17 @@ check_unchanged() {
   fi
 }
 
+# Two servers on one volume corrupt it, and a deployment can start this
+# container while the previous one still runs. This server doesn't listen yet,
+# so an answer is another one's: 0 accepts connections, 1 rejects them.
+refuse_a_running_server() {
+  local status=0
+  pg_isready -h "$service" -t 3 >/dev/null 2>&1 || status=$?
+  if [ "$status" -le 1 ]; then
+    refuse "a server already answers at '$service'; stop it first, two servers on one volume would corrupt it"
+  fi
+}
+
 # refuse_clusters <newer|older>: fails if the volume holds a cluster of a major
 # newer, or older, than this image's. The layouts from before major 18 count as
 # older.
@@ -90,11 +103,24 @@ refuse_clusters() {
   fi
 }
 
+# stop_if_running <bindir> <datadir>
+stop_if_running() {
+  if "$1/pg_ctl" -D "$2" status >/dev/null 2>&1; then
+    "$1/pg_ctl" -D "$2" -m fast -w stop || true
+  fi
+}
+
 # Leaves no temporary server behind, and reports a failed upgrade.
 on_exit() {
   local status=$?
   if [ "${#running[@]}" -gt 0 ]; then
     "${running[0]}" -D "${running[1]}" -m fast -w stop || true
+  fi
+  # pg_upgrade starts and stops both servers itself, and leaves one running when
+  # it is interrupted.
+  if [ "$current_step" = check ] || [ "$current_step" = upgrade ]; then
+    stop_if_running "$old_bin" "$old"
+    stop_if_running "$new_bin" "$staging"
   fi
   if [ "$status" -ne 0 ]; then
     # pg_upgrade keeps its logs only when it fails. They echo the statements
@@ -109,6 +135,8 @@ on_exit() {
 
 upgrade() {
   trap on_exit EXIT
+  # A stop from the entrypoint: leave through on_exit.
+  trap 'exit 1' INT TERM
   # A slow disk can need more than pg_ctl's default minute for a recovery.
   export PGCTLTIMEOUT=300
   export PGPASSWORD="${PGPASSWORD:-$POSTGRES_PASSWORD}"
@@ -132,8 +160,8 @@ upgrade() {
   step 'read old cluster'
   local socket settings encoding provider collate ctype locale checksums
   socket=$(mktemp -d)
-  "$old_bin/pg_ctl" -D "$old" -o "-c listen_addresses='' -c unix_socket_directories='$socket'" -w start
   running=("$old_bin/pg_ctl" "$old")
+  "$old_bin/pg_ctl" -D "$old" -o "-c listen_addresses='' -c unix_socket_directories='$socket'" -w start
   settings=$(psql -h "$socket" -U "$POSTGRES_USER" -d template1 -v ON_ERROR_STOP=1 -XAtF '|' -c \
     "select pg_encoding_to_char(encoding), datlocprovider, datcollate, datctype, coalesce(datlocale, '') from pg_database where datname = 'template0'")
   "$old_bin/pg_ctl" -D "$old" -m fast -w stop
@@ -175,8 +203,8 @@ upgrade() {
 
   # A private socket directory: the health check must not reach this server.
   step 'finish'
-  docker_temp_server_start postgres -c unix_socket_directories="$work"
   running=("$new_bin/pg_ctl" "$staging")
+  docker_temp_server_start postgres -c unix_socket_directories="$work"
   if [ -f "$work/update_extensions.sql" ]; then
     psql -h "$work" -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -X -f "$work/update_extensions.sql"
   fi
@@ -206,6 +234,7 @@ main() {
   docker_setup_env
   # Only the image's own layout is upgraded.
   [ "$PGDATA" = "$new" ] || return 0
+  refuse_a_running_server
   if has_cluster "$new"; then
     if has_cluster "$old"; then
       check_unchanged

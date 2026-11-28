@@ -57,5 +57,20 @@ for image in bagheera-api bagheera-web bagheera-backup bagheera-postgres; do
 	fi
 done
 
+# Uncloud leaves a container that failed to turn healthy behind, stopped. With a
+# second postgres container around, the next deploy may start the new one without
+# stopping the running one: two servers on one volume. At most one may exist.
+containers=$(uc ps)
+postgres=$(awk '$1 == "postgres"' <<<"$containers")
+if [ "$(grep -c . <<<"$postgres")" -gt 1 ]; then
+	{
+		echo "more than one postgres container exists:"
+		echo "$postgres"
+		echo "remove those that are not Up, on their host: ssh <user>@<host> docker rm <container id>"
+		echo "then deploy again (docs/deploying.md, \"Postgres major upgrades\")"
+	} >&2
+	exit 1
+fi
+
 export TAG="$tag"
 exec uc deploy -f docker/compose.prod.yml "$@"

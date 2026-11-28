@@ -288,4 +288,106 @@ test_low_disk_space_refuses() {
   assert_no_new_cluster
 }
 
+# Uncloud can leave the previous container running while it starts the new one:
+# two servers on one volume would corrupt it.
+test_a_running_server_blocks_the_start() {
+  new_volume
+  seed_old
+  start_old
+  local status=0 output
+  output=$(timeout 60 docker run --name "$C-holder" --network "$NET" --network-alias postgres \
+    "${SERVER_ENV[@]}" -v "$VOL:/var/lib/postgresql" "$IMAGE" 2>&1) || status=$?
+  [ "$status" -ne 124 ] || fail "started beside the running server: $output"
+  [ "$status" -ne 0 ] || fail "did not refuse: $output"
+  assert_contains "$output" "a server already answers at 'postgres'" "message"
+  in_volume 'test ! -e /var/lib/postgresql/19/docker && test ! -e /var/lib/postgresql/19/docker.upgrading' || fail "wrote to the volume"
+  assert_eq 1000 "$(sql 'select count(*) from t')" "the running server still serves"
+}
+
+# A stop during an upgrade reaches it: the servers it runs shut down cleanly
+# instead of being killed once the grace period ends. A stand-in pg_upgrade
+# starts the old server, as the real one does, and hangs.
+test_a_stop_during_an_upgrade_shuts_down_cleanly() {
+  new_volume
+  seed_old
+  in_volume 'cat > /var/lib/postgresql/fake_pg_upgrade <<"EOF"
+#!/bin/sh
+/usr/libexec/postgresql18/pg_ctl -D /var/lib/postgresql/18/docker -o "-c listen_addresses= -c unix_socket_directories=/tmp" -w start
+echo "stand-in running"
+sleep 600
+EOF
+chmod 755 /var/lib/postgresql/fake_pg_upgrade'
+  local fake
+  fake="$(docker volume inspect -f '{{.Mountpoint}}' "$VOL")/fake_pg_upgrade"
+  docker run -d --name "$C" "${SERVER_ENV[@]}" -v "$VOL:/var/lib/postgresql" \
+    -v "$fake:/usr/local/bin/pg_upgrade:ro" "$IMAGE" >/dev/null
+  local running=
+  for _ in $(seq 1 600); do
+    case $(docker logs "$C" 2>&1) in
+      *'stand-in running'*)
+        running=1
+        break
+        ;;
+    esac
+    sleep 0.1
+  done
+  [ -n "$running" ] || fail "the stand-in never ran: $(docker logs "$C" 2>&1)"
+  local started=$SECONDS
+  docker stop -t 60 "$C" >/dev/null
+  [ $((SECONDS - started)) -lt 30 ] || fail "the stop was ignored: killed after the grace period"
+  assert_eq 1 "$(docker inspect -f '{{.State.ExitCode}}' "$C")" "exit code"
+  assert_contains "$(docker logs "$C" 2>&1)" "failed at step 'check'" "message"
+  docker rm -v "$C" >/dev/null
+  assert_contains "$(in_volume '/usr/libexec/postgresql18/pg_controldata /var/lib/postgresql/18/docker')" 'shut down' "old cluster stopped cleanly"
+  assert_no_new_cluster
+  start_new
+  assert_eq 1000 "$(sql 'select count(*) from t')" "the next start upgrades"
+}
+
+# run_deploy <uc ps output>: scripts/deploy.sh in a container with no network
+# and no uc, with stand-ins for uc and docker.
+run_deploy() {
+  # shellcheck disable=SC2016 # expanded in the container
+  docker run --rm --network none -e PS_OUTPUT="$1" -e IMAGE_NAMESPACE=ghcr.io/example \
+    -v "$PWD/scripts/deploy.sh:/repo/scripts/deploy.sh:ro" --entrypoint bash "$IMAGE" -c '
+      mkdir /tmp/bin
+      cat >/tmp/bin/uc <<"EOF"
+#!/bin/sh
+if [ "$1" = ps ]; then printf "%s\n" "$PS_OUTPUT"; else echo "RAN uc $*"; fi
+EOF
+      printf "#!/bin/sh\nexit 0\n" >/tmp/bin/docker
+      chmod +x /tmp/bin/uc /tmp/bin/docker
+      PATH=/tmp/bin:$PATH /repo/scripts/deploy.sh 3.0.0'
+}
+
+# The shape of `uc ps`.
+ps_others='SERVICE    CONTAINER ID   IMAGE            CREATED      STATUS                  HOOK         IP ADDRESS    MACHINE
+api        60d11a41b098   example/api:1    2 days ago   Up 34 hours (healthy)                10.210.0.5    host
+api        3f147b9380b1   example/api:1    2 days ago   Exited (0) 2 days ago   pre-deploy                 host'
+ps_running='postgres   f0ffad99a989   postgres:18      2 days ago   Up 34 hours (healthy)                10.210.0.7    host'
+ps_stopped='postgres   0badc0ffee00   postgres:19      1 hour ago   Exited (1) 1 hour ago                              host'
+
+# Uncloud could start the new container without stopping the running one.
+test_deploy_refuses_a_leftover_postgres_container() {
+  local status=0 output
+  output=$(run_deploy "$ps_others
+$ps_stopped
+$ps_running" 2>&1) || status=$?
+  [ "$status" -ne 0 ] || fail "deployed: $output"
+  assert_contains "$output" '0badc0ffee00' "the containers are listed"
+  assert_contains "$output" 'docker rm' "how to remove one"
+  case $output in
+    *'RAN uc deploy'*) fail "uc deploy ran: $output" ;;
+  esac
+}
+
+test_deploy_proceeds_with_at_most_one_postgres_container() {
+  local rows output
+  for rows in "$ps_running" "$ps_stopped" ""; do
+    output=$(run_deploy "$ps_others
+$rows" 2>&1) || fail "refused with [$rows]: $output"
+    assert_contains "$output" 'RAN uc deploy' "uc deploy with [$rows]"
+  done
+}
+
 run_tests

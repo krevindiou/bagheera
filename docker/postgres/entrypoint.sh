@@ -8,16 +8,35 @@ set -Eeo pipefail
 . /usr/local/bin/docker-entrypoint.sh
 
 if { [ "${1:-}" = postgres ] || [[ "${1:-}" == -* ]]; } && ! _pg_want_help "$@"; then
+  upgrade=(bagheera-upgrade)
   if [ "$(id -u)" = 0 ]; then
     mkdir -p "/var/lib/postgresql/$PG_MAJOR"
     # -h: a link at that path (the postgres user can create one) is changed
     # itself, never what it points at.
     chown -h postgres:postgres "/var/lib/postgresql/$PG_MAJOR"
-    # A child, not exec: PID 1 has to stay root's, so that a postmaster.pid
-    # left by a killed container, which names PID 1, is recognised as stale.
-    su-exec postgres bagheera-upgrade
-  else
-    bagheera-upgrade
+    upgrade=(su-exec postgres bagheera-upgrade)
+  fi
+  # A child, not exec: PID 1 has to stay root's, so that a postmaster.pid left
+  # by a killed container, which names PID 1, is recognised as stale. In its own
+  # process group and in the background, so that a stop reaches it and all it
+  # runs. SIGTERM, whatever was received: a background job ignores SIGINT.
+  stopped=
+  child=
+  trap 'stopped=1; kill -TERM -- "-$child" 2>/dev/null || true' INT TERM
+  setsid "${upgrade[@]}" &
+  child=$!
+  while true; do
+    status=0
+    wait "$child" || status=$?
+    # A trapped signal ends the wait before the child does.
+    kill -0 "$child" 2>/dev/null || break
+  done
+  trap - INT TERM
+  if [ -n "$stopped" ]; then
+    exit 1
+  fi
+  if [ "$status" -ne 0 ]; then
+    exit "$status"
   fi
 fi
 
