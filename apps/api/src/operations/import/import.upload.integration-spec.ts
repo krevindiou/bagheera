@@ -379,6 +379,39 @@ describe('bank file import: upload, limits and release', () => {
       }
     });
 
+    it('starts the hold over on a rejected preview too', async () => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { importId } = await startImport(fixture, accountId, FILE);
+      const url = `/operations/import/${importId}/preview`;
+      const { rows } = (await fixture.mutate('post', url, {})).body as Preview;
+      const key = `import:file:${fixture.memberId}:${importId}`;
+      await valkey.expire(key, 60);
+
+      const res = await fixture.mutate('post', url, {
+        categoryChanges: [
+          { line: rows[0].line, categoryId: '01900000-0000-7000-8000-000000000000' },
+        ],
+      });
+
+      expect(res.status).toBe(400);
+      expect(await valkey.ttl(key)).toBeGreaterThan(59 * 60);
+    });
+
+    it('counts a previewed upload again when it had been dropped from the pending ones', async () => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { importId } = await startImport(fixture, accountId, FILE);
+      const pending = `import:pending:${fixture.memberId}`;
+      await valkey.zrem(pending, importId);
+
+      await fixture.mutate('post', `/operations/import/${importId}/preview`, {});
+
+      expect(await valkey.zscore(pending, importId)).not.toBeNull();
+    });
+
     it('holds the statement encrypted', async () => {
       const fixture = await seedSignedInMember(app);
       const accountId = await createAccount(fixture);
@@ -481,6 +514,23 @@ describe('bank file import: upload, limits and release', () => {
       await fixture.mutate('delete', `/operations/import/${importId}`);
 
       expect(await valkey.exists(`import:file:${fixture.memberId}:${importId}`)).toBe(0);
+    });
+
+    it('makes room by dropping the upload left unpreviewed the longest', async () => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const fileKey = (importId: string) => `import:file:${fixture.memberId}:${importId}`;
+      const ids: string[] = [];
+      for (let upload = 0; upload < MAX_PENDING_IMPORTS; upload++) {
+        ids.push((await startImport(fixture, accountId, FILE)).importId);
+      }
+      await fixture.mutate('post', `/operations/import/${ids[0]}/preview`, {});
+
+      await startImport(fixture, accountId, FILE);
+
+      expect(await valkey.exists(fileKey(ids[0]))).toBe(1);
+      expect(await valkey.exists(fileKey(ids[1]))).toBe(0);
     });
 
     it('keeps at most a few uploads waiting, the oldest making room for a new one', async () => {
