@@ -176,8 +176,10 @@ export class ImportService {
     importId: string,
     dto: PreviewImportDto,
   ): Promise<ImportPreviewDto> {
-    const evaluated = await this.evaluate(memberId, importId, dto);
+    // First, so that a rejected preview counts too and the file cannot expire
+    // while this one is worked out.
     await this.store.refresh(memberId, importId);
+    const evaluated = await this.evaluate(memberId, importId, dto);
     const { rows } = evaluated;
     const [statement, balances] = await Promise.all([
       this.summarize(memberId, evaluated),

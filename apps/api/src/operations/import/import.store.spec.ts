@@ -38,10 +38,9 @@ interface FakeClient {
   set: Mock;
   del: Mock;
   eval: Mock;
-  zrange: Mock;
 }
 
-const CHAIN_STEPS = ['set', 'del', 'zadd', 'zrem', 'zremrangebyscore', 'expire', 'zcard'] as const;
+const CHAIN_STEPS = ['set', 'del', 'zadd', 'zrem', 'zremrangebyscore', 'expire', 'eval'] as const;
 type Chain = Record<(typeof CHAIN_STEPS)[number] | 'exec', Mock>;
 
 function fakeClient(): { client: FakeClient; chain: Chain } {
@@ -49,7 +48,6 @@ function fakeClient(): { client: FakeClient; chain: Chain } {
   for (const step of CHAIN_STEPS) chain[step] = vi.fn().mockReturnValue(chain);
   const client: FakeClient = {
     multi: vi.fn().mockReturnValue(chain),
-    zrange: vi.fn().mockResolvedValue([]),
     get: vi.fn(),
     set: vi.fn().mockResolvedValue('OK'),
     del: vi.fn().mockResolvedValue(1),
@@ -191,27 +189,22 @@ describe('ImportStore', () => {
       expect(IMPORT_HOLD_SECONDS).toBe(60 * 60);
     });
 
-    it('starts the hold of a pending import over', async () => {
+    it('starts the hold of a pending import over, in one step', async () => {
       vi.useFakeTimers({ now: 1_000 });
-      const { client, chain } = fakeClient();
+      const { client } = fakeClient();
 
       await storeOver(client).refresh(MEMBER, 'i-1');
 
-      for (const key of ['file', 'meta']) {
-        expect(chain.expire).toHaveBeenCalledWith(
-          `import:${key}:${MEMBER}:i-1`,
-          IMPORT_HOLD_SECONDS,
-        );
-      }
-      // XX: an import discarded meanwhile is not registered again.
-      expect(chain.zadd).toHaveBeenCalledWith(
+      expect(client.eval).toHaveBeenCalledWith(
+        expect.stringContaining("redis.call('exists', KEYS[1], KEYS[2]) < 2"),
+        3,
+        `import:file:${MEMBER}:i-1`,
+        `import:meta:${MEMBER}:i-1`,
         `import:pending:${MEMBER}`,
-        'XX',
+        IMPORT_HOLD_SECONDS,
         1_000 + IMPORT_HOLD_SECONDS * 1000,
         'i-1',
       );
-      expect(chain.expire).toHaveBeenCalledWith(`import:pending:${MEMBER}`, IMPORT_HOLD_SECONDS);
-      expect(chain.exec).toHaveBeenCalled();
     });
   });
 
@@ -231,15 +224,6 @@ describe('ImportStore', () => {
   });
 
   describe('pending imports', () => {
-    const exec = (held: number) => [
-      [null, 'OK'],
-      [null, 'OK'],
-      [null, 0],
-      [null, 1],
-      [null, 1],
-      [null, held],
-    ];
-
     it('registers the upload under the Member until its hold ends', async () => {
       const { client, chain } = fakeClient();
 
@@ -258,31 +242,19 @@ describe('ImportStore', () => {
       expect(chain.expire).toHaveBeenCalledWith(`import:pending:${MEMBER}`, IMPORT_HOLD_SECONDS);
     });
 
-    it('keeps every upload while the Member is within the limit', async () => {
+    it('makes room past the limit in the same transaction as the upload', async () => {
       const { client, chain } = fakeClient();
-      chain.exec.mockResolvedValue(exec(MAX_PENDING_IMPORTS));
 
       await storeOver(client).save(MEMBER, ACCOUNT, STATEMENT);
 
-      expect(client.zrange).not.toHaveBeenCalled();
-      expect(chain.del).not.toHaveBeenCalled();
-    });
-
-    it('drops the oldest uploads past the limit', async () => {
-      const { client, chain } = fakeClient();
-      chain.exec.mockResolvedValueOnce(exec(MAX_PENDING_IMPORTS + 2));
-      client.zrange.mockResolvedValue(['old-1', 'old-2']);
-
-      await storeOver(client).save(MEMBER, ACCOUNT, STATEMENT);
-
-      expect(client.zrange).toHaveBeenCalledWith(`import:pending:${MEMBER}`, '0', '1');
-      expect(chain.del).toHaveBeenCalledWith(
-        `import:file:${MEMBER}:old-1`,
-        `import:meta:${MEMBER}:old-1`,
-        `import:file:${MEMBER}:old-2`,
-        `import:meta:${MEMBER}:old-2`,
+      expect(chain.eval).toHaveBeenCalledWith(
+        expect.stringContaining("redis.call('zpopmin', KEYS[1], extra)"),
+        1,
+        `import:pending:${MEMBER}`,
+        MAX_PENDING_IMPORTS,
+        `import:file:${MEMBER}:`,
+        `import:meta:${MEMBER}:`,
       );
-      expect(chain.zrem).toHaveBeenCalledWith(`import:pending:${MEMBER}`, 'old-1', 'old-2');
     });
   });
 

@@ -40,6 +40,29 @@ const RELEASE_LOCK = `if redis.call('get', KEYS[1]) == ARGV[1] then
 end
 return 0`;
 
+// Chooses and removes in one step: a preview cannot reorder the uploads in
+// between, and two uploads cannot each remove their own count.
+const EVICT_PAST_LIMIT = `local extra = redis.call('zcard', KEYS[1]) - tonumber(ARGV[1])
+if extra <= 0 then
+  return 0
+end
+local popped = redis.call('zpopmin', KEYS[1], extra)
+for i = 1, #popped, 2 do
+  redis.call('del', ARGV[2] .. popped[i], ARGV[3] .. popped[i])
+end
+return extra`;
+
+// An import discarded, evicted or expired stays gone. One still held is
+// registered as pending even if another upload had just pruned its id.
+const REFRESH_HOLD = `if redis.call('exists', KEYS[1], KEYS[2]) < 2 then
+  return 0
+end
+redis.call('expire', KEYS[1], ARGV[1])
+redis.call('expire', KEYS[2], ARGV[1])
+redis.call('zadd', KEYS[3], ARGV[2], ARGV[3])
+redis.call('expire', KEYS[3], ARGV[1])
+return 1`;
+
 /**
  * Holds a Member's uploaded bank statement, read once at upload, between the
  * upload and the confirmation, and nowhere else, encrypted: it names the
@@ -80,7 +103,7 @@ export class ImportStore {
     const importId = randomUUID();
     const now = Date.now();
     const pending = this.pendingKey(memberId);
-    const results = await this.client
+    await this.client
       .multi()
       .set(
         this.fileKey(memberId, importId),
@@ -97,21 +120,16 @@ export class ImportStore {
       .zremrangebyscore(pending, '-inf', now)
       .zadd(pending, now + IMPORT_HOLD_SECONDS * 1000, importId)
       .expire(pending, IMPORT_HOLD_SECONDS)
-      .zcard(pending)
+      .eval(
+        EVICT_PAST_LIMIT,
+        1,
+        pending,
+        MAX_PENDING_IMPORTS,
+        this.fileKey(memberId, ''),
+        this.metaKey(memberId, ''),
+      )
       .exec();
-    const held = Number(results?.[results.length - 1]?.[1] ?? 0);
-    if (held > MAX_PENDING_IMPORTS) await this.evictOldest(memberId, held - MAX_PENDING_IMPORTS);
     return importId;
-  }
-
-  private async evictOldest(memberId: string, count: number): Promise<void> {
-    const oldest = await this.client.zrange(this.pendingKey(memberId), '0', String(count - 1));
-    if (oldest.length === 0) return;
-    await this.client
-      .multi()
-      .del(...oldest.flatMap((id) => [this.fileKey(memberId, id), this.metaKey(memberId, id)]))
-      .zrem(this.pendingKey(memberId), ...oldest)
-      .exec();
   }
 
   async load(memberId: string, importId: string): Promise<PendingImport | null> {
@@ -135,17 +153,18 @@ export class ImportStore {
     }
   }
 
-  // Starts the hold over. An import discarded or expired meanwhile stays gone:
-  // EXPIRE ignores a missing key, and XX adds no pending id.
+  // Starts the hold over.
   async refresh(memberId: string, importId: string): Promise<void> {
-    const pending = this.pendingKey(memberId);
-    await this.client
-      .multi()
-      .expire(this.fileKey(memberId, importId), IMPORT_HOLD_SECONDS)
-      .expire(this.metaKey(memberId, importId), IMPORT_HOLD_SECONDS)
-      .zadd(pending, 'XX', Date.now() + IMPORT_HOLD_SECONDS * 1000, importId)
-      .expire(pending, IMPORT_HOLD_SECONDS)
-      .exec();
+    await this.client.eval(
+      REFRESH_HOLD,
+      3,
+      this.fileKey(memberId, importId),
+      this.metaKey(memberId, importId),
+      this.pendingKey(memberId),
+      IMPORT_HOLD_SECONDS,
+      Date.now() + IMPORT_HOLD_SECONDS * 1000,
+      importId,
+    );
   }
 
   async discard(memberId: string, importId: string): Promise<void> {
