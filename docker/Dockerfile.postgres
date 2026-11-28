@@ -15,15 +15,18 @@ ENV PG_PREVIOUS_MAJOR=18
 # name the base entrypoint calls it by.
 RUN apk upgrade --no-cache \
   && apk add --no-cache "postgresql${PG_PREVIOUS_MAJOR}" "postgresql${PG_PREVIOUS_MAJOR}-contrib" su-exec \
-  && rm -f /usr/local/bin/gosu \
-  && ln -s "$(command -v su-exec)" /usr/local/bin/gosu
+  && rm -f /usr/local/bin/gosu
 
-# A script that is missing fails the build (install exits non-zero).
+# A script that is missing fails the build (install exits non-zero). The gosu
+# link belongs to this layer, not the one above: recreated in the layer that
+# removes it, the path is no deletion, and the scanner keeps reporting the
+# base's binary.
 COPY docker/postgres/*.sh /opt/postgres/
 RUN for name in entrypoint upgrade; do \
       install -m 0755 "/opt/postgres/$name.sh" "/usr/local/bin/bagheera-$name"; \
     done \
-  && rm -rf /opt/postgres
+  && rm -rf /opt/postgres \
+  && ln -s "$(command -v su-exec)" /usr/local/bin/gosu
 
 ENTRYPOINT ["bagheera-entrypoint"]
 # Setting an entrypoint drops the base image's command.
