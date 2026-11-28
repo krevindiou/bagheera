@@ -149,8 +149,18 @@ jobs:
       - run: make test-backup
 
   postgres:
-    name: Postgres image tests
-    runs-on: ubuntu-latest
+    name: Postgres image tests (${{ matrix.arch }})
+    # Both published architectures: production runs arm64, and the upgrade
+    # depends on each one's packages of the previous major.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     needs: lint
     timeout-minutes: 15
     steps:
