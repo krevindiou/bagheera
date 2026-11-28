@@ -33,7 +33,7 @@ jobs:
       # A failed publish is abandoned anyway; a check wants every failure.
       fail-fast: ${{ inputs.publish }}
       matrix:
-        image: [bagheera-api, bagheera-web, bagheera-backup]
+        image: [bagheera-api, bagheera-web, bagheera-backup, bagheera-postgres]
         arch: [amd64, arm64]
         include:
           - image: bagheera-api
@@ -42,6 +42,8 @@ jobs:
             dockerfile: docker/Dockerfile.caddy
           - image: bagheera-backup
             dockerfile: docker/Dockerfile.backup
+          - image: bagheera-postgres
+            dockerfile: docker/Dockerfile.postgres
           # amd64 keeps the Trivy category the images were scanned under
           # before arm64 got its own scan, and that image-scan.yml updates.
           - arch: amd64
@@ -103,7 +105,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        image: [bagheera-api, bagheera-web, bagheera-backup]
+        image: [bagheera-api, bagheera-web, bagheera-backup, bagheera-postgres]
     steps:
       # For the local actions.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
