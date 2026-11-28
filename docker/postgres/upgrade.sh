@@ -98,8 +98,21 @@ refuse_clusters() {
       found+=("$dir")
     fi
   done
-  if [ "${#found[@]}" -gt 0 ]; then
-    refuse "found a cluster in ${found[*]}; only an upgrade from $PG_PREVIOUS_MAJOR is supported"
+  if [ "${#found[@]}" -eq 0 ]; then
+    return 0
+  fi
+  if [ "$1" = newer ]; then
+    refuse "found a cluster in ${found[*]}, newer than $PG_MAJOR: starting $PG_MAJOR would ignore its data." \
+      "Run a release of that major, or remove it, which deletes what only it holds."
+  fi
+  refuse "found a cluster in ${found[*]}; only an upgrade from $PG_PREVIOUS_MAJOR is supported"
+}
+
+# Publishing the new cluster needs its directory absent or empty: checked before
+# the upgrade rather than after it.
+refuse_files_without_cluster() {
+  if [ -d "$new" ] && [ -n "$(ls -A "$new")" ]; then
+    refuse "$new holds files but no cluster; move or remove them"
   fi
 }
 
@@ -235,15 +248,17 @@ main() {
   # Only the image's own layout is upgraded.
   [ "$PGDATA" = "$new" ] || return 0
   refuse_a_running_server
+  # First: serving this major's data, or upgrading to it, beside a newer cluster
+  # would silently serve stale data.
+  refuse_clusters newer
   if has_cluster "$new"; then
     if has_cluster "$old"; then
       check_unchanged
     fi
     return 0
   fi
-  # First: upgrading the old data beside a newer cluster would serve stale data.
-  refuse_clusters newer
   if has_cluster "$old"; then
+    refuse_files_without_cluster
     upgrade
   else
     refuse_clusters older

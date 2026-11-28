@@ -70,8 +70,11 @@ TAG=<version>` another one (a leading `v` is dropped; the script refuses one
 whose images are missing). Uncloud
 replaces containers one at a time: it starts the new one, waits for its health
 check, then removes the old one, so a release that never turns healthy leaves
-the previous one serving. Extra arguments go to `uc deploy`, e.g.
-`scripts/deploy.sh <version> -y` to skip the confirmation.
+the previous one serving. Postgres is the exception: it has a volume, so the old
+container is stopped before the new one starts, and started again if the new one
+never turns healthy. Its image is tagged with the release too, so every deploy
+replaces it and the database is briefly down. Extra arguments go to
+`uc deploy`, e.g. `scripts/deploy.sh <version> -y` to skip the confirmation.
 
 To roll back, deploy an older version. A release older than one of the images
 cannot be deployed from a newer checkout: there was no `bagheera-postgres`
@@ -108,8 +111,8 @@ health check's `start_period`, then its retries), then stops it, restarts the
 old one and aborts the deploy: the site is back, on the previous release. Remove
 the container it leaves behind before doing anything else (below).
 
-Only the previous major is upgraded: the image refuses to start on anything
-older, or newer. Custom `postgresql.conf`, `pg_hba.conf` and `ALTER SYSTEM`
+Only the previous major is upgraded: the image refuses to start on a volume
+that only holds something older, or that holds anything newer. Custom `postgresql.conf`, `pg_hba.conf` and `ALTER SYSTEM`
 settings are not carried over: the new cluster is configured like a fresh one.
 
 ### The container a failed deploy leaves behind
@@ -118,8 +121,9 @@ Uncloud keeps the container that did not turn healthy, stopped, for inspection.
 With it next to the restored one, a further deploy could start the new Postgres
 without stopping the running one, and two servers on one volume corrupt it.
 `make deploy` therefore refuses while more than one `postgres` container exists,
-and the image refuses to start while another server answers. Read its logs, fix
-the cause, then remove it:
+and the image refuses to start while another server answers, or another
+container of this image holds the volume. Read its logs, fix the cause, then
+remove it:
 
 ```sh
 uc ps                                          # the postgres container that is not Up
@@ -128,7 +132,7 @@ make deploy
 ```
 
 Do not `uc start postgres` while it exists: that starts both. Remove it before
-rolling back too: releases older than 3.0.0 check neither.
+rolling back too: releases older than 3.0.0 check none of this.
 
 ### Cleaning up
 

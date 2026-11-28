@@ -266,12 +266,28 @@ test_newer_major_refuses() {
   assert_no_new_cluster
 }
 
+# After a later upgrade, going back to this image: its own cluster is the stale
+# one.
+test_newer_major_beside_the_own_cluster_refuses() {
+  new_volume
+  start_new
+  stop_server
+  fake_cluster /var/lib/postgresql/20/docker 20
+  assert_refuses
+  assert_contains "$ASSERT_OUTPUT" 'found a cluster in /var/lib/postgresql/20/docker' "message"
+}
+
 test_non_empty_target_is_not_deleted() {
   new_volume
   seed_old
   in_volume 'mkdir -p /var/lib/postgresql/19/docker && echo keep > /var/lib/postgresql/19/docker/file'
   assert_refuses
+  assert_contains "$ASSERT_OUTPUT" '/var/lib/postgresql/19/docker holds files but no cluster' "message"
+  case $ASSERT_OUTPUT in
+    *'postgres-upgrade: step:'*) fail "refused only after starting the upgrade: $ASSERT_OUTPUT" ;;
+  esac
   assert_eq keep "$(in_volume 'cat /var/lib/postgresql/19/docker/file')" "file kept"
+  in_volume 'test ! -e /var/lib/postgresql/19/docker.upgrading' || fail "wrote before refusing"
 }
 
 test_low_disk_space_refuses() {
@@ -304,6 +320,82 @@ test_a_running_server_blocks_the_start() {
   assert_eq 1000 "$(sql 'select count(*) from t')" "the running server still serves"
 }
 
+# wait_for_log <text>
+wait_for_log() {
+  for _ in $(seq 1 600); do
+    case $(docker logs "$C" 2>&1) in
+      *"$1"*) return 0 ;;
+    esac
+    sleep 0.1
+  done
+  fail "[$1] never logged: $(docker logs "$C" 2>&1)"
+}
+
+# assert_volume_is_held: a second container on the volume, which the first can't
+# be reached from over the network, refuses to start.
+assert_volume_is_held() {
+  local status=0 output
+  output=$(timeout 60 docker run --name "$C-holder" "${SERVER_ENV[@]}" \
+    -v "$VOL:/var/lib/postgresql" "$IMAGE" 2>&1) || status=$?
+  docker rm -f -v "$C-holder" >/dev/null 2>&1 || true
+  [ "$status" -ne 124 ] || fail "started beside the other container: $output"
+  [ "$status" -ne 0 ] || fail "did not refuse: $output"
+  assert_contains "$output" 'another container holds the data volume' "message"
+}
+
+# An upgrade's servers listen on no network: only a lock shows it is running.
+test_a_second_container_during_an_upgrade_refuses() {
+  new_volume
+  seed_old
+  in_volume 'printf "#!/bin/sh\necho stand-in running\nsleep 600\n" > /var/lib/postgresql/fake_pg_upgrade
+chmod 755 /var/lib/postgresql/fake_pg_upgrade'
+  local fake
+  fake="$(docker volume inspect -f '{{.Mountpoint}}' "$VOL")/fake_pg_upgrade"
+  docker run -d --name "$C" "${SERVER_ENV[@]}" -v "$VOL:/var/lib/postgresql" \
+    -v "$fake:/usr/local/bin/pg_upgrade:ro" "$IMAGE" >/dev/null
+  wait_for_log 'stand-in running'
+  assert_volume_is_held
+  in_volume 'test -e /var/lib/postgresql/19/docker.upgrading/PG_VERSION' || fail "the running upgrade's directory was removed"
+}
+
+test_a_second_container_beside_a_running_server_refuses() {
+  new_volume
+  start_new
+  assert_volume_is_held
+  assert_eq 1 "$(sql 'select 1')" "the running server still serves"
+  stop_server
+  start_new
+}
+
+# A stand-in setsid that never makes the process group: the moment between the
+# launch of the upgrade and the group's creation, held open.
+test_a_stop_before_the_upgrade_has_its_process_group_is_obeyed() {
+  new_volume
+  in_volume 'printf "#!/bin/sh\necho stand-in running\nsleep 600\n" > /var/lib/postgresql/fake_setsid
+chmod 755 /var/lib/postgresql/fake_setsid'
+  local fake
+  fake="$(docker volume inspect -f '{{.Mountpoint}}' "$VOL")/fake_setsid"
+  docker run -d --name "$C" "${SERVER_ENV[@]}" -v "$VOL:/var/lib/postgresql" \
+    -v "$fake:/usr/local/bin/setsid:ro" "$IMAGE" >/dev/null
+  wait_for_log 'stand-in running'
+  local started=$SECONDS
+  docker stop -t 60 "$C" >/dev/null
+  [ $((SECONDS - started)) -lt 30 ] || fail "the stop was lost: killed after the grace period"
+  assert_eq 1 "$(docker inspect -f '{{.State.ExitCode}}' "$C")" "exit code"
+}
+
+# As with the official image, a secret only root can read works.
+test_a_root_only_password_file_is_read() {
+  new_volume
+  seed_old
+  in_volume 'echo secret > /var/lib/postgresql/password && chmod 400 /var/lib/postgresql/password'
+  docker run -d --name "$C" -e POSTGRES_USER=bagheera -e POSTGRES_DB=bagheera \
+    -e POSTGRES_PASSWORD_FILE=/var/lib/postgresql/password \
+    -v "$VOL:/var/lib/postgresql" "$IMAGE" >/dev/null
+  wait_ready
+  assert_eq 1000 "$(sql 'select count(*) from t')" "rows"
+}
+
 # A stop during an upgrade reaches it: the servers it runs shut down cleanly
 # instead of being killed once the grace period ends. A stand-in pg_upgrade
 # starts the old server, as the real one does, and hangs.
@@ -321,17 +413,7 @@ chmod 755 /var/lib/postgresql/fake_pg_upgrade'
   fake="$(docker volume inspect -f '{{.Mountpoint}}' "$VOL")/fake_pg_upgrade"
   docker run -d --name "$C" "${SERVER_ENV[@]}" -v "$VOL:/var/lib/postgresql" \
     -v "$fake:/usr/local/bin/pg_upgrade:ro" "$IMAGE" >/dev/null
-  local running=
-  for _ in $(seq 1 600); do
-    case $(docker logs "$C" 2>&1) in
-      *'stand-in running'*)
-        running=1
-        break
-        ;;
-    esac
-    sleep 0.1
-  done
-  [ -n "$running" ] || fail "the stand-in never ran: $(docker logs "$C" 2>&1)"
+  wait_for_log 'stand-in running'
   local started=$SECONDS
   docker stop -t 60 "$C" >/dev/null
   [ $((SECONDS - started)) -lt 30 ] || fail "the stop was ignored: killed after the grace period"
@@ -344,20 +426,22 @@ chmod 755 /var/lib/postgresql/fake_pg_upgrade'
   assert_eq 1000 "$(sql 'select count(*) from t')" "the next start upgrades"
 }
 
-# run_deploy <uc ps output>: scripts/deploy.sh in a container with no network
-# and no uc, with stand-ins for uc and docker.
+# run_deploy <uc ps output> [deploy flags...]: scripts/deploy.sh in a container
+# with no network and no uc, with stand-ins for uc and docker.
 run_deploy() {
   # shellcheck disable=SC2016 # expanded in the container
-  docker run --rm --network none -e PS_OUTPUT="$1" -e IMAGE_NAMESPACE=ghcr.io/example \
+  local ps_output=$1
+  shift
+  docker run --rm --network none -e PS_OUTPUT="$ps_output" -e IMAGE_NAMESPACE=ghcr.io/example \
     -v "$PWD/scripts/deploy.sh:/repo/scripts/deploy.sh:ro" --entrypoint bash "$IMAGE" -c '
       mkdir /tmp/bin
       cat >/tmp/bin/uc <<"EOF"
 #!/bin/sh
-if [ "$1" = ps ]; then printf "%s\n" "$PS_OUTPUT"; else echo "RAN uc $*"; fi
+if [ "$1" = ps ]; then echo "RAN uc $*" >&2; printf "%s\n" "$PS_OUTPUT"; else echo "RAN uc $*"; fi
 EOF
       printf "#!/bin/sh\nexit 0\n" >/tmp/bin/docker
       chmod +x /tmp/bin/uc /tmp/bin/docker
-      PATH=/tmp/bin:$PATH /repo/scripts/deploy.sh 3.0.0'
+      PATH=/tmp/bin:$PATH /repo/scripts/deploy.sh 3.0.0 "$@"' deploy "$@"
 }
 
 # The shape of `uc ps`.
@@ -388,6 +472,28 @@ test_deploy_proceeds_with_at_most_one_postgres_container() {
 $rows" 2>&1) || fail "refused with [$rows]: $output"
     assert_contains "$output" 'RAN uc deploy' "uc deploy with [$rows]"
   done
+}
+
+# assert_checked_cluster <uc ps arguments> <deploy flags...>
+assert_checked_cluster() {
+  local expected=$1 output
+  shift
+  output=$(run_deploy "$ps_running" "$@" 2>&1) || fail "refused with [$*]: $output"
+  assert_contains "$output" "RAN uc ps$expected
+RAN uc deploy -f docker/compose.prod.yml $*" "uc ps for [$*]"
+}
+
+# The containers checked must be those of the cluster deployed to.
+test_deploy_checks_the_cluster_it_deploys_to() {
+  assert_checked_cluster '' -y api
+  assert_checked_cluster ' --context prod' --context prod -y
+  assert_checked_cluster ' -c prod' -y -c prod
+  assert_checked_cluster ' -cprod' -cprod
+  assert_checked_cluster ' -c prod' -yc prod
+  assert_checked_cluster ' -cprod' -ycprod
+  assert_checked_cluster ' --context=prod --connect=ssh://a@b' --context=prod --connect=ssh://a@b
+  assert_checked_cluster ' --connect ssh://a@b --uncloud-config /tmp/c.yaml' --connect ssh://a@b --uncloud-config /tmp/c.yaml api
+  assert_checked_cluster ' --uncloud-config=/tmp/c.yaml' --uncloud-config=/tmp/c.yaml
 }
 
 run_tests
