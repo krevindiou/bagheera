@@ -105,11 +105,30 @@ with `pg_upgrade` before the server starts, so `make deploy` is all it takes:
 If the upgrade fails, the 18 data is kept and the logs name the failed step.
 Uncloud waits about seven minutes for the new container to turn healthy (the
 health check's `start_period`, then its retries), then stops it, restarts the
-old one and aborts the deploy: the site is back, on the previous release.
+old one and aborts the deploy: the site is back, on the previous release. Remove
+the container it leaves behind before doing anything else (below).
 
 Only the previous major is upgraded: the image refuses to start on anything
 older, or newer. Custom `postgresql.conf`, `pg_hba.conf` and `ALTER SYSTEM`
 settings are not carried over: the new cluster is configured like a fresh one.
+
+### The container a failed deploy leaves behind
+
+Uncloud keeps the container that did not turn healthy, stopped, for inspection.
+With it next to the restored one, a further deploy could start the new Postgres
+without stopping the running one, and two servers on one volume corrupt it.
+`make deploy` therefore refuses while more than one `postgres` container exists,
+and the image refuses to start while another server answers. Read its logs, fix
+the cause, then remove it:
+
+```sh
+uc ps                                          # the postgres container that is not Up
+ssh <user>@<host> docker rm <container id>
+make deploy
+```
+
+Do not `uc start postgres` while it exists: that starts both. Remove it before
+rolling back too: releases older than 3.0.0 check neither.
 
 ### Cleaning up
 
@@ -138,12 +157,14 @@ If Postgres 18 runs again after the upgrade (a rollback to 2.0.0, or a deploy
 that gave up on an upgrade that had in fact just finished), the volume holds two
 diverging copies, and the new image refuses to start rather than pick one. The
 deploy then fails and Uncloud restores the 18 container. Choose which data to
-keep; the other is **deleted for good**, so back up first.
+keep; the other is **deleted for good**, so back up first. Either way, first
+remove the container the failed deploy left behind (above).
 
 - Keep the 18 data and upgrade it again, **discarding the 19 data** (what was
   written between the upgrade and the return to 18):
 
   ```sh
+  ssh <user>@<host> docker rm <container id>   # the failed deploy's
   uc exec postgres rm -rf /var/lib/postgresql/19/docker
   make deploy
   ```
@@ -152,6 +173,7 @@ keep; the other is **deleted for good**, so back up first.
   Postgres 18 must be stopped before its data is removed:
 
   ```sh
+  ssh <user>@<host> docker rm <container id>   # the failed deploy's
   uc stop postgres --timeout 60
   ssh <user>@<host> docker run --rm -v postgres_data:/var/lib/postgresql alpine \
     rm -rf /var/lib/postgresql/18/docker
