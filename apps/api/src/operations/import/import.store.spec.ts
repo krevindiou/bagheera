@@ -1,5 +1,5 @@
 import type IORedis from 'ioredis';
-import { vi, type Mock } from 'vitest';
+import { afterEach, vi, type Mock } from 'vitest';
 import { testCryptoService } from '../../test-support/test-crypto-service';
 import type { OfxStatement } from './ofx';
 import {
@@ -181,6 +181,37 @@ describe('ImportStore', () => {
       expect(
         await new ImportStore(client as unknown as IORedis, onlyFirst).load(MEMBER, 'i-1'),
       ).toBeNull();
+    });
+  });
+
+  describe('refresh', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('holds for one hour', () => {
+      expect(IMPORT_HOLD_SECONDS).toBe(60 * 60);
+    });
+
+    it('starts the hold of a pending import over', async () => {
+      vi.useFakeTimers({ now: 1_000 });
+      const { client, chain } = fakeClient();
+
+      await storeOver(client).refresh(MEMBER, 'i-1');
+
+      for (const key of ['file', 'meta']) {
+        expect(chain.expire).toHaveBeenCalledWith(
+          `import:${key}:${MEMBER}:i-1`,
+          IMPORT_HOLD_SECONDS,
+        );
+      }
+      // XX: an import discarded meanwhile is not registered again.
+      expect(chain.zadd).toHaveBeenCalledWith(
+        `import:pending:${MEMBER}`,
+        'XX',
+        1_000 + IMPORT_HOLD_SECONDS * 1000,
+        'i-1',
+      );
+      expect(chain.expire).toHaveBeenCalledWith(`import:pending:${MEMBER}`, IMPORT_HOLD_SECONDS);
+      expect(chain.exec).toHaveBeenCalled();
     });
   });
 

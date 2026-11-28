@@ -5,11 +5,12 @@ import { CryptoService } from '../../security/crypto.service';
 import { VALKEY_CLIENT } from '../../session/session.constants';
 import type { OfxStatement } from './ofx';
 
-// How long an uploaded file, or the result of its import, is kept.
-export const IMPORT_HOLD_SECONDS = 30 * 60;
+// How long an uploaded file is kept after its upload or latest preview, and the
+// result of its import after the confirmation.
+export const IMPORT_HOLD_SECONDS = 60 * 60;
 const CONFIRM_LOCK_SECONDS = 2 * 60;
 // Uploads a Member may have waiting at once (a few tabs, a retry); an upload
-// past that replaces the oldest one.
+// past that replaces the one left unpreviewed the longest.
 export const MAX_PENDING_IMPORTS = 5;
 
 // Bump when OfxStatement changes shape: a statement held under another version
@@ -132,6 +133,19 @@ export class ImportStore {
       // as a raw file: as good as expired.
       return null;
     }
+  }
+
+  // Starts the hold over. An import discarded or expired meanwhile stays gone:
+  // EXPIRE ignores a missing key, and XX adds no pending id.
+  async refresh(memberId: string, importId: string): Promise<void> {
+    const pending = this.pendingKey(memberId);
+    await this.client
+      .multi()
+      .expire(this.fileKey(memberId, importId), IMPORT_HOLD_SECONDS)
+      .expire(this.metaKey(memberId, importId), IMPORT_HOLD_SECONDS)
+      .zadd(pending, 'XX', Date.now() + IMPORT_HOLD_SECONDS * 1000, importId)
+      .expire(pending, IMPORT_HOLD_SECONDS)
+      .exec();
   }
 
   async discard(memberId: string, importId: string): Promise<void> {

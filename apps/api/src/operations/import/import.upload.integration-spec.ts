@@ -344,7 +344,7 @@ describe('bank file import: upload, limits and release', () => {
       expect(body.rows.every((row) => row.labelOrigin === 'correction')).toBe(true);
     });
 
-    it('holds the file for at most 30 minutes and drops it once the import ends', async () => {
+    it('holds the file for an hour and drops it once the import ends', async () => {
       const fixture = await seedSignedInMember(app);
       const accountId = await createAccount(fixture);
       const valkey = app.get<IORedis>(VALKEY_CLIENT);
@@ -352,11 +352,31 @@ describe('bank file import: upload, limits and release', () => {
       const { importId } = await startImport(fixture, accountId, FILE);
       const key = `import:file:${fixture.memberId}:${importId}`;
       const ttl = await valkey.ttl(key);
-      expect(ttl).toBeGreaterThan(0);
-      expect(ttl).toBeLessThanOrEqual(30 * 60);
+      expect(ttl).toBeGreaterThan(59 * 60);
+      expect(ttl).toBeLessThanOrEqual(60 * 60);
 
       await confirmImport(fixture, importId, NO_CHANGES);
       expect(await valkey.exists(key)).toBe(0);
+    });
+
+    it('starts the hold over on each preview', async () => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { importId } = await startImport(fixture, accountId, FILE);
+      const keys = [
+        `import:file:${fixture.memberId}:${importId}`,
+        `import:meta:${fixture.memberId}:${importId}`,
+        `import:pending:${fixture.memberId}`,
+      ];
+      await Promise.all(keys.map((key) => valkey.expire(key, 60)));
+
+      const res = await fixture.mutate('post', `/operations/import/${importId}/preview`, {});
+
+      expect(res.status).toBe(200);
+      for (const key of keys) {
+        expect(await valkey.ttl(key)).toBeGreaterThan(59 * 60);
+      }
     });
 
     it('holds the statement encrypted', async () => {

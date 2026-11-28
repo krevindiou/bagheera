@@ -120,8 +120,8 @@ interface Evaluated {
 
 /**
  * Bank file import: upload, preview, confirm. The file is read once, at
- * upload; what it holds lives only in ImportStore, for 30 minutes at most, and
- * an import is all-or-nothing.
+ * upload; what it holds lives only in ImportStore, until an hour passes without
+ * a preview, and an import is all-or-nothing.
  */
 @Injectable()
 export class ImportService {
@@ -177,6 +177,7 @@ export class ImportService {
     dto: PreviewImportDto,
   ): Promise<ImportPreviewDto> {
     const evaluated = await this.evaluate(memberId, importId, dto);
+    await this.store.refresh(memberId, importId);
     const { rows } = evaluated;
     const [statement, balances] = await Promise.all([
       this.summarize(memberId, evaluated),
