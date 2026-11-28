@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.0.0](https://github.com/krevindiou/bagheera/compare/v2.1.0...v3.0.0) (2026-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* production runs the new bagheera-postgres image, whose package must be made public before the first deploy. Rolling back after the upgrade starts the data as it was on upgrade day.
+
+### Features
+
+* **import:** hold a statement for an hour after its latest preview ([e42925c](https://github.com/krevindiou/bagheera/commit/e42925c8424463c2e54860bd18a6b38cc62d03fd))
+* **postgres:** add an image that upgrades the previous major on start ([69d628f](https://github.com/krevindiou/bagheera/commit/69d628f8958bb7471988c4b204fc245a4f81be59))
+* **postgres:** refuse unsafe states and keep the old cluster on failure ([7639c17](https://github.com/krevindiou/bagheera/commit/7639c17e97f5e14f87bad5caec8bf29fd310b71e))
+* run Postgres from an image that upgrades 18 to 19 on start ([1f4fba5](https://github.com/krevindiou/bagheera/commit/1f4fba5bdcbea4da3cacca8c8c4e0c230f695601))
+
+
+### Bug Fixes
+
+* **import:** evict and refresh held statements atomically ([5dbbd7c](https://github.com/krevindiou/bagheera/commit/5dbbd7c733636982229455f6cf1ca74155e69a55))
+* **postgres:** drop the base gosu binary from the image scan ([6f5170a](https://github.com/krevindiou/bagheera/commit/6f5170a30a893f991b260fc479d9e142f2e456fd))
+* **postgres:** lock the volume and close gaps found in review ([847719f](https://github.com/krevindiou/bagheera/commit/847719fd4eafb2704d8145c54273a5724c24f22f))
+* **postgres:** never start beside a running server, and stop cleanly ([572b70f](https://github.com/krevindiou/bagheera/commit/572b70f53763e7965b20bc3f078a418c295b27f8))
+
 ## [2.1.0](https://github.com/krevindiou/bagheera/compare/v2.0.0...v2.1.0) (2026-11-27)
 
 
