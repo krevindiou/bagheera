@@ -60,7 +60,25 @@ done
 # Uncloud leaves a container that failed to turn healthy behind, stopped. With a
 # second postgres container around, the next deploy may start the new one without
 # stopping the running one: two servers on one volume. At most one may exist.
-containers=$(uc ps)
+# uc's global flags choose the cluster, so the ones meant for `uc deploy` go to
+# `uc ps` too. -y may be bundled before -c.
+cluster=()
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+	case ${args[i]} in
+	-c | --context | --connect | --uncloud-config)
+		cluster+=("${args[@]:i:2}")
+		i=$((i + 1))
+		;;
+	-c?* | --context=* | --connect=* | --uncloud-config=*) cluster+=("${args[i]}") ;;
+	-yc)
+		cluster+=(-c "${args[@]:i+1:1}")
+		i=$((i + 1))
+		;;
+	-yc?*) cluster+=("-c${args[i]#-yc}") ;;
+	esac
+done
+containers=$(uc ps "${cluster[@]}")
 postgres=$(awk '$1 == "postgres"' <<<"$containers")
 if [ "$(grep -c . <<<"$postgres")" -gt 1 ]; then
 	{
