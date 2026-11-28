@@ -14,7 +14,7 @@ afterwards.
   `feat` bumps the minor version, `fix` the patch, a breaking change (`!` or a
   `BREAKING CHANGE:` footer) the major; `CHANGELOG.md` lists them. A
   `Release-As: x.y.z` footer in a commit message forces the next version.
-- That pull request runs the end-to-end tests and builds and scans the three images
+- That pull request runs the end-to-end tests and builds and scans the four images
   for amd64 and arm64 without pushing them (`.github/workflows/release-check.yml`),
   so merge it once its checks are green. They start only because a GitHub App
   opens the pull request (the `RELEASE_APP_ID` variable and
@@ -26,7 +26,9 @@ afterwards.
   end-to-end tests on that commit, builds `bagheera-api`
   (`docker/Dockerfile.api`), `bagheera-web` (`docker/Dockerfile.caddy`:
   Caddy serving the built SPA, see `docker/Caddyfile` for its security
-  headers) and `bagheera-backup` (`docker/Dockerfile.backup`) for amd64 and arm64, each on a native runner, scans them with Trivy
+  headers), `bagheera-backup` (`docker/Dockerfile.backup`) and
+  `bagheera-postgres` (`docker/Dockerfile.postgres`) for amd64 and arm64, each on
+  a native runner, scans them with Trivy
   and pushes them to GitHub Container Registry (`ghcr.io`) tagged `x.y.z` and
   `latest`. The images are public and hold no secrets or deployment settings.
   A failing test, or a critical or high CVE with a fix, stops it before
@@ -50,15 +52,16 @@ the public `ghcr.io/krevindiou/bagheera-*` images. Fork the repository, enable
 its Actions, and allow GitHub Actions to create pull requests (Settings →
 Actions → General → Workflow permissions). Pushes to your fork's `main` then
 open release pull requests; merging one publishes the images to
-`ghcr.io/<your-account>/bagheera-api`, `bagheera-web` and `bagheera-backup`, with no secret to set
+`ghcr.io/<your-account>/bagheera-api`, `bagheera-web`, `bagheera-backup` and
+`bagheera-postgres`, with no secret to set
 up (without the GitHub App, release pull requests get no checks before the
 merge). After the first publish, make the packages public (each package's
 settings on GitHub, "Change visibility") so the host can pull them
 anonymously, and set `IMAGE_NAMESPACE=ghcr.io/<your-account>` in
-`docker/prod.env`. `bagheera-backup` arrived later than the other two (in
-2.0.0): if your fork published releases before it, make it public after the
-first release that publishes it, or `make deploy` stops with
-`bagheera-backup:<version> is not published, or not public`.
+`docker/prod.env`. `bagheera-backup` (2.0.0) and `bagheera-postgres` (3.0.0)
+arrived later than the other two: if your fork published releases before one of
+them, make it public after the first release that publishes it, or `make deploy`
+stops with `<image>:<version> is not published, or not public`.
 
 ## Deploying and rolling back
 
@@ -70,15 +73,92 @@ check, then removes the old one, so a release that never turns healthy leaves
 the previous one serving. Extra arguments go to `uc deploy`, e.g.
 `scripts/deploy.sh <version> -y` to skip the confirmation.
 
-To roll back, deploy an older version. Before 2.0.0 there was no
-`bagheera-backup` image, so rolling back past 2.0.0 cannot be done from a 2.x
-checkout (the script stops at the missing `bagheera-backup:<version>`): deploy
-from the old tag's checkout instead, with its own `docker/compose.prod.yml`,
-e.g. `git checkout v1.0.4` then `make deploy TAG=1.0.4` there. What then
-happens to the running `backup` service, which the old compose file does not
-know, has not been verified: check `uc ps` afterwards, and remove it by hand
-if it is still there. The old release's backup then needs its old setup (the
-`backup.yml` workflow and the host-side script) again.
+To roll back, deploy an older version. A release older than one of the images
+cannot be deployed from a newer checkout: there was no `bagheera-postgres`
+before 3.0.0 and no `bagheera-backup` before 2.0.0, so the script stops at the
+missing `<image>:<version>`. Deploy from the old tag's checkout instead, with
+its own `docker/compose.prod.yml`, e.g. `git checkout v2.1.0` then `make deploy
+TAG=2.1.0` there. Rolling back across a Postgres major has its own rules (see
+"Postgres major upgrades").
+
+When rolling back past 2.0.0, what happens to the running `backup` service,
+which the old compose file does not know, has not been verified: check `uc ps`
+afterwards, and remove it by hand if it is still there. The old release's backup
+then needs its old setup (the `backup.yml` workflow and the host-side script)
+again.
+
+## Postgres major upgrades
+
+Production runs `bagheera-postgres`, the official Postgres image plus the
+previous major's binaries. When it starts on a volume that only holds the
+previous major (18, for the Postgres 19 of release 3.0.0), it upgrades the data
+with `pg_upgrade` before the server starts, so `make deploy` is all it takes:
+
+1. Back up first: `uc exec backup backup-run` ("Backups" below).
+2. `make deploy`, outside the backup window. Uncloud stops the old Postgres
+   container, then starts the new one: the database is down while it upgrades,
+   and no write can be lost. The new data is a copy, so the volume needs free
+   space of at least twice the size of the old data.
+3. Check: `uc logs postgres` ends the `postgres-upgrade:` lines with `upgrade
+   from 18 to 19 complete`, and the application shows your data.
+
+If the upgrade fails, the 18 data is kept and the logs name the failed step.
+Uncloud waits about seven minutes for the new container to turn healthy (the
+health check's `start_period`, then its retries), then stops it, restarts the
+old one and aborts the deploy: the site is back, on the previous release.
+
+Only the previous major is upgraded: the image refuses to start on anything
+older, or newer. Custom `postgresql.conf`, `pg_hba.conf` and `ALTER SYSTEM`
+settings are not carried over: the new cluster is configured like a fresh one.
+
+### Cleaning up
+
+The old data stays in `/var/lib/postgresql/18/docker`. Once you are satisfied
+with the upgrade, delete it. This cannot be undone and ends the possibility of
+going back to 18:
+
+```sh
+uc exec postgres rm -rf /var/lib/postgresql/18/docker
+```
+
+### Rolling back
+
+- To 2.1.0 (official Postgres 19 image), after a successful upgrade: it serves
+  the upgraded data, nothing is lost. On a volume that was never upgraded,
+  2.1.0 does not start.
+- To 2.0.0 or older (Postgres 18): it starts the 18 data **as it was on upgrade
+  day**. Everything entered since is not there. Not possible once that data is
+  deleted.
+
+Both are deployed from their tag's checkout ("Deploying and rolling back").
+
+### "changed since the upgrade"
+
+If Postgres 18 runs again after the upgrade (a rollback to 2.0.0, or a deploy
+that gave up on an upgrade that had in fact just finished), the volume holds two
+diverging copies, and the new image refuses to start rather than pick one. The
+deploy then fails and Uncloud restores the 18 container. Choose which data to
+keep; the other is **deleted for good**, so back up first.
+
+- Keep the 18 data and upgrade it again, **discarding the 19 data** (what was
+  written between the upgrade and the return to 18):
+
+  ```sh
+  uc exec postgres rm -rf /var/lib/postgresql/19/docker
+  make deploy
+  ```
+
+- Keep the 19 data, **discarding everything written to 18 since the upgrade**.
+  Postgres 18 must be stopped before its data is removed:
+
+  ```sh
+  uc stop postgres --timeout 60
+  ssh <user>@<host> docker run --rm -v postgres_data:/var/lib/postgresql alpine \
+    rm -rf /var/lib/postgresql/18/docker
+  make deploy
+  ```
+
+  Check `uc ps` afterwards: this path has not been tried on a real cluster.
 
 ## Deploying schema changes
 
